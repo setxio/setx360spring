@@ -1,0 +1,315 @@
+.signup-flow-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.signup-step {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.signup-header {
+  text-align: center;
+}
+
+.signup-header h3 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(to right, #a855f7, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.signup-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Step 1: Type Grid */
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px;
+  gap: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+  background: var(--bg-soft);
+}
+
+.type-card.selected {
+  border-color: var(--primary);
+  background: var(--accent-bg);
+}
+
+.type-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.type-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.type-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.type-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.check-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--primary);
+}
+
+/* Generic Form UI */
+.form-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding-left: 4px;
+}
+
+.input-group input,
+.input-group select {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+[data-theme*='dark'] .input-group select {
+  color-scheme: dark;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.input-group select option {
+  background-color: var(--bg-soft);
+  color: var(--text);
+}
+
+.birthday-selects {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  gap: 8px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Step 3: Localization */
+.zip-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.zip-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+}
+
+.zip-search input {
+  width: 100%;
+  padding-left: 44px !important;
+}
+
+.shared-zip-container {
+  padding: 16px;
+  background: var(--bg-soft);
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.cluster-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cluster-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cluster-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.validation-summary {
+  margin-top: 8px;
+}
+
+.badge-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.badge-preview.resident {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+.badge-preview.visitor {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+/* Step 4: Final Reveal */
+.final-reveal {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.large-badge {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.large-badge.resident {
+  background: var(--primary);
+  color: white;
+}
+
+.large-badge.visitor {
+  background: #2563eb;
+  color: white;
+}
+
+.profile-summary {
+  margin: 24px 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+
+.summary-row span {
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .signup-flow-container {
+    padding: 0 16px;
+  }
+  .birthday-selects {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .type-grid {
+    grid-template-columns: 1fr;
+  }
+}

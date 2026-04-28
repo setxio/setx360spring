@@ -1,0 +1,28 @@
+{
+  "short_name": "Efutura",
+  "name": "Efutura Super App",
+  "icons": [
+    {
+      "src": "logo-efutura.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "logo-efutura.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo-efutura.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#7000f4",
+  "background_color": "#0a0014",
+  "description": "Efutura — Your local social platform powered by community. Social, Market, Eats, Services, and more.",
+  "orientation": "portrait",
+  "categories": ["social", "shopping", "lifestyle"]
+}

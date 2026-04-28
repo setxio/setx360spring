@@ -1,0 +1,41 @@
+.social-feed {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.social-fab {
+  position: fixed;
+  bottom: 150px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--social-primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  cursor: pointer;
+  z-index: 80;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.social-fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+}
+
+.social-fab:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+}
+
+@media (min-width: 600px) {
+  /* Keep it aligned with the content container max-width */
+  .social-fab {
+    right: calc(50% - 280px); /* 600px max width / 2 = 300px, 20px inward = 280px */
+  }
+}

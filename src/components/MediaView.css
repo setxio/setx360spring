@@ -1,0 +1,15 @@
+.media-view-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .media-view-container {
+  background: var(--bg);
+}
+
+[data-theme='light'] .media-view-container {
+  background: #f8fafc;
+}

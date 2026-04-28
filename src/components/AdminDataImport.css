@@ -1,0 +1,148 @@
+.admin-import-tool {
+  padding: 32px;
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tool-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.tool-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(var(--admin-gold-rgb), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tool-title h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.tool-title p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.import-zone {
+  min-height: 300px;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.upload-placeholder {
+  text-align: center;
+}
+
+.upload-icon {
+  margin-bottom: 16px;
+  color: #64748b;
+  opacity: 0.5;
+}
+
+.select-file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--admin-gold);
+  color: black;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+}
+
+.select-file-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.import-status {
+  text-align: center;
+  width: 80%;
+}
+
+.progress-bar-wrap {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  height: 8px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--admin-gold);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-bar-wrap span {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.import-result {
+  text-align: center;
+  padding: 40px;
+}
+
+.import-result.success { color: #10b981; }
+.import-result.error { color: #ef4444; }
+
+.import-result h4 {
+  margin: 16px 0 8px;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.import-result p {
+  color: #94a3b8;
+  margin-bottom: 24px;
+}
+
+.reset-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tool-footer {
+  margin-top: 32px;
+  padding: 16px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 600;
+}

@@ -1,0 +1,119 @@
+.feed-filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  width: calc(100% + 32px); /* Compensation for container padding */
+  margin-left: -16px;
+  margin-right: -16px;
+}
+
+.filter-slider {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px 16px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.filter-slider::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.filter-pill {
+  white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-pill:active {
+  transform: scale(0.95);
+}
+
+.filter-pill.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.filter-pill.secondary {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.filter-pill.secondary.active {
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+/* AI Picks pill — distinct purple gradient */
+.filter-pill.ai-pill {
+  border-color: rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.08));
+  color: rgb(167, 139, 250);
+  display: inline-flex;
+  align-items: center;
+}
+
+.filter-pill.ai-pill.active {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border-color: #7c3aed;
+  color: white;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+}
+
+/* Emergency pill — red alert style */
+.filter-pill.emergency-pill {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.05));
+  color: rgb(248, 113, 113);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.filter-pill.emergency-pill.active {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border-color: #dc2626;
+  color: white;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+}
+
+.filter-pill.emergency-pill.alert-pulse {
+  animation: emergency-border-pulse 2s ease-in-out infinite;
+}
+
+@keyframes emergency-border-pulse {
+  0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: none; }
+  50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+@media (min-width: 800px) {
+  .feed-filters-container {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .filter-slider {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: visible;
+    padding: 4px 0;
+  }
+}

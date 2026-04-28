@@ -1,0 +1,601 @@
+:root {
+  /* Common Colors */
+  --white: #ffffff;
+  --black: #000000;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* Primary Palettes */
+  --social-primary: #a855f7; /* Purple */
+  --social-secondary: #06b6d4; /* Cyan */
+  --market-primary: #10b981; /* Green */
+  --market-secondary: #2563eb; /* Blue */
+  --discover-primary: #06b6d4; /* Cyan */
+  --discover-secondary: #a855f7; /* Purple */
+  --jobs-violet: #7c3aed;
+
+  /* Default (Social Light) */
+  --primary: var(--social-primary);
+  --secondary: var(--social-secondary);
+  --bg: var(--white);
+  --bg-soft: var(--gray-50);
+  --text: var(--gray-900);
+  --text-muted: var(--gray-500);
+  --border: var(--gray-200);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  
+  --safe-area-bottom: env(safe-area-inset-bottom);
+
+  /* TopBar color slots — fallback defaults (Civic Blue / Green) */
+  --theme-primary: 221 83% 53%; /* HSL for Primary */
+  --theme-secondary: 142 72% 36%; /* HSL for Secondary */
+  --theme-tertiary: 199 89% 48%; /* HSL for Tertiary */
+  
+  --theme-gradient-from: #2563eb;
+  --theme-gradient-via: #3b82f6;
+  --theme-gradient-to: #16a34a;
+  
+  --theme-color-1: #2563eb;
+  --theme-color-2: #0ea5e9;
+  --theme-color-3: #22c55e;
+  --theme-color-4: #16a34a;
+
+  --button-style: flat; /* flat | gradient */
+}
+
+[data-theme='dark'] {
+  --bg: #0f172a;
+  --bg-soft: #1e293b;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+}
+
+/* ── Civic (Classic) Light ─────────────────────────────────── */
+[data-theme='civic-classic-light'] {
+  --bg: #ffffff;
+  --bg-soft: #f0f4ff;
+  --text: #0d1b3e;
+  --text-muted: #4a6080;
+  --border: #c5d4ee;
+  --shadow: 0 4px 6px -1px rgb(37 99 235 / 0.08), 0 2px 4px -2px rgb(37 99 235 / 0.06);
+  --primary: #2563eb;
+  --secondary: #16a34a;
+  /* TopBar color slots */
+  --theme-color-1: #2563eb;
+  --theme-color-2: #0ea5e9;
+  --theme-color-3: #22c55e;
+  --theme-color-4: #16a34a;
+}
+
+/* ── SETX (Civic Styling) Light ────────────────────────────── */
+[data-theme='setx-light'] {
+  --bg: #ffffff;
+  --bg-soft: #f0f4ff;
+  --text: #0d1b3e;
+  --text-muted: #4a6080;
+  --border: #c5d4ee;
+  --shadow: 0 4px 6px -1px rgb(37 99 235 / 0.08), 0 2px 4px -2px rgb(37 99 235 / 0.06);
+  --primary: #2563eb;
+  --secondary: #16a34a;
+  /* TopBar color slots */
+  --theme-color-1: #2563eb;
+  --theme-color-2: #0ea5e9;
+  --theme-color-3: #22c55e;
+  --theme-color-4: #16a34a;
+}
+
+/* ── Civic (Classic) Dark ──────────────────────────────────── */
+/* Distinct blue-toned background — different from generic dark slate */
+[data-theme='civic-classic-dark'] {
+  --bg: #0d2257;
+  --bg-soft: #162f72;
+  --text: #e8efff;
+  --text-muted: #93acd4;
+  --border: #1e3d8a;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+  --primary: #60a5fa;
+  --secondary: #34d399;
+  /* TopBar color slots */
+  --theme-color-1: #60a5fa;
+  --theme-color-2: #38bdf8;
+  --theme-color-3: #34d399;
+  --theme-color-4: #6ee7b7;
+}
+
+/* ── SETX (Civic Styling) Dark ─────────────────────────────── */
+[data-theme='setx-dark'] {
+  --bg: #000000;
+  --bg-soft: #0a0a0a;
+  --text: #ffffff;
+  --text-muted: #a1a1aa;
+  --border: #1a1a1a;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --primary: #60a5fa;
+  --secondary: #34d399;
+  /* TopBar color slots */
+  --theme-color-1: #60a5fa;
+  --theme-color-2: #38bdf8;
+  --theme-color-3: #34d399;
+  --theme-color-4: #6ee7b7;
+}
+
+/* ── Neo (Electric Future) — Light ──────────────────── */
+/* Primary: #7000f4 (Purple) | Secondary: #2c69b5 (Blue) */
+[data-theme='neo-light'] {
+  --bg: #f8f8ff;
+  --bg-soft: #f0eeff;
+  --text: #09090b;
+  --text-muted: #71717a;
+  --border: #e4e4f0;
+  --shadow: 0 4px 6px -1px rgb(112 0 244 / 0.08);
+  --primary: #7000f4;
+  --secondary: #2c69b5;
+  /* TopBar color slots */
+  --theme-color-1: #5af27f;
+  --theme-color-2: #22d3ee;
+  --theme-color-3: #3b82f6;
+  --theme-color-4: #7000f4;
+}
+
+/* Neo (Electric Future) — Dark */
+/* Deep black base, electric purple + blue accent */
+[data-theme='neo-dark'] {
+  --bg: #000000;
+  --bg-soft: #0a0a10;
+  --text: #fafafa;
+  --text-muted: #a1a1aa;
+  --border: #27272a;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --primary: #7000f4;
+  --secondary: #3b82f6;
+  /* TopBar color slots */
+  --theme-color-1: #5af27f;
+  --theme-color-2: #22d3ee;
+  --theme-color-3: #3b82f6;
+  --theme-color-4: #7000f4;
+}
+
+/* ── Neo II (Glass) — Light ────────────────────────── */
+/* Same palette as Neo, but light has a cool blue-white tint */
+[data-theme='neo-ii-light'] {
+  --bg: #fdfdff;
+  --bg-soft: #f4f4ff;
+  --text: #09090b;
+  --text-muted: #71717a;
+  --border: #e4e4ff;
+  --shadow: 0 4px 6px -1px rgb(112 0 244 / 0.06);
+  --primary: #7000f4;
+  --secondary: #2c69b5;
+  /* TopBar color slots */
+  --theme-color-1: #5af27f;
+  --theme-color-2: #22d3ee;
+  --theme-color-3: #3b82f6;
+  --theme-color-4: #7000f4;
+}
+
+/* Neo II (Glass) — Dark */
+/* Near-black with deep purple tint */
+[data-theme='neo-ii-dark'] {
+  --bg: #020205;
+  --bg-soft: #0a0a10;
+  --text: #fafafa;
+  --text-muted: #a1a1aa;
+  --border: #1a1a2e;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.6);
+  --primary: #7000f4;
+  --secondary: #3b82f6;
+  /* TopBar color slots */
+  --theme-color-1: #5af27f;
+  --theme-color-2: #22d3ee;
+  --theme-color-3: #3b82f6;
+  --theme-color-4: #7000f4;
+}
+
+/* ── Twilight (Texas Sunset) — Light ───────────────── */
+/* Primary: #ff2e97 (Magenta) | Secondary: #ffb86c (Gold) */
+[data-theme='twilight-light'] {
+  --bg: #f8f8ff;
+  --bg-soft: #fff5f8;
+  --text: #09090b;
+  --text-muted: #71717a;
+  --border: #ffe4ee;
+  --shadow: 0 4px 6px -1px rgb(255 46 151 / 0.08);
+  --primary: #ff2e97;
+  --secondary: #ffb86c;
+  /* TopBar color slots */
+  --theme-color-1: #ffb86c;
+  --theme-color-2: #ff2e97;
+  --theme-color-3: #9333ea;
+  --theme-color-4: #4f46e5;
+}
+
+/* Twilight (Texas Sunset) — Dark */
+/* Standard dark base, magenta + gold accents */
+[data-theme='twilight-dark'] {
+  --bg: #000000;
+  --bg-soft: #0a0508;
+  --text: #fafafa;
+  --text-muted: #a1a1aa;
+  --border: #27272a;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --primary: #ff2e97;
+  --secondary: #ffb86c;
+  /* TopBar color slots */
+  --theme-color-1: #ffb86c;
+  --theme-color-2: #ff2e97;
+  --theme-color-3: #9333ea;
+  --theme-color-4: #4f46e5;
+}
+
+/* ── Twilight II (Glass) — Light ──────────────────── */
+/* Warm white tint, same sunset palette */
+[data-theme='twilight-ii-light'] {
+  --bg: #fffafa;
+  --bg-soft: #fff5f5;
+  --text: #09090b;
+  --text-muted: #71717a;
+  --border: #ffe4e4;
+  --shadow: 0 4px 6px -1px rgb(255 46 151 / 0.06);
+  --primary: #ff2e97;
+  --secondary: #ffb86c;
+  /* TopBar color slots */
+  --theme-color-1: #ffb86c;
+  --theme-color-2: #ff2e97;
+  --theme-color-3: #9333ea;
+  --theme-color-4: #4f46e5;
+}
+
+/* Twilight II (Glass) — Dark */
+/* Deep plum-black base, glassy warm dark */
+[data-theme='twilight-ii-dark'] {
+  --bg: #0a0508;
+  --bg-soft: #150a12;
+  --text: #fafafa;
+  --text-muted: #a1a1aa;
+  --border: #2e1628;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.6);
+  --primary: #ff2e97;
+  --secondary: #ffb86c;
+  /* TopBar color slots */
+  --theme-color-1: #ffb86c;
+  --theme-color-2: #ff2e97;
+  --theme-color-3: #9333ea;
+  --theme-color-4: #4f46e5;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── Efutura ─────────────────────────────────────────────────── */
+/* Derived from the Efutura logo: purple→violet→blue→cyan sweep   */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Efutura — Light */
+/* Soft lavender canvas; darker primaries for readability */
+[data-theme='efutura-light'] {
+  --bg: #f5f0ff;
+  --bg-soft: #ede9fe;
+  --text: #0a0614;
+  --text-muted: #5b5280;
+  --border: #c4b5fd;
+  --shadow: 0 4px 6px -1px rgb(124 58 237 / 0.1), 0 2px 4px -2px rgb(6 182 212 / 0.06);
+  --primary: #7c3aed;
+  --secondary: #0891b2;
+  /* TopBar: logo gradient purple → violet → blue → cyan */
+  --theme-color-1: #a855f7;
+  --theme-color-2: #7c3aed;
+  --theme-color-3: #3b82f6;
+  --theme-color-4: #06b6d4;
+}
+
+/* Efutura — Dark */
+/* Pure black canvas — exactly the logo background */
+[data-theme='efutura-dark'] {
+  --bg: #000000;
+  --bg-soft: #0a0614;
+  --text: #f0eeff;
+  --text-muted: #8892b0;
+  --border: #1a1030;
+  --shadow: 0 10px 25px -3px rgb(168 85 247 / 0.25), 0 4px 10px -4px rgb(6 182 212 / 0.15);
+  --primary: #a855f7;
+  --secondary: #06b6d4;
+  /* TopBar: logo gradient purple → violet → blue → cyan */
+  --theme-color-1: #a855f7;
+  --theme-color-2: #7c3aed;
+  --theme-color-3: #3b82f6;
+  --theme-color-4: #06b6d4;
+}
+
+/* ─── Porch: Texas Front Porch ─── */
+[data-theme='porch'] {
+  --theme-primary: 12 52% 52%;    /* Terracotta */
+  --theme-secondary: 38 62% 54%;  /* Warm Gold */
+  --theme-gradient-from: #D4A042;
+  --theme-gradient-to: #C2654A;
+  --theme-color-1: #D4A042;
+  --theme-color-2: #C2654A;
+  --theme-color-3: #6B8F71;
+  --theme-color-4: #5C3D2E;
+}
+
+/* ─── Spring: Renewal ─── */
+[data-theme='spring'] {
+  --theme-primary: 142 71% 45%;   /* Emerald Green */
+  --theme-secondary: 330 81% 60%; /* Rose Pink */
+  --theme-gradient-from: #10b981;
+  --theme-gradient-to: #ec4899;
+  --theme-color-1: #10b981;
+  --theme-color-2: #34d399;
+  --theme-color-3: #f472b6;
+  --theme-color-4: #ec4899;
+}
+
+/* ── Summer: Solstice ─── */
+[data-theme='summer'] {
+  --theme-primary: 45 93% 47%;    /* Sunflower Yellow */
+  --theme-secondary: 199 89% 48%; /* Sky Blue */
+  --theme-gradient-from: #eab308;
+  --theme-gradient-to: #0ea5e9;
+  --theme-color-1: #eab308;
+  --theme-color-2: #fde047;
+  --theme-color-3: #67e8f9;
+  --theme-color-4: #0ea5e9;
+}
+
+/* ─── Autumn: Harvest ─── */
+[data-theme='autumn'] {
+  --theme-primary: 25 95% 53%;    /* Burnt Orange */
+  --theme-secondary: 48 96% 53%;  /* Harvest Gold */
+  --theme-gradient-from: #f97316;
+  --theme-gradient-to: #facc15;
+  --theme-color-1: #f97316;
+  --theme-color-2: #fb923c;
+  --theme-color-3: #fcd34d;
+  --theme-color-4: #facc15;
+}
+
+/* ── Winter: Frost ─── */
+[data-theme='winter'] {
+  --theme-primary: 213 94% 68%;   /* Ice Blue */
+  --theme-secondary: 215 16% 47%; /* Slate Silver */
+  --theme-gradient-from: #60a5fa;
+  --theme-gradient-to: #94a3b8;
+  --theme-color-1: #60a5fa;
+  --theme-color-2: #93c5fd;
+  --theme-color-3: #cbd5e1;
+  --theme-color-4: #94a3b8;
+}
+
+/* ─── Custom Theme ─── */
+[data-theme='custom'] {
+  --primary: hsl(var(--theme-primary));
+  --secondary: hsl(var(--theme-secondary));
+}
+
+[data-button-style='gradient'] .btn-theme-primary {
+  background: linear-gradient(to bottom right, var(--theme-gradient-from), var(--theme-gradient-via), var(--theme-gradient-to)) !important;
+}
+
+[data-env='market'] {
+  --primary: var(--market-primary);
+  --secondary: var(--market-secondary);
+}
+
+[data-env='discover'] {
+  --primary: var(--discover-primary);
+  --secondary: var(--discover-secondary);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.premium-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease;
+}
+
+.premium-card:active {
+  transform: scale(0.98);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme='dark'] .glass {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+[data-theme='civic-classic-dark'] .glass {
+  background: rgba(13, 34, 87, 0.75);
+  border-bottom-color: rgba(96, 165, 250, 0.15);
+}
+
+[data-theme='setx-dark'] .glass {
+  background: rgba(0, 0, 0, 0.75);
+  border-bottom-color: rgba(96, 165, 250, 0.15);
+}
+
+[data-theme='neo-dark'] .glass,
+[data-theme='neo-ii-dark'] .glass {
+  background: rgba(0, 0, 0, 0.75);
+  border-bottom-color: rgba(112, 0, 244, 0.2);
+}
+
+[data-theme='twilight-dark'] .glass {
+  background: rgba(0, 0, 0, 0.75);
+  border-bottom-color: rgba(255, 46, 151, 0.15);
+}
+
+[data-theme='twilight-ii-dark'] .glass {
+  background: rgba(10, 5, 8, 0.8);
+  border-bottom-color: rgba(255, 46, 151, 0.15);
+}
+
+[data-theme='efutura-dark'] .glass {
+  background: rgba(0, 0, 0, 0.82);
+  border-bottom-color: rgba(168, 85, 247, 0.25);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ── TopBar Scan Animations ──────────────────────────────────── */
+/* Scan sweeps left-to-right (right half of bar, scanning inward) */
+@keyframes scan-left {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Scan sweeps right-to-left (left half of bar, scanning inward) */
+@keyframes scan-right {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* Fade out overlay after scan completes */
+@keyframes fade-out {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Composed animation: scan 2.25s then fade over 0.75s */
+.animate-scan-left-fade {
+  animation:
+    scan-left  2.25s linear forwards,
+    fade-out   0.75s linear 2.25s forwards;
+}
+
+.animate-scan-right-fade {
+  animation:
+    scan-right 2.25s linear forwards,
+    fade-out   0.75s linear 2.25s forwards;
+}
+
+/* Premium Utilities */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+  border-color: var(--primary);
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(0.98); }
+}
+
+/* Push Notification UI (Settings Page) */
+.push-manager-container {
+  margin-top: 8px;
+}
+
+.notif-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.notif-settings-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.notif-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-status {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.notif-subtext {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.notif-settings-btn.subscribed {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.notif-settings-btn.subscribed svg {
+  color: #10b981;
+}
+
+.notif-settings-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
