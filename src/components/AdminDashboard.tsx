@@ -9,7 +9,7 @@ import {
   DollarSign,
   ShieldCheck,
   ShieldAlert,
-  BarChart3,
+  Sparkles,
   RefreshCw,
   Siren,
   Home,
@@ -27,6 +27,7 @@ import {
   Shield
 } from 'lucide-react';
 import { AdminDataImport } from './AdminDataImport';
+import { AIAssistant } from './AIAssistant';
 import { supabase } from '../lib/supabase';
 import './AdminDashboard.css';
 
@@ -354,7 +355,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
           <NavItem tab="reviews" icon={Shield} label="Verifications" />
           <NavItem tab="moderation" icon={ShieldAlert} label="Content Moderation" />
           <NavItem tab="alerts" icon={Siren} label="Crisis Center" />
-          <NavItem tab="intelligence" icon={BarChart3} label="Platform Intel" />
+          <NavItem tab="intelligence" icon={Sparkles} label="AI Architect" />
           <NavItem tab="modules" icon={Grid} label="Asset Manager" />
           <NavItem tab="activity" icon={LucideActivity} label="System Events" />
           <NavItem tab="settings" icon={LucideSettings} label="Global Config" />
@@ -543,7 +544,10 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
             )}
             {activeTab === 'intelligence' && (
               <div className="intelligence-tab">
-                <AdminDataImport />
+                <AIAssistant />
+                <div style={{ marginTop: 40 }}>
+                  <AdminDataImport />
+                </div>
               </div>
             )}
             {activeTab === 'settings' && (
