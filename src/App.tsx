@@ -999,6 +999,12 @@ const App: React.FC = () => {
               </button>
             )}
 
+            {user?.role === 'admin' && (
+              <button className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`} onClick={() => handleEnvClick('admin')}>
+                <ShieldCheck size={18} /> Admin Control
+              </button>
+            )}
+
 
             {/* Spacer for centering last item */}
             <div className="sw-btn spacer" aria-hidden="true" />
