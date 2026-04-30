@@ -23,6 +23,7 @@ interface PostCardProps {
   onRepost: (postId: string) => void;
   onShare: (postId: string) => void;
   onNavigateToPost?: (postId: string, commentId?: string) => void;
+  onNavigateToProfile?: (profileId: string) => void;
   isBookmarked?: boolean;
   onToggleBookmark?: (postId: string) => void;
   hideCommentPreview?: boolean;
@@ -38,6 +39,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   onRepost, 
   onShare,
   onNavigateToPost,
+  onNavigateToProfile,
   isBookmarked = false,
   onToggleBookmark,
   hideCommentPreview = false
@@ -103,7 +105,11 @@ export const PostCard: React.FC<PostCardProps> = ({
             size={40}
           />
           <div className="author-info">
-            <h4 className="author-name">
+            <h4 
+              className="author-name" 
+              onClick={(e) => { e.stopPropagation(); onNavigateToProfile?.(contentPost.profile_id); }}
+              style={{ cursor: 'pointer' }}
+            >
               {contentPost.author?.name || 'E User'}
               {contentPost.author?.is_verified && <ShieldCheck size={14} className="verified-tick" style={{ marginLeft: 4, display: 'inline' }} />}
             </h4>
@@ -302,6 +308,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           <CommentPreview 
             comments={contentPost.comments || []} 
             onCommentClick={(commentId) => onNavigateToPost?.(contentPost.id, commentId)}
+            onNavigateToProfile={onNavigateToProfile}
           />
         </div>
       )}

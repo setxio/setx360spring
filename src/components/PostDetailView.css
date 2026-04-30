@@ -147,6 +147,10 @@
   border-radius: 24px;
 }
 
+.comment-input-avatar {
+  flex-shrink: 0;
+}
+
 .comment-input-wrapper input {
   flex: 1;
   background: none;

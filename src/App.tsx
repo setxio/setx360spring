@@ -160,12 +160,14 @@ const App: React.FC = () => {
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 
   // Clear store/post detail views whenever the user navigates away
   useEffect(() => {
     setActiveStoreId(null);
     setActivePostId(null);
     setActiveCommentId(null);
+    setActiveProfileId(null);
   }, [env, activeTab]);
 
   // Notch Swipe Logic
@@ -560,9 +562,25 @@ const App: React.FC = () => {
           highlightCommentId={activeCommentId || undefined}
           user={user} 
           onBack={() => { setActivePostId(null); setActiveCommentId(null); }} 
+          onNavigateToProfile={setActiveProfileId}
         />
       );
     }
+    
+    // Member Profile View
+    if (activeProfileId && (env === 'social' || env === 'discover')) {
+      return (
+        <ProfilePage 
+          user={user} 
+          profileId={activeProfileId}
+          onNavigate={(index) => {
+            setActiveProfileId(null);
+            setActiveTab(index);
+          }} 
+        />
+      );
+    }
+
 
     if (env === 'discover') {
       switch (activeTab) {
@@ -578,7 +596,12 @@ const App: React.FC = () => {
     
     if (env === 'social') {
       switch (activeTab) {
-        case 0: return <SocialFeed user={user} scope={scope} onNavigateToPost={(pid, cid) => { setActivePostId(pid); setActiveCommentId(cid || null); }} />;
+        case 0: return <SocialFeed 
+          user={user} 
+          scope={scope} 
+          onNavigateToPost={(pid, cid) => { setActivePostId(pid); setActiveCommentId(cid || null); }} 
+          onNavigateToProfile={setActiveProfileId}
+        />;
         case 1: return <ClassifiedsView />;
         case 2: return <UserDirectory scope={scope} />;
         case 3: return <GroupDirectory scope={scope} />;

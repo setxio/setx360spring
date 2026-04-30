@@ -20,10 +20,11 @@ import './ProfilePage.css';
 
 interface ProfilePageProps {
   user: any;
+  profileId?: string;
   onNavigate: (tab: number) => void;
 }
 
-export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate }) => {
+export const ProfilePage: React.FC<ProfilePageProps> = ({ user, profileId, onNavigate }) => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -38,7 +39,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate }) =>
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', profileId || user.id)
         .single();
       
       if (data) setProfile(data);
@@ -46,7 +47,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate }) =>
     };
 
     fetchProfile();
-  }, [user.id]);
+  }, [user.id, profileId]);
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, bucket: 'avatars' | 'banners') => {
     const file = event.target.files?.[0];
@@ -137,8 +138,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate }) =>
         </div>
 
         <div className="profile-actions">
-          <button className="settings-circle-btn" onClick={() => onNavigate(10)}><SettingsIcon size={20} /></button>
-          <button className="edit-profile-btn" onClick={() => onNavigate(10)}>Edit Profile</button>
+          {(!profileId || profileId === user.id) ? (
+            <>
+              <button className="settings-circle-btn" onClick={() => onNavigate(10)}><SettingsIcon size={20} /></button>
+              <button className="edit-profile-btn" onClick={() => onNavigate(10)}>Edit Profile</button>
+            </>
+          ) : (
+            <button className="edit-profile-btn primary">Follow</button>
+          )}
         </div>
       </div>
 
@@ -227,7 +234,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate }) =>
       {/* Content Placeholder */}
       <div className="profile-content-scroll">
         {activeTab === 'Posts' && (
-          <SocialFeed showFilters={false} showFAB={false} user={user} filterUserId={user.id} />
+          <SocialFeed 
+            showFilters={false} 
+            showFAB={false} 
+            user={user} 
+            filterUserId={profileId || user.id} 
+          />
         )}
         
         {activeTab !== 'Posts' && (

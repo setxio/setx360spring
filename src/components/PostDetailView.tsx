@@ -12,9 +12,10 @@ interface PostDetailViewProps {
   highlightCommentId?: string;
   user?: any;
   onBack: () => void;
+  onNavigateToProfile?: (profileId: string) => void;
 }
 
-export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highlightCommentId, user, onBack }) => {
+export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highlightCommentId, user, onBack, onNavigateToProfile }) => {
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -218,6 +219,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
           onDelete={() => onBack()}
           onRepost={() => {}}
           onShare={() => {}}
+          onNavigateToProfile={onNavigateToProfile}
         />
 
         <div className="comments-section">
@@ -243,7 +245,17 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
                   <div className="comment-body">
                     <div className="comment-content-main">
                       <div className="comment-header">
-                        <span className="comment-user">{comment.profiles?.name}</span>
+                        <span 
+                          className="comment-user"
+                          onClick={() => {
+                            if (comment.profile_id) {
+                              onNavigateToProfile?.(comment.profile_id);
+                            }
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {comment.profiles?.name}
+                        </span>
                         {comment.profiles?.community && (
                           <span className="post-location" style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--primary)', fontWeight: '600' }}>
                             <MapPin size={10} />
@@ -324,7 +336,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
             </div>
           )}
           <div className="comment-input-wrapper glass">
-            <Avatar url={user.avatar_url} name={user.name} size={32} />
+            <Avatar url={user.avatar_url} name={user.name} size={32} className="comment-input-avatar" />
             <input 
               type="text" 
               placeholder={replyTo ? "Write a reply..." : "Add a comment..."} 

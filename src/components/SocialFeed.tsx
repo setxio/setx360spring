@@ -17,6 +17,7 @@ interface SocialFeedProps {
   filterUserId?: string;
   scope?: 'national' | 'state' | 'county' | 'city';
   onNavigateToPost?: (postId: string, commentId?: string) => void;
+  onNavigateToProfile?: (profileId: string) => void;
 }
 
 export const SocialFeed: React.FC<SocialFeedProps> = ({ 
@@ -25,7 +26,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   user, 
   filterUserId, 
   scope = 'national',
-  onNavigateToPost
+  onNavigateToPost,
+  onNavigateToProfile
 }) => {
   const { theme } = useApp();
   const [activeCategory, setActiveCategory] = useState('Hot');
@@ -605,7 +607,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           onDelete={handleDelete}
           onRepost={handleRepost}
           onShare={handleShare}
-          onNavigateToPost={onNavigateToPost} 
+          onNavigateToPost={onNavigateToPost}
+          onNavigateToProfile={onNavigateToProfile}
         />
       );
 

@@ -6,9 +6,10 @@ import './CommentPreview.css';
 interface CommentPreviewProps {
   comments: any[];
   onCommentClick?: (commentId: string) => void;
+  onNavigateToProfile?: (profileId: string) => void;
 }
 
-export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments, onCommentClick }) => {
+export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments, onCommentClick, onNavigateToProfile }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Show max 5 comments in preview
@@ -55,7 +56,18 @@ export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments, onComm
             size={24} 
           />
           <div className="comment-bubble">
-            <span className="comment-author">{currentComment.profiles?.name || 'Anonymous'}</span>
+            <span 
+              className="comment-author"
+              onClick={(e) => {
+                if (currentComment.profile_id) {
+                  e.stopPropagation();
+                  onNavigateToProfile?.(currentComment.profile_id);
+                }
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              {currentComment.profiles?.name || 'Anonymous'}
+            </span>
             <p className="comment-text">{currentComment.content}</p>
           </div>
         </div>
