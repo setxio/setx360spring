@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Share2, Repeat, MapPin, X, Calendar, Info, Eye, ShieldCheck, Sparkles, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { MessageCircle, Share2, Repeat, MapPin, X, Calendar, Info, Eye, ShieldCheck, Sparkles, AlertTriangle, CheckCircle, Clock, Flag, BarChart2, Bookmark } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { VoteButtons } from './VoteButtons';
 import { RSVPButtons } from './RSVPButtons';
 import { CommentPreview } from './CommentPreview';
 import { CommunityNoteCard } from './CommunityNoteCard';
 import { AddCommunityNoteModal } from './AddCommunityNoteModal';
+import { FlagContentModal } from './FlagContentModal';
 import { getCommunityNotes } from '../lib/communityNotes';
 import { OptimizedImage } from './OptimizedImage';
+import { formatText } from '../utils/textFormatting';
+import { PostStatsModal } from './PostStatsModal';
 import './PostCard.css';
 
 interface PostCardProps {
@@ -19,7 +22,9 @@ interface PostCardProps {
   onDelete: (postId: string) => void;
   onRepost: (postId: string) => void;
   onShare: (postId: string) => void;
-  onNavigateToPost?: (postId: string) => void;
+  onNavigateToPost?: (postId: string, commentId?: string) => void;
+  isBookmarked?: boolean;
+  onToggleBookmark?: (postId: string) => void;
   hideCommentPreview?: boolean;
 }
 
@@ -33,10 +38,15 @@ export const PostCard: React.FC<PostCardProps> = ({
   onRepost, 
   onShare,
   onNavigateToPost,
+  isBookmarked = false,
+  onToggleBookmark,
   hideCommentPreview = false
 }) => {
   const [communityNotes, setCommunityNotes] = useState<any[]>([]);
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const [showFlagModal, setShowFlagModal] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
   const contentPost = post.type === 'repost' && post.original_post ? post.original_post : post;
   const isEvent = contentPost.type === 'event';
@@ -127,7 +137,9 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </div>
 
-      <p className="post-content">{contentPost.content}</p>
+      <div className="post-content">
+        <p>{formatText(contentPost.content)}</p>
+      </div>
       
       {isEvent && (
         <div onClick={e => e.stopPropagation()}>
@@ -136,17 +148,39 @@ export const PostCard: React.FC<PostCardProps> = ({
       )}
 
       {contentPost.media_urls && contentPost.media_urls.length > 0 && (
-        <div className="post-media" style={{ borderRadius: '16px', overflow: 'hidden', marginTop: '12px' }}>
-          {contentPost.media_urls[0].match(/\.(mp4|webm|ogg)$/i) || contentPost.media_urls[0].includes('mixkit.co') ? (
-            <video 
-              src={contentPost.media_urls[0]} 
-              controls 
-              className="post-video"
-              style={{ width: '100%', display: 'block', borderRadius: '16px' }}
-              poster={contentPost.media_urls[0].replace(/\.(mp4|webm|ogg)$/i, '.jpg')}
-            />
-          ) : (
-            <OptimizedImage src={contentPost.media_urls[0]} alt="Post Media" />
+        <div className="post-media-container" onClick={e => e.stopPropagation()}>
+          <div 
+            className="post-media-slider no-scrollbar"
+            onScroll={(e) => {
+              const target = e.target as HTMLDivElement;
+              const index = Math.round(target.scrollLeft / target.offsetWidth);
+              if (index !== activeMediaIndex) setActiveMediaIndex(index);
+            }}
+          >
+            {contentPost.media_urls.map((url: string, idx: number) => (
+              <div key={idx} className="media-slide">
+                {url.match(/\.(mp4|webm|ogg)$/i) || url.includes('mixkit.co') ? (
+                  <video 
+                    src={url} 
+                    controls 
+                    className="post-video"
+                    poster={url.replace(/\.(mp4|webm|ogg)$/i, '.jpg')}
+                  />
+                ) : (
+                  <OptimizedImage src={url} alt={`Post Media ${idx + 1}`} />
+                )}
+              </div>
+            ))}
+          </div>
+          {contentPost.media_urls.length > 1 && (
+            <div className="media-indicators">
+              {contentPost.media_urls.map((_: any, idx: number) => (
+                <div 
+                  key={idx} 
+                  className={`media-dot ${idx === activeMediaIndex ? 'active' : ''}`} 
+                />
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -229,18 +263,46 @@ export const PostCard: React.FC<PostCardProps> = ({
           >
             <Share2 size={20} />
           </button>
+          <button 
+            className="action-btn flag"
+            onClick={() => setShowFlagModal(true)}
+            title="Report Post"
+          >
+            <Flag size={20} />
+          </button>
+          <button 
+            className={`action-btn bookmark ${isBookmarked ? 'active' : ''}`}
+            onClick={(e) => { e.stopPropagation(); onToggleBookmark?.(contentPost.id); }}
+            title={isBookmarked ? "Remove Bookmark" : "Save Post"}
+          >
+            <Bookmark size={20} fill={isBookmarked ? "var(--primary)" : "none"} />
+          </button>
         </div>
         
-        <div className="view-count">
+        <div 
+          className="view-count"
+          style={user?.id === contentPost.profile_id ? { cursor: 'pointer', color: 'var(--primary)' } : {}}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (user?.id === contentPost.profile_id) {
+              setShowStatsModal(true);
+            }
+          }}
+          title={user?.id === contentPost.profile_id ? "View Detailed Stats" : ""}
+        >
           <Eye size={14} />
           <span>{contentPost.views || 0}</span>
+          {user?.id === contentPost.profile_id && <BarChart2 size={14} style={{ marginLeft: 4 }} />}
         </div>
       </div>
 
       {/* Comment Preview Carousel */}
       {!hideCommentPreview && contentPost.comments_count > 0 && (
         <div onClick={e => e.stopPropagation()}>
-          <CommentPreview comments={contentPost.comments || []} />
+          <CommentPreview 
+            comments={contentPost.comments || []} 
+            onCommentClick={(commentId) => onNavigateToPost?.(contentPost.id, commentId)}
+          />
         </div>
       )}
       {isAddingNote && user && (
@@ -249,6 +311,20 @@ export const PostCard: React.FC<PostCardProps> = ({
           userId={user.id}
           onClose={() => setIsAddingNote(false)}
           onSuccess={fetchNotes}
+        />
+      )}
+      {showFlagModal && user && (
+        <FlagContentModal
+          postId={contentPost.id}
+          userId={user.id}
+          onClose={() => setShowFlagModal(false)}
+        />
+      )}
+
+      {showStatsModal && user?.id === contentPost.profile_id && (
+        <PostStatsModal 
+          post={contentPost}
+          onClose={() => setShowStatsModal(false)}
         />
       )}
     </div>

@@ -21,12 +21,12 @@ export default defineConfig({
         orientation: 'portrait',
         icons: [
           {
-            src: 'icon-192.png',
+            src: 'logo-setx-blue.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'icon-512.png',
+            src: 'logo-setx-blue.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

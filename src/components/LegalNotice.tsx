@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, FileText, Copyright, ChevronLeft, ExternalLink } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import './LegalNotice.css';
 
 interface LegalNoticeProps {
@@ -7,7 +8,11 @@ interface LegalNoticeProps {
 }
 
 export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
+  const { isSetxDomain } = useApp();
   const [activeTab, setActiveTab] = useState<'tos' | 'privacy' | 'copyright'>('tos');
+
+  const brandName = isSetxDomain ? 'SETX 360' : 'Efutura';
+  const companyName = isSetxDomain ? 'SETX 360 Platform' : 'Efutura Technologies LLC';
 
   return (
     <div className="legal-notice-container glass">
@@ -15,7 +20,7 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
         <div className="legal-header-content">
           <button className="back-btn" onClick={onClose}><ChevronLeft size={20} /> Back</button>
           <h1>Platform Guidelines</h1>
-          <p>Protecting the Efutura community and our users.</p>
+          <p>Protecting the {brandName} community and our users.</p>
         </div>
       </div>
 
@@ -48,22 +53,22 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
             
             <section>
               <h3>1. Acceptance of Terms</h3>
-              <p>By accessing or using Efutura Technologies LLC ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.</p>
+              <p>By accessing or using {companyName} ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.</p>
             </section>
 
             <section>
               <h3>2. Financial Services & Fintech</h3>
-              <p>Efutura Technologies LLC provides a digital ledger and wallet system (SEC). By using the financial features of the platform, you acknowledge:</p>
+              <p>{companyName} provides a digital ledger and wallet system (SEC). By using the financial features of the platform, you acknowledge:</p>
               <ul>
-                <li>The digital wallet is a representation of value within the Efutura ecosystem.</li>
+                <li>The digital wallet is a representation of value within the {brandName} ecosystem.</li>
                 <li>Vendors and Drivers utilize Stripe Connect for fiat payouts. You must comply with Stripe's Services Agreement.</li>
-                <li>Efutura is a platform provider and is not responsible for the quality or delivery of products sold by independent vendors.</li>
+                <li>{brandName} is a platform provider and is not responsible for the quality or delivery of products sold by independent vendors.</li>
               </ul>
             </section>
 
             <section>
               <h3>3. Refund Policy</h3>
-              <p>Refunds are managed according to the specific policy set by each independent Vendor. In the absence of a vendor-specific policy, the Efutura platform standard 30-day window applies. All refunds are processed back to the original payment method.</p>
+              <p>Refunds are managed according to the specific policy set by each independent Vendor. In the absence of a vendor-specific policy, the {brandName} platform standard 30-day window applies. All refunds are processed back to the original payment method.</p>
             </section>
 
             <section>
@@ -73,12 +78,12 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
 
             <section>
               <h3>6. Dispute Resolution</h3>
-              <p>Any disputes arising from the use of Efutura Technologies LLC shall be resolved through binding arbitration in the jurisdiction of your local municipality. You waive your right to a jury trial or to participate in a class action lawsuit.</p>
+              <p>Any disputes arising from the use of {companyName} shall be resolved through binding arbitration in the jurisdiction of your local municipality. You waive your right to a jury trial or to participate in a class action lawsuit.</p>
             </section>
 
             <section>
               <h3>7. Limitation of Liability</h3>
-              <p>Efutura Technologies LLC is provided "as is" without warranties of any kind. In no event shall Efutura Technologies LLC, its directors, or employees be liable for any indirect, incidental, or consequential damages resulting from your use of the platform, including financial losses or service interruptions.</p>
+              <p>{companyName} is provided "as is" without warranties of any kind. In no event shall {companyName}, its directors, or employees be liable for any indirect, incidental, or consequential damages resulting from your use of the platform, including financial losses or service interruptions.</p>
             </section>
           </div>
         )}
@@ -125,12 +130,12 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
             
             <section>
               <h3>1. Platform Ownership</h3>
-              <p>All platform software, logos, the "Neo X" branding, and proprietary algorithms are the sole property of Efutura Technologies LLC.</p>
+              <p>All platform software, logos, and proprietary algorithms are the sole property of {companyName}.</p>
             </section>
 
             <section>
               <h3>2. User Generated Content</h3>
-              <p>By posting content on Efutura Technologies LLC, you grant us a non-exclusive, royalty-free license to display and distribute that content within the platform ecosystem.</p>
+              <p>By posting content on {brandName}, you grant us a non-exclusive, royalty-free license to display and distribute that content within the platform ecosystem.</p>
             </section>
 
             <section>
@@ -146,9 +151,9 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
       </div>
 
       <div className="legal-footer">
-        <p>© 2026 Efutura Technologies LLC. All Rights Reserved.</p>
+        <p>© 2026 {companyName}. All Rights Reserved.</p>
         <div className="legal-links">
-          <a href="mailto:support@efutura.com">Contact Support <ExternalLink size={14} /></a>
+          <a href={isSetxDomain ? "mailto:support@setx360.com" : "mailto:support@efutura.com"}>Contact Support <ExternalLink size={14} /></a>
         </div>
       </div>
     </div>

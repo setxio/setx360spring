@@ -17,7 +17,11 @@ import {
   Music,
   Tv,
   HeartHandshake,
-  Church
+  Church,
+  Eye,
+  EyeOff,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
@@ -47,7 +51,7 @@ const accountTypes: AccountType[] = [
 ];
 
 export const SignUpFlow: React.FC = () => {
-  const { isSetxDomain } = useApp();
+  const { isSetxDomain, toggleTheme, theme } = useApp();
   const [step, setStep] = useState(1);
   const [isLoginMode, setIsLoginMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +61,7 @@ export const SignUpFlow: React.FC = () => {
     lastName: '',
     email: '',
     password: '',
+    confirmPassword: '',
     zip: '',
     community: '',
     county: '',
@@ -97,7 +102,7 @@ export const SignUpFlow: React.FC = () => {
 
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (window.location.hash === '#reset-password') {
@@ -107,10 +112,6 @@ export const SignUpFlow: React.FC = () => {
   }, []);
 
   const handleUpdatePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
     if (newPassword.length < 6) {
       setError('Password must be at least 6 characters.');
       return;
@@ -275,6 +276,16 @@ export const SignUpFlow: React.FC = () => {
 
   return (
     <div className="signup-flow-container">
+      <div className="theme-toggle-wrapper" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
+        <button 
+          onClick={toggleTheme}
+          className="theme-toggle-btn"
+          aria-label="Toggle Theme"
+        >
+          {theme.includes('light') ? <Moon size={20} /> : <Sun size={20} />}
+        </button>
+      </div>
+
       <AnimatePresence mode="wait">
         
         {/* Step 1: Account Type or Login */}
@@ -290,9 +301,9 @@ export const SignUpFlow: React.FC = () => {
               <>
                 <div className="signup-header">
                   <img 
-                    src={isSetxDomain ? "/logo-setx.png" : "/logo-neo.png"} 
+                    src={isSetxDomain ? (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png") : "/logo-neo.png"} 
                     alt="Logo" 
-                    style={{ width: 80, height: 80, marginBottom: 16, objectFit: 'contain', borderRadius: '12px' }} 
+                    style={{ width: 100, height: 100, marginBottom: 24, objectFit: 'contain' }} 
                   />
                   <h3>Sign In</h3>
                   <p>Access the {isSetxDomain ? 'SETX 360' : 'Efutura'} Platform</p>
@@ -318,22 +329,39 @@ export const SignUpFlow: React.FC = () => {
                         Forgot?
                       </button>
                     </div>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••"
-                      value={formData.password}
-                      onChange={e => setFormData({ ...formData, password: e.target.value })}
-                    />
+                    <div className="password-input-wrapper">
+                      <input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                        style={{ paddingRight: '48px' }}
+                      />
+                      <button 
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   {error && <p className="error-text" style={{ color: 'var(--accent)', fontSize: '0.8rem', textAlign: 'center' }}>{error}</p>}
-                  <button className="primary-btn" onClick={handleLogin} disabled={isLoading}>
+                  <button 
+                    className="primary-btn" 
+                    onClick={handleLogin} 
+                    disabled={isLoading}
+                  >
                     {isLoading ? <Loader2 className="animate-spin" /> : 'Login'}
                   </button>
-                  <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                    <button className="back-btn" onClick={() => setIsLoginMode(false)} style={{ margin: '0 auto' }}>
-                      Don't have an account? <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Sign Up</span>
-                    </button>
-                  </div>
+                  <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                    Don't have an account? <button 
+                      className="link-btn" 
+                      style={{ color: '#22c55e', fontWeight: 700, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      onClick={() => setIsLoginMode(false)}
+                    >Sign Up</button>
+                  </p>
                 </div>
               </>
             ) : isResettingPassword ? (
@@ -345,21 +373,23 @@ export const SignUpFlow: React.FC = () => {
                 <div className="form-inputs">
                   <div className="input-group">
                     <label>New Password</label>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••"
-                      value={newPassword}
-                      onChange={e => setNewPassword(e.target.value)}
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label>Confirm New Password</label>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                    />
+                    <div className="password-input-wrapper">
+                      <input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        style={{ paddingRight: '48px' }}
+                      />
+                      <button 
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   {error && <p className="error-text" style={{ color: 'var(--accent)', fontSize: '0.8rem', textAlign: 'center' }}>{error}</p>}
                   <button className="primary-btn" onClick={handleUpdatePassword} disabled={isLoading}>
@@ -411,9 +441,9 @@ export const SignUpFlow: React.FC = () => {
               <>
                 <div className="signup-header">
                   <img 
-                    src={isSetxDomain ? "/logo-setx.png" : "/logo-neo.png"} 
+                    src={isSetxDomain ? (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png") : "/logo-neo.png"} 
                     alt="Logo" 
-                    style={{ width: 80, height: 80, marginBottom: 16, objectFit: 'contain', borderRadius: '12px' }} 
+                    style={{ width: 100, height: 100, marginBottom: 24, objectFit: 'contain' }} 
                   />
                   <h3>Join {isSetxDomain ? 'SETX 360' : 'Efutura'}</h3>
                   <p>Select your account type to get started</p>
@@ -436,7 +466,7 @@ export const SignUpFlow: React.FC = () => {
                 </div>
                 <div className="login-prompt" style={{ textAlign: 'center', marginTop: '24px' }}>
                   <button className="back-btn" onClick={() => setIsLoginMode(true)} style={{ margin: '0 auto', fontSize: '1rem' }}>
-                    Already have an account? <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Sign In</span>
+                    Already have an account? <span style={{ color: '#a855f7', fontWeight: 700 }}>Sign In</span>
                   </button>
                 </div>
               </>
@@ -490,12 +520,44 @@ export const SignUpFlow: React.FC = () => {
               </div>
               <div className="input-group">
                 <label>Password</label>
-                <input 
-                  type="password" 
-                  placeholder="••••••••" 
-                  value={formData.password}
-                  onChange={e => setFormData({ ...formData, password: e.target.value })}
-                />
+                <div className="password-input-wrapper">
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="••••••••" 
+                    value={formData.password}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                    style={{ paddingRight: '48px' }}
+                  />
+                  <button 
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>Confirm Password</label>
+                <div className="password-input-wrapper">
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="••••••••" 
+                    value={formData.confirmPassword}
+                    onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    style={{ paddingRight: '48px' }}
+                  />
+                  <button 
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="input-group">
@@ -536,7 +598,7 @@ export const SignUpFlow: React.FC = () => {
 
               <button 
                 className="primary-btn" 
-                disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.birthMonth || !formData.birthDay || !formData.birthYear}
+                disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword || !formData.birthMonth || !formData.birthDay || !formData.birthYear || formData.password !== formData.confirmPassword}
                 onClick={() => {
                   const hasSpecialFields = ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(formData.type);
                   if (hasSpecialFields) setStep(2.5);
@@ -801,9 +863,9 @@ export const SignUpFlow: React.FC = () => {
           >
             <div className="reveal-content">
               <img 
-                src={isSetxDomain ? "/logo-setx.png" : "/logo-neo.png"} 
+                src={isSetxDomain ? "/logo-setx-blue.png" : "/logo-neo.png"} 
                 alt={isSetxDomain ? "SETX 360" : "Efutura"} 
-                style={{ width: 120, height: 120, objectFit: 'contain' }} 
+                style={{ width: 100, height: 100, marginBottom: 24, objectFit: 'contain', display: 'block', margin: '0 auto 24px' }} 
               />
               <div className={`large-badge ${isVisitor ? 'visitor' : 'resident'}`}>
                 {isVisitor ? <Globe size={48} /> : <CheckCircle2 size={48} />}
@@ -811,7 +873,7 @@ export const SignUpFlow: React.FC = () => {
               <h2>Registration Success!</h2>
               <p style={{ marginBottom: 8 }}>Your {isVisitor ? 'Visitor' : 'Resident'} profile is being created.</p>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '300px', margin: '0 auto 20px' }}>
-                Please check your email for a verification link from <strong>Supabase</strong> to activate your account.
+                Please check your email for a verification link from <strong style={{ color: '#10b981' }}>Supabase</strong> to activate your account.
               </p>
               
               <div className="profile-summary premium-card">

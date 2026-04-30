@@ -40,10 +40,10 @@
 }
 
 .filter-pill.active {
-  background: var(--primary);
+  background: linear-gradient(135deg, #22d3ee, #3b82f6);
   color: white;
-  border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 }
 
 .filter-pill.secondary {

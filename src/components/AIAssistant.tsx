@@ -48,55 +48,23 @@ export const AIAssistant: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-
     setIsProcessing(true);
-    setProposedAction(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Edge Function handles auth transparently
       
-      // We'll use a secure proxy or direct call if environment allows
-      // For this implementation, we'll call the Gemini API directly from the client 
-      // using the key we added to the environment.
-      
-      const prompt = `
-        You are the SETX 360 AI Architect. 
-        Current User: ${session?.user?.email}
-        Task: ${query}
-        
-        Database Schema Context:
-        - profiles (id, name, email, role, community, county, denomination, service_times, tithe_url)
-        - stores (id, name, owner_id, total_sales)
-        - posts (id, content, author_id, moderation_status)
-        - church_members (id, church_id, profile_id, status)
-        
-        Return a JSON object with:
-        {
-          "proposedAction": {
-            "type": "database_fix" | "content_creation" | "analysis",
-            "description": "Clear explanation of what will happen",
-            "sql": "SQL code to execute if applicable"
-          }
-        }
-      `;
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY || ''}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { response_mime_type: "application/json" }
-        })
+      const { data, error } = await supabase.functions.invoke('architect-ai', {
+        body: { query }
       });
 
-      const result = await response.json();
-      const aiResponse = JSON.parse(result.candidates[0].content.parts[0].text);
+      if (error) {
+        throw new Error(error.message || 'Failed to communicate with Architect AI');
+      }
 
-      if (aiResponse.proposedAction) {
-        setProposedAction(aiResponse.proposedAction);
+      if (data?.proposedAction) {
+        setProposedAction(data.proposedAction);
       }
       
-      // Add to conversation history (UI only for now)
       setHistory(prev => [{
         id: Date.now(),
         action_type: 'consultation',
@@ -104,9 +72,14 @@ export const AIAssistant: React.FC = () => {
         created_at: new Date().toISOString()
       }, ...prev]);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('AI Architect Error:', err);
-      alert('The AI Architect is still waking up. Deploying the Edge Function now...');
+      setHistory(prev => [{
+        id: Date.now(),
+        action_type: 'error',
+        description: `Architect Error: ${err.message || 'System is still waking up.'}`,
+        created_at: new Date().toISOString()
+      }, ...prev]);
     } finally {
       setIsProcessing(false);
       setQuery('');

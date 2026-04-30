@@ -25,12 +25,15 @@
   /* Default (Social Light) */
   --primary: var(--social-primary);
   --secondary: var(--social-secondary);
-  --bg: var(--white);
-  --bg-soft: var(--gray-50);
+  --bg: #f8f8ff;
+  --bg-soft: var(--white);
   --text: var(--gray-900);
   --text-muted: var(--gray-500);
   --border: var(--gray-200);
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  
+  --post-action-bg: #f8f8ff;
+  --carousel-bg: #f8f8ff;
   
   --safe-area-bottom: env(safe-area-inset-bottom);
 
@@ -58,12 +61,14 @@
   --text-muted: #94a3b8;
   --border: #334155;
   --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+  --post-action-bg: rgba(255, 255, 255, 0.02);
+  --carousel-bg: rgba(255, 255, 255, 0.02);
 }
 
 /* ── Civic (Classic) Light ─────────────────────────────────── */
 [data-theme='civic-classic-light'] {
-  --bg: #ffffff;
-  --bg-soft: #f0f4ff;
+  --bg: #f8f8ff;
+  --bg-soft: #ffffff;
   --text: #0d1b3e;
   --text-muted: #4a6080;
   --border: #c5d4ee;
@@ -79,8 +84,8 @@
 
 /* ── SETX (Civic Styling) Light ────────────────────────────── */
 [data-theme='setx-light'] {
-  --bg: #ffffff;
-  --bg-soft: #f0f4ff;
+  --bg: #f8f8ff;
+  --bg-soft: #ffffff;
   --text: #0d1b3e;
   --text-muted: #4a6080;
   --border: #c5d4ee;
@@ -168,8 +173,8 @@
 /* ── Neo II (Glass) — Light ────────────────────────── */
 /* Same palette as Neo, but light has a cool blue-white tint */
 [data-theme='neo-ii-light'] {
-  --bg: #fdfdff;
-  --bg-soft: #f4f4ff;
+  --bg: #f8f8ff;
+  --bg-soft: #ffffff;
   --text: #09090b;
   --text-muted: #71717a;
   --border: #e4e4ff;
@@ -240,8 +245,8 @@
 /* ── Twilight II (Glass) — Light ──────────────────── */
 /* Warm white tint, same sunset palette */
 [data-theme='twilight-ii-light'] {
-  --bg: #fffafa;
-  --bg-soft: #fff5f5;
+  --bg: #f8f8ff;
+  --bg-soft: #ffffff;
   --text: #09090b;
   --text-muted: #71717a;
   --border: #ffe4e4;
@@ -281,8 +286,8 @@
 /* Efutura — Light */
 /* Soft lavender canvas; darker primaries for readability */
 [data-theme='efutura-light'] {
-  --bg: #f5f0ff;
-  --bg-soft: #ede9fe;
+  --bg: #f8f8ff;
+  --bg-soft: #ffffff;
   --text: #0a0614;
   --text-muted: #5b5280;
   --border: #c4b5fd;
@@ -425,6 +430,34 @@ body {
   transition: transform 0.2s ease;
 }
 
+/* ── Text Formatting ─────────────────────────────── */
+.hashtag {
+  color: #10b981; /* Green */
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hashtag:hover {
+  text-decoration: underline;
+}
+
+.mention {
+  color: #8b5cf6; /* Purple */
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mention:hover {
+  text-decoration: underline;
+}
+
+/* ── Global Dark Mode Overrides ─────────────────────────────── */
+/* Ensures transparent backgrounds don't inherit light-mode ghost white */
+[data-theme*='dark'] {
+  --post-action-bg: rgba(255, 255, 255, 0.02);
+  --carousel-bg: rgba(255, 255, 255, 0.02);
+}
+
 .premium-card:active {
   transform: scale(0.98);
 }
@@ -547,6 +580,14 @@ body {
   margin-top: 8px;
 }
 
+.post-detail-footer {
+  position: fixed;
+  bottom: 80px; /* Above the Mobile Nav */
+  left: 0;
+  right: 0;
+  padding: 16px;
+  z-index: 100;
+}
 .notif-loading {
   display: flex;
   align-items: center;

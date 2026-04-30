@@ -42,7 +42,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isSetxDomain = hostname.includes('setx360.com');
+  const isSetxDomain = hostname.includes('setx360.com') || hostname.includes('setx360spring') || hostname.includes('project-xjdn2');
 
   const [env, setEnvState] = useState<Env>(() => (localStorage.getItem('ecity_env') as Env) || 'social');
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('ecity_theme') as Theme) || 'setx-dark');

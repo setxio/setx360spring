@@ -1,9 +1,16 @@
 .comment-preview-carousel {
   margin-top: 12px;
-  padding-top: 12px;
-  border-t: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--carousel-bg, transparent);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comment-preview-carousel:hover {
+  filter: brightness(0.98);
 }
 
 .carousel-content {

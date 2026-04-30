@@ -5,9 +5,10 @@ import './CommentPreview.css';
 
 interface CommentPreviewProps {
   comments: any[];
+  onCommentClick?: (commentId: string) => void;
 }
 
-export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments }) => {
+export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments, onCommentClick }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Show max 5 comments in preview
@@ -42,7 +43,12 @@ export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments }) => {
           </button>
         )}
 
-        <div className="comment-item animate-fade-in" key={currentComment.id}>
+        <div 
+          className="comment-item animate-fade-in" 
+          key={currentComment.id}
+          onClick={() => onCommentClick?.(currentComment.id)}
+          style={{ cursor: onCommentClick ? 'pointer' : 'default' }}
+        >
           <Avatar 
             url={currentComment.profiles?.avatar_url} 
             name={currentComment.profiles?.name || 'User'} 

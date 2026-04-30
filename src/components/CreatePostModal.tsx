@@ -3,6 +3,7 @@ import { X, Image, Video, BarChart2, Loader2, ChevronDown, Plus } from 'lucide-r
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
 import './CreatePostModal.css';
+import './CreatePostModalMeta.css';
 
 interface CreatePostModalProps {
   onClose: () => void;
@@ -25,6 +26,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user,
   const [faithType, setFaithType] = useState('post');
   const [userGroups, setUserGroups] = useState<any[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+  const [isNsfw, setIsNsfw] = useState(false);
+  const [tags, setTags] = useState('');
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -134,7 +137,9 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user,
         poll_data: pollData,
         location: location || user?.community,
         visibility_scope: currentScope === 'national' ? 'national' : currentScope,
-        group_id: targetFeed === 'Groups' ? selectedGroupId : null
+        group_id: targetFeed === 'Groups' ? selectedGroupId : null,
+        is_nsfw: isNsfw,
+        tags: tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
       }]);
 
       if (error) throw error;
@@ -290,6 +295,26 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user,
                   ))}
                 </div>
               )}
+
+              {/* Meta Inputs (NSFW & Tags) */}
+              <div className="composer-meta-inputs">
+                <label className="nsfw-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={isNsfw} 
+                    onChange={(e) => setIsNsfw(e.target.checked)} 
+                  />
+                  <span>Mark as NSFW</span>
+                </label>
+                <div className="tags-input-wrapper">
+                  <input 
+                    type="text" 
+                    placeholder="Add tags (comma separated)" 
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                  />
+                </div>
+              </div>
 
               {/* Action Chips */}
               <div className="composer-chips-row">

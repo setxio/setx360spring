@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bookmark, 
   Search, 
@@ -6,8 +6,11 @@ import {
   ShoppingBag, 
   Briefcase,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 import './SavedView.css';
 
 interface SavedItem {
@@ -19,39 +22,78 @@ interface SavedItem {
   company?: string;
   date: string;
   image?: string;
+  postId?: string;
 }
 
-const SAVED_ITEMS: SavedItem[] = [
-  {
-    id: 's1',
-    type: 'post',
-    title: 'Check out the new sunrise over the Neches River!',
-    author: 'Sarah Jenkins',
-    date: 'Saved 2 days ago',
-    image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 's2',
-    type: 'product',
-    title: 'Handcrafted Oak Coffee Table',
-    price: '$299',
-    date: 'Saved yesterday',
-    image: 'https://images.unsplash.com/photo-1554290712-e640351074bd?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 's3',
-    type: 'job',
-    title: 'Senior Frontend Developer',
-    company: 'TechFlow Systems',
-    date: 'Saved 4h ago'
-  }
-];
-
 export const SavedView: React.FC = () => {
+  const { user } = useApp();
   const [filter, setFilter] = useState<'all' | 'post' | 'product' | 'job'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredItems = SAVED_ITEMS.filter(item => {
+  useEffect(() => {
+    if (user) {
+      fetchBookmarks();
+    }
+  }, [user]);
+
+  const fetchBookmarks = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select(`
+          id,
+          created_at,
+          posts (
+            id,
+            content,
+            media_urls,
+            author:profiles!posts_profile_id_fkey (
+              name
+            )
+          )
+        `)
+        .eq('profile_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formatted: SavedItem[] = (data || []).map(b => ({
+        id: b.id,
+        type: 'post',
+        title: b.posts?.content?.substring(0, 80) + (b.posts?.content?.length > 80 ? '...' : '') || 'Untitled Post',
+        author: b.posts?.author?.name || 'Unknown User',
+        date: `Saved ${new Date(b.created_at).toLocaleDateString()}`,
+        image: b.posts?.media_urls?.[0],
+        postId: b.posts?.id
+      }));
+
+      setSavedItems(formatted);
+    } catch (err) {
+      console.error('Error fetching bookmarks:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemove = async (bookmarkId: string) => {
+    if (!window.confirm("Remove this item from your saved collection?")) return;
+
+    const { error } = await supabase
+      .from('bookmarks')
+      .delete()
+      .eq('id', bookmarkId);
+    
+    if (error) {
+      alert("Failed to remove bookmark.");
+    } else {
+      setSavedItems(prev => prev.filter(item => item.id !== bookmarkId));
+    }
+  };
+
+  const filteredItems = savedItems.filter(item => {
     const matchesFilter = filter === 'all' || item.type === filter;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -99,7 +141,11 @@ export const SavedView: React.FC = () => {
       </header>
 
       <div className="saved-content">
-        {filteredItems.length > 0 ? (
+        {isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+            <Loader2 className="animate-spin" size={32} color="var(--primary)" />
+          </div>
+        ) : filteredItems.length > 0 ? (
           <div className="saved-list">
             {filteredItems.map(item => (
               <div key={item.id} className="saved-card glass">
@@ -116,8 +162,18 @@ export const SavedView: React.FC = () => {
                     {item.author || item.company || item.price} • {item.date}
                   </p>
                   <div className="saved-card-actions">
-                    <button className="card-btn secondary"><Trash2 size={16} /></button>
-                    <button className="card-btn primary">
+                    <button 
+                      className="card-btn secondary"
+                      onClick={() => handleRemove(item.id)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <button className="card-btn primary" onClick={() => {
+                      // Logic to navigate to post detail could be added here
+                      if (item.postId) {
+                        window.location.hash = `#/post/${item.postId}`;
+                      }
+                    }}>
                       <ExternalLink size={16} /> View Item
                     </button>
                   </div>

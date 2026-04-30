@@ -1,28 +1,28 @@
 {
-  "short_name": "Efutura",
-  "name": "Efutura Super App",
+  "short_name": "SETX 360",
+  "name": "SETX 360 Platform",
   "icons": [
     {
-      "src": "logo-efutura.png",
+      "src": "logo-setx-blue.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/png"
     },
     {
-      "src": "logo-efutura.png",
+      "src": "logo-setx-blue.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo-efutura.png",
+      "src": "logo-setx-blue.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#7000f4",
-  "background_color": "#0a0014",
-  "description": "Efutura — Your local social platform powered by community. Social, Market, Eats, Services, and more.",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "description": "SETX 360 — Your regional social platform powered by community. Social, Market, Eats, Services, and more.",
   "orientation": "portrait",
   "categories": ["social", "shopping", "lifestyle"]
 }

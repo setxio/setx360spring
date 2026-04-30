@@ -16,7 +16,7 @@ interface SocialFeedProps {
   user?: any;
   filterUserId?: string;
   scope?: 'national' | 'state' | 'county' | 'city';
-  onNavigateToPost?: (postId: string) => void;
+  onNavigateToPost?: (postId: string, commentId?: string) => void;
 }
 
 export const SocialFeed: React.FC<SocialFeedProps> = ({ 
@@ -29,6 +29,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 }) => {
   const { theme } = useApp();
   const [activeCategory, setActiveCategory] = useState('Hot');
+  const [activeType, setActiveType] = useState('all');
   const [isPosting, setIsPosting] = useState(false);
   const [isPromoting, setIsPromoting] = useState(false);
   const [posts, setPosts] = useState<any[]>([]);
@@ -37,6 +38,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [userPollVotes, setUserPollVotes] = useState<Record<string, number>>({});
+  const [userBookmarks, setUserBookmarks] = useState<Set<string>>(new Set());
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
   const [hasActiveAlert, setHasActiveAlert] = useState(false);
 
@@ -45,7 +47,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
   useEffect(() => {
     fetchContent();
-  }, [activeCategory, scope]);
+  }, [activeCategory, activeType, scope]);
 
   const calculateAge = (m: number, d: number, y: number) => {
     if (!m || !d || !y) return 0;
@@ -332,6 +334,22 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     } else {
       let filteredPosts = (postData as any[]) || [];
       
+      // Post Type Filtering (Text, Images, Videos)
+      if (activeType !== 'all') {
+        filteredPosts = filteredPosts.filter((post: any) => {
+          const hasMedia = post.media_urls && post.media_urls.length > 0;
+          if (activeType === 'text') {
+            return !hasMedia;
+          } else if (activeType === 'images') {
+            // Check if any media url implies an image
+            return hasMedia && post.media_urls.some((url: string) => !url.match(/\.(mp4|webm|ogg)$/i));
+          } else if (activeType === 'videos') {
+            return hasMedia && post.media_urls.some((url: string) => url.match(/\.(mp4|webm|ogg)$/i));
+          }
+          return true;
+        });
+      }
+
       // Privacy Filtering
       if (user) {
         // Fetch current user's follow list to know who they are allowed to see
@@ -422,6 +440,17 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           const voteMap: Record<string, number> = {};
           votes.forEach(v => voteMap[v.post_id] = v.vote_type);
           setUserVotes(voteMap);
+        }
+
+        // Fetch Bookmarks
+        const { data: bookmarks } = await supabase
+          .from('bookmarks')
+          .select('post_id')
+          .eq('profile_id', user.id)
+          .in('post_id', pIds);
+        
+        if (bookmarks) {
+          setUserBookmarks(new Set(bookmarks.map(b => b.post_id)));
         }
       }
     }
@@ -517,6 +546,45 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     }));
   };
 
+  const handleToggleBookmark = async (postId: string) => {
+    if (!user) return alert("Please sign in to save posts.");
+
+    const isBookmarked = userBookmarks.has(postId);
+    
+    if (isBookmarked) {
+      // Unsave
+      const { error } = await supabase
+        .from('bookmarks')
+        .delete()
+        .eq('profile_id', user.id)
+        .eq('post_id', postId);
+      
+      if (!error) {
+        setUserBookmarks(prev => {
+          const next = new Set(prev);
+          next.delete(postId);
+          return next;
+        });
+      }
+    } else {
+      // Save
+      const { error } = await supabase
+        .from('bookmarks')
+        .insert({
+          profile_id: user.id,
+          post_id: postId
+        });
+      
+      if (!error) {
+        setUserBookmarks(prev => {
+          const next = new Set(prev);
+          next.add(postId);
+          return next;
+        });
+      }
+    }
+  };
+
   const renderFeedContent = () => {
     const feedItems: React.ReactNode[] = [];
     let adIndex = 0;
@@ -531,7 +599,9 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           user={user}
           userVote={userVotes[contentPost.id]}
           userPollVote={userPollVotes[contentPost.id]}
+          isBookmarked={userBookmarks.has(contentPost.id)}
           onPollVote={handlePollVote}
+          onToggleBookmark={handleToggleBookmark}
           onDelete={handleDelete}
           onRepost={handleRepost}
           onShare={handleShare}
@@ -576,6 +646,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           onCategoryChange={setActiveCategory}
           hasActiveAlert={hasActiveAlert}
           userRole={user?.role}
+          activeType={activeType}
+          onTypeChange={setActiveType}
         />
       )}
       

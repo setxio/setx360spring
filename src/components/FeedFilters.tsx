@@ -7,9 +7,11 @@ interface FeedFiltersProps {
   onCategoryChange: (category: string) => void;
   hasActiveAlert?: boolean;
   userRole?: string;
+  activeType?: string;
+  onTypeChange?: (type: string) => void;
 }
 
-export const FeedFilters: React.FC<FeedFiltersProps> = ({ activeCategory, onCategoryChange, hasActiveAlert, userRole }) => {
+export const FeedFilters: React.FC<FeedFiltersProps> = ({ activeCategory, onCategoryChange, hasActiveAlert, userRole, activeType = 'all', onTypeChange }) => {
   const categories = [
     'Hot',
     'Everybody',
@@ -46,6 +48,21 @@ export const FeedFilters: React.FC<FeedFiltersProps> = ({ activeCategory, onCate
           </button>
         ))}
       </div>
+      
+      {/* Type Filter Sub-row */}
+      {onTypeChange && (
+        <div className="filter-slider type-slider">
+          {['All', 'Text', 'Images', 'Videos'].map((type) => (
+            <button
+              key={type}
+              className={`filter-pill type-pill ${activeType === type.toLowerCase() ? 'active' : ''}`}
+              onClick={() => onTypeChange(type.toLowerCase())}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

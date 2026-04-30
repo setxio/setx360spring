@@ -158,12 +158,14 @@ const App: React.FC = () => {
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
 
   // Clear store/post detail views whenever the user navigates away
   useEffect(() => {
     setActiveStoreId(null);
     setActivePostId(null);
+    setActiveCommentId(null);
   }, [env, activeTab]);
 
   // Notch Swipe Logic
@@ -555,8 +557,9 @@ const App: React.FC = () => {
       return (
         <PostDetailView 
           postId={activePostId} 
+          highlightCommentId={activeCommentId || undefined}
           user={user} 
-          onBack={() => setActivePostId(null)} 
+          onBack={() => { setActivePostId(null); setActiveCommentId(null); }} 
         />
       );
     }
@@ -575,7 +578,7 @@ const App: React.FC = () => {
     
     if (env === 'social') {
       switch (activeTab) {
-        case 0: return <SocialFeed user={user} scope={scope} onNavigateToPost={setActivePostId} />;
+        case 0: return <SocialFeed user={user} scope={scope} onNavigateToPost={(pid, cid) => { setActivePostId(pid); setActiveCommentId(cid || null); }} />;
         case 1: return <ClassifiedsView />;
         case 2: return <UserDirectory scope={scope} />;
         case 3: return <GroupDirectory scope={scope} />;
@@ -703,14 +706,7 @@ const App: React.FC = () => {
   if (!user) {
     return (
       <div style={{ position: 'fixed', inset: 0, overflowY: 'scroll', background: 'var(--bg)', color: 'var(--text)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '40px' }}>
-          <img 
-            src="/logo-neo.png" 
-            alt="Efutura" 
-            style={{ width: 120, height: 120, objectFit: 'contain' }} 
-          />
-        </div>
-        <main className="content-area" style={{ paddingBottom: '80px' }}>
+        <main className="content-area" style={{ paddingBottom: '80px', paddingTop: '40px' }}>
           <SignUpFlow />
         </main>
       </div>
@@ -743,7 +739,7 @@ const App: React.FC = () => {
               display: 'flex',
               alignItems: 'baseline',
               gap: '2px',
-              color: '#fff'
+              color: theme.includes('light') ? '#000' : '#fff'
             }}>
               {scope === 'city' ? (user?.community || 'City') : 'SETX'}
               <span style={{ 
@@ -782,7 +778,7 @@ const App: React.FC = () => {
                   theme.startsWith('efutura-') ? '/logo-efutura.png' :
                   theme.startsWith('neo-') ? '/logo-neo.png' :
                   theme.startsWith('twilight-') ? '/logo-twilight.png' :
-                  '/logo-setx.png'
+                  '/logo-setx-blue.png'
                 }
                 alt="Logo"
                 style={{

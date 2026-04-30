@@ -1,26 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Loader2, Send } from 'lucide-react';
+import { ChevronLeft, Loader2, Send, ThumbsUp, ThumbsDown, MessageCircle, Repeat, Share2, Eye, Flag, X, MapPin } from 'lucide-react';
 import { PostCard } from './PostCard';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
+import { formatText } from '../utils/textFormatting';
+import { FlagContentModal } from './FlagContentModal';
 import './PostDetailView.css';
 
 interface PostDetailViewProps {
   postId: string;
+  highlightCommentId?: string;
   user?: any;
   onBack: () => void;
 }
 
-export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, user, onBack }) => {
+export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highlightCommentId, user, onBack }) => {
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [replyTo, setReplyTo] = useState<any>(null);
+  const [flagCommentId, setFlagCommentId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchPostAndComments();
+    incrementViews();
   }, [postId]);
+
+  const incrementViews = async () => {
+    try {
+      await supabase.rpc('increment_post_views', { post_id_val: postId });
+    } catch (err) {
+      console.error('Failed to increment views', err);
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoading && highlightCommentId) {
+      setTimeout(() => {
+        const el = document.getElementById(`comment-${highlightCommentId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('highlight-pulse');
+        }
+      }, 500);
+    }
+  }, [isLoading, highlightCommentId]);
 
   const fetchPostAndComments = async () => {
     setIsLoading(true);
@@ -74,7 +101,8 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, user, on
           id,
           name,
           avatar_url,
-          role
+          role,
+          community
         )
       `)
       .eq('post_id', postId)
@@ -88,21 +116,71 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, user, on
     if (!newComment.trim() || !user) return;
 
     setIsSubmitting(true);
-    const { error } = await supabase
+    setError(null);
+
+    const { error: submitError } = await supabase
       .from('comments')
       .insert({
         post_id: postId,
         profile_id: user.id,
-        content: newComment.trim()
+        content: newComment.trim(),
+        parent_id: replyTo?.id || null
       });
 
-    if (!error) {
-      setNewComment('');
+    if (submitError) {
+      console.error('Error submitting comment:', submitError);
+      setError(submitError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setNewComment('');
+    setReplyTo(null);
+    
+    try {
       // Increment comment count
       await supabase.rpc('increment_post_comments', { post_id_val: postId });
+    } catch (e) {
+      console.error('RPC failed:', e);
+    }
+
+    fetchPostAndComments();
+    setIsSubmitting(false);
+  };
+
+  const handleCommentVote = async (commentId: string, type: 1 | -1) => {
+    if (!user) return;
+    // In a real app, this would use a comment_votes table
+    // For now, we'll increment local state to show the UI
+    setComments((prev: any[]) => prev.map((c: any) => {
+      if (c.id === commentId) {
+        return {
+          ...c,
+          upvote_count: type === 1 ? (c.upvote_count || 0) + 1 : c.upvote_count,
+          downvote_count: type === -1 ? (c.downvote_count || 0) + 1 : c.downvote_count
+        };
+      }
+      return c;
+    }));
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    
+    // Optimistic UI update for real-time feel
+    setComments(prev => prev.filter(c => c.id !== commentId));
+
+    const { error } = await supabase
+      .from('comments')
+      .delete()
+      .eq('id', commentId);
+      
+    if (error) {
+      console.error('Error deleting comment:', error);
+      setError(error.message);
+      // Revert if error
       fetchPostAndComments();
     }
-    setIsSubmitting(false);
   };
 
   if (isLoading) {
@@ -151,21 +229,78 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, user, on
                 <p>No comments yet. Start the conversation!</p>
               </div>
             ) : (
-              comments.map(comment => (
-                <div key={comment.id} className="comment-thread-item">
+              comments.map((comment: any) => (
+                <div 
+                  key={comment.id} 
+                  id={`comment-${comment.id}`}
+                  className={`comment-thread-item ${comment.parent_id ? 'is-reply' : ''}`}
+                >
                   <Avatar 
                     url={comment.profiles?.avatar_url}
                     name={comment.profiles?.name || 'User'}
-                    size={36}
+                    size={comment.parent_id ? 28 : 36}
                   />
                   <div className="comment-body">
-                    <div className="comment-header">
-                      <span className="comment-user">{comment.profiles?.name}</span>
-                      <span className="comment-date">
-                        {new Date(comment.created_at).toLocaleDateString()}
-                      </span>
+                    <div className="comment-content-main">
+                      <div className="comment-header">
+                        <span className="comment-user">{comment.profiles?.name}</span>
+                        {comment.profiles?.community && (
+                          <span className="post-location" style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--primary)', fontWeight: '600' }}>
+                            <MapPin size={10} />
+                            {comment.profiles.community}
+                          </span>
+                        )}
+                        <span className="comment-date">
+                          {new Date(comment.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="comment-text">{formatText(comment.content)}</p>
+                      
+                      <div className="comment-actions">
+                        <div className="comment-action-group">
+                          <button className="c-action-btn" onClick={() => handleCommentVote(comment.id, 1)}>
+                            <ThumbsUp size={14} /> <span>{comment.upvote_count || 0}</span>
+                          </button>
+                          <button className="c-action-btn" onClick={() => handleCommentVote(comment.id, -1)}>
+                            <ThumbsDown size={14} /> <span>{comment.downvote_count || 0}</span>
+                          </button>
+                          <button className="c-action-btn" onClick={() => setReplyTo(comment)}>
+                            <MessageCircle size={14} /> <span>Reply</span>
+                          </button>
+                          <button className="c-action-btn">
+                            <Repeat size={14} />
+                          </button>
+                          <button className="c-action-btn" title="Share">
+                            <Share2 size={14} />
+                          </button>
+                          {user && user.id !== comment.profile_id && (
+                            <button 
+                              className="c-action-btn" 
+                              title="Report Comment"
+                              onClick={() => setFlagCommentId(comment.id)}
+                            >
+                              <Flag size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <p className="comment-text">{comment.content}</p>
+                    <div className="comment-side-actions">
+                      {user && user.id === comment.profile_id ? (
+                        <button 
+                          className="comment-delete-btn" 
+                          onClick={() => handleDeleteComment(comment.id)}
+                          title="Delete Comment"
+                        >
+                          <X size={16} />
+                        </button>
+                      ) : (
+                        <div style={{height: 24}}></div>
+                      )}
+                      <div className="comment-views">
+                        <Eye size={12} /> <span>{comment.views || 0}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))
@@ -176,11 +311,23 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, user, on
 
       {user && (
         <div className="post-detail-footer">
+          {error && (
+            <div className="error-indicator animate-fade-in">
+              <span>{error}</span>
+              <button onClick={() => setError(null)}>X</button>
+            </div>
+          )}
+          {replyTo && (
+            <div className="reply-indicator animate-fade-in">
+              <span>Replying to <strong>{replyTo.profiles?.name}</strong></span>
+              <button onClick={() => setReplyTo(null)}>Cancel</button>
+            </div>
+          )}
           <div className="comment-input-wrapper glass">
             <Avatar url={user.avatar_url} name={user.name} size={32} />
             <input 
               type="text" 
-              placeholder="Add a comment..." 
+              placeholder={replyTo ? "Write a reply..." : "Add a comment..."} 
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
@@ -195,6 +342,14 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, user, on
             </button>
           </div>
         </div>
+      )}
+      
+      {flagCommentId && user && (
+        <FlagContentModal
+          commentId={flagCommentId}
+          userId={user.id}
+          onClose={() => setFlagCommentId(null)}
+        />
       )}
     </div>
   );
