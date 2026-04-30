@@ -60,15 +60,20 @@ export const SavedView: React.FC = () => {
 
       if (error) throw error;
 
-      const formatted: SavedItem[] = (data || []).map(b => ({
-        id: b.id,
-        type: 'post',
-        title: b.posts?.content?.substring(0, 80) + (b.posts?.content?.length > 80 ? '...' : '') || 'Untitled Post',
-        author: b.posts?.author?.name || 'Unknown User',
-        date: `Saved ${new Date(b.created_at).toLocaleDateString()}`,
-        image: b.posts?.media_urls?.[0],
-        postId: b.posts?.id
-      }));
+      const formatted: SavedItem[] = (data || []).map(b => {
+        const post = Array.isArray(b.posts) ? b.posts[0] : b.posts;
+        const author = Array.isArray(post?.author) ? post.author[0] : post?.author;
+        
+        return {
+          id: b.id,
+          type: 'post',
+          title: post?.content?.substring(0, 80) + (post?.content?.length > 80 ? '...' : '') || 'Untitled Post',
+          author: author?.name || 'Unknown User',
+          date: `Saved ${new Date(b.created_at).toLocaleDateString()}`,
+          image: post?.media_urls?.[0],
+          postId: post?.id
+        };
+      });
 
       setSavedItems(formatted);
     } catch (err) {
