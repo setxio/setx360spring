@@ -577,6 +577,8 @@ const App: React.FC = () => {
             setActiveProfileId(null);
             setActiveTab(index);
           }} 
+          onNavigateToPost={(pid, cid) => { setActivePostId(pid); setActiveCommentId(cid || null); }}
+          onNavigateToProfile={setActiveProfileId}
         />
       );
     }
@@ -608,7 +610,12 @@ const App: React.FC = () => {
         case 4: return <MessagesView user={user} />;
         case 5: return <SavedView />;
         case 6: return <NotificationsView user={user} />;
-        case 7: return <ProfilePage user={user} onNavigate={(index) => setActiveTab(index)} />;
+        case 7: return <ProfilePage 
+          user={user} 
+          onNavigate={(index) => setActiveTab(index)} 
+          onNavigateToPost={(pid, cid) => { setActivePostId(pid); setActiveCommentId(cid || null); }}
+          onNavigateToProfile={setActiveProfileId}
+        />;
         case 8: return <SettingsPage user={user} theme={theme} toggleTheme={toggleTheme} setTheme={setTheme} />;
         case 9: return <EditProfilePage user={user} onUpdate={(data) => updateUser(data)} />;
         default: return <ComingSoon title={socialNav[activeTab]?.label || 'Social'} />;

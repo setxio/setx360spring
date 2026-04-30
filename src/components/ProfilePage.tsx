@@ -22,9 +22,17 @@ interface ProfilePageProps {
   user: any;
   profileId?: string;
   onNavigate: (tab: number) => void;
+  onNavigateToPost?: (postId: string, commentId?: string) => void;
+  onNavigateToProfile?: (profileId: string) => void;
 }
 
-export const ProfilePage: React.FC<ProfilePageProps> = ({ user, profileId, onNavigate }) => {
+export const ProfilePage: React.FC<ProfilePageProps> = ({ 
+  user, 
+  profileId, 
+  onNavigate, 
+  onNavigateToPost,
+  onNavigateToProfile
+}) => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -239,6 +247,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user, profileId, onNav
             showFAB={false} 
             user={user} 
             filterUserId={profileId || user.id} 
+            onNavigateToPost={onNavigateToPost}
+            onNavigateToProfile={onNavigateToProfile}
           />
         )}
         
