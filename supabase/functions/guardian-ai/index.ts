@@ -34,15 +34,21 @@ serve(async (req) => {
     }
 
     const prompt = `
-      You are the SETX 360 AI Guardian. Your job is to moderate social media posts.
-      Analyze the following text. If it contains explicit NSFW content, intense profanity, harassment, or severe hate speech, you must flag it.
+      You are the SETX 360 AI Guardian. Your job is to moderate and categorize social media posts.
+      Analyze the following text.
+      
+      1. Moderation: If it contains explicit NSFW content, intense profanity, harassment, or severe hate speech, flag it.
+      2. Categorization: Detect if the post is primarily about a video, news, an event, a prayer request, or a sale. 
+         Especially check for video links (YouTube, Vimeo, etc.).
       
       Post Text: "${postContent}"
       
       Return a strict JSON object:
       {
         "isViolation": boolean,
-        "reason": "String explaining why it is a violation, or null if it is safe"
+        "reason": "String explaining why it is a violation, or null if it is safe",
+        "suggestedType": "post" | "video" | "news" | "event" | "prayer_request" | "sale",
+        "confidence": float
       }
     `;
 
@@ -64,7 +70,7 @@ serve(async (req) => {
     const aiResponse = JSON.parse(textResp);
 
     if (aiResponse.isViolation) {
-      // Initialize Supabase admin client (Service Role Key required for inserting strikes bypassing RLS)
+      // Initialize Supabase admin client
       const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -79,10 +85,33 @@ serve(async (req) => {
 
       // 2. Hide the post
       await supabaseAdmin.from('posts')
-        .update({ moderation_status: 'hidden', is_nsfw: true })
+        .update({ 
+          moderation_status: 'hidden', 
+          is_nsfw: true,
+          ai_metadata: { 
+            analysis: aiResponse, 
+            analyzed_at: new Date().toISOString() 
+          }
+        })
         .eq('id', postId);
         
       console.log(`Action taken against post ${postId}: ${aiResponse.reason}`);
+    } else if (aiResponse.suggestedType && aiResponse.suggestedType !== 'post' && aiResponse.confidence > 0.8) {
+      // AI suggests a better category with high confidence
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      // Only update if it's currently just a generic 'post'
+      await supabaseAdmin.rpc('categorize_post_ai', {
+        post_id_val: postId,
+        new_type: aiResponse.suggestedType,
+        metadata: { 
+          analysis: aiResponse, 
+          analyzed_at: new Date().toISOString() 
+        }
+      });
     }
 
     return new Response(JSON.stringify({ status: 'analyzed', isViolation: aiResponse.isViolation }), {
