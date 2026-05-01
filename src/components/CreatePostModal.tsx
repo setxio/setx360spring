@@ -99,6 +99,10 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user,
         mediaUrls.push(publicUrl);
       }
 
+      // Detect YouTube URL
+      const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/g;
+      const hasYoutube = youtubeRegex.test(postContent);
+
       const pollData = selectedTab === 'poll' ? {
         options: pollOptions.filter(opt => opt.trim() !== '').map(opt => ({ text: opt, votes: 0 })),
         total_votes: 0
@@ -107,6 +111,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user,
       // Map dynamic types
       let finalType = 'post';
       if (selectedTab === 'poll') finalType = 'poll';
+      else if (hasYoutube) finalType = 'video';
       else if (targetFeed === 'Faith') finalType = faithType;
       else if (targetFeed === 'Shopping') finalType = 'sale';
       else if (targetFeed === 'News') finalType = 'news';

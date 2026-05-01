@@ -50,7 +50,14 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
+  const extractYoutubeId = (text: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = text.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
   const contentPost = post.type === 'repost' && post.original_post ? post.original_post : post;
+  const youtubeId = extractYoutubeId(contentPost.content || '');
   const isEvent = contentPost.type === 'event';
   const isAuthor = user?.id === post.profile_id || user?.role === 'admin';
 
@@ -153,7 +160,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
       )}
 
-      {contentPost.media_urls && contentPost.media_urls.length > 0 && (
+      {((contentPost.media_urls && contentPost.media_urls.length > 0) || youtubeId) && (
         <div className="post-media-container" onClick={e => e.stopPropagation()}>
           <div 
             className="post-media-slider no-scrollbar"
@@ -163,7 +170,24 @@ export const PostCard: React.FC<PostCardProps> = ({
               if (index !== activeMediaIndex) setActiveMediaIndex(index);
             }}
           >
-            {contentPost.media_urls.map((url: string, idx: number) => (
+            {/* Embedded YouTube Video */}
+            {youtubeId && (
+              <div className="media-slide">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${youtubeId}`}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="post-video youtube-embed"
+                />
+              </div>
+            )}
+
+            {/* Local Media Files */}
+            {contentPost.media_urls?.map((url: string, idx: number) => (
               <div key={idx} className="media-slide">
                 {url.match(/\.(mp4|webm|ogg)$/i) || url.includes('mixkit.co') ? (
                   <video 
@@ -178,9 +202,9 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             ))}
           </div>
-          {contentPost.media_urls.length > 1 && (
+          {(contentPost.media_urls?.length > 1 || (youtubeId && contentPost.media_urls?.length > 0)) && (
             <div className="media-indicators">
-              {contentPost.media_urls.map((_: any, idx: number) => (
+              {Array.from({ length: (contentPost.media_urls?.length || 0) + (youtubeId ? 1 : 0) }).map((_, idx) => (
                 <div 
                   key={idx} 
                   className={`media-dot ${idx === activeMediaIndex ? 'active' : ''}`} 
