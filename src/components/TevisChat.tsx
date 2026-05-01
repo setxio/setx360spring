@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Loader2, Minimize2, Maximize2 } from 'lucide-react';
+import { X, Send, Bot, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './TevisChat.css';
 
