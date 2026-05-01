@@ -19,9 +19,7 @@ import {
   HeartHandshake,
   Church,
   Eye,
-  EyeOff,
-  Sun,
-  Moon
+  EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
@@ -51,7 +49,7 @@ const accountTypes: AccountType[] = [
 ];
 
 export const SignUpFlow: React.FC = () => {
-  const { isSetxDomain, toggleTheme, theme } = useApp();
+  const { isSetxDomain, theme } = useApp();
   const [step, setStep] = useState(1);
   const [isLoginMode, setIsLoginMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -276,15 +274,6 @@ export const SignUpFlow: React.FC = () => {
 
   return (
     <div className="signup-flow-container">
-      <div className="theme-toggle-wrapper" style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
-        <button 
-          onClick={toggleTheme}
-          className="theme-toggle-btn"
-          aria-label="Toggle Theme"
-        >
-          {theme.includes('light') ? <Moon size={20} /> : <Sun size={20} />}
-        </button>
-      </div>
 
       <AnimatePresence mode="wait">
         
@@ -440,11 +429,6 @@ export const SignUpFlow: React.FC = () => {
             ) : (
               <>
                 <div className="signup-header">
-                  <img 
-                    src={isSetxDomain ? (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png") : "/logo-neo.png"} 
-                    alt="Logo" 
-                    style={{ width: 100, height: 100, marginBottom: 24, objectFit: 'contain' }} 
-                  />
                   <h3>Join {isSetxDomain ? 'SETX 360' : 'Efutura'}</h3>
                   <p>Select your account type to get started</p>
                 </div>

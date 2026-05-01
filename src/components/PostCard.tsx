@@ -51,9 +51,10 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
   const extractYoutubeId = (text: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    if (!text) return null;
+    const regExp = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:shorts\/|live\/|embed\/|v\/|watch\?v=|watch\?.+&v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const match = text.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    return match ? match[1] : null;
   };
 
   const contentPost = post.type === 'repost' && post.original_post ? post.original_post : post;

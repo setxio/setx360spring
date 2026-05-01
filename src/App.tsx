@@ -125,7 +125,7 @@ import { useApp, type Env } from './context/AppContext';
 
 const App: React.FC = () => {
   const { 
-    user, env, theme, scope, activeTab, unreadCount, isLoading, isSearchOpen,
+    user, env, theme, scope, activeTab, unreadCount, isLoading, isSearchOpen, isSetxDomain,
     setEnv, setTheme, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser, updateUser
   } = useApp();
 
@@ -735,15 +735,6 @@ const App: React.FC = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, overflowY: 'scroll', background: 'var(--bg)', color: 'var(--text)' }}>
-        <main className="content-area" style={{ paddingBottom: '80px', paddingTop: '40px' }}>
-          <SignUpFlow />
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div 
@@ -811,10 +802,7 @@ const App: React.FC = () => {
             }}>
               <img
                 src={
-                  theme.startsWith('efutura-') ? '/logo-efutura.png' :
-                  theme.startsWith('neo-') ? '/logo-neo.png' :
-                  theme.startsWith('twilight-') ? '/logo-twilight.png' :
-                  '/logo-setx-blue.png'
+                  isSetxDomain ? (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png") : "/logo-neo.png"
                 }
                 alt="Logo"
                 style={{
@@ -830,7 +818,7 @@ const App: React.FC = () => {
 
           {/* Right: User Badge + Theme Toggle */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
-            {user && (
+            {user ? (
               <div 
                 className="user-profile-badge" 
                 onClick={() => !user.role.startsWith('v_') && setIsVerifying(true)}
@@ -849,57 +837,66 @@ const App: React.FC = () => {
                 </div>
                 <Avatar url={user.avatar_url} name={user.name} size={32} />
               </div>
+            ) : (
+              <button 
+                onClick={toggleTheme}
+                className="theme-toggle"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)', padding: '8px' }}
+              >
+                {theme.includes('light') ? <Moon size={20} /> : <Sun size={20} />}
+              </button>
             )}
-            <button className="theme-toggle" onClick={toggleTheme} style={{ padding: '8px' }}>
-              {theme.includes('light') ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
           </div>
         </div>
         
 
-        <div className="top-switch-container" style={{ padding: '4px 0 8px' }}>
-          <div className="two-notches">
-            <div 
-              className={`notch notch-2 ${scope === 'county' ? 'active' : ''}`} 
-              onClick={() => setScope('county')}
-              style={{ cursor: 'pointer' }}
-              title={`${user?.county || 'Regional'} (County)`}
-            />
-            <div 
-              className={`notch notch-3 ${scope === 'city' ? 'active' : ''}`} 
-              onClick={() => setScope('city')}
-              style={{ cursor: 'pointer' }}
-              title={`${user?.community || 'Local'} (City)`}
-            />
+        {user && (
+          <div className="top-switch-container" style={{ padding: '4px 0 8px' }}>
+            <div className="two-notches">
+              <div 
+                className={`notch notch-2 ${scope === 'county' ? 'active' : ''}`} 
+                onClick={() => setScope('county')}
+                style={{ cursor: 'pointer' }}
+                title={`${user?.county || 'Regional'} (County)`}
+              />
+              <div 
+                className={`notch notch-3 ${scope === 'city' ? 'active' : ''}`} 
+                onClick={() => setScope('city')}
+                style={{ cursor: 'pointer' }}
+                title={`${user?.community || 'Local'} (City)`}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Search Bar Header */}
-        <header className="main-header" style={{ padding: '0 16px 8px' }}>
-          <div className="header-content" style={{ display: 'block' }}>
-            <button 
-              className="header-action-btn search-trigger" 
-              onClick={() => setIsSearchOpen(true)}
-              style={{ 
-                width: '100%',
-                background: theme.endsWith('-dark') ? 'rgba(255,255,255,0.08)' : '#fff', 
-                border: theme === 'setx-light' ? '2px solid var(--primary)' : theme.endsWith('-light') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', 
-                color: 'var(--text-muted)', 
-                padding: '12px 20px', 
-                borderRadius: '30px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '14px',
-                justifyContent: 'flex-start',
-                boxShadow: theme.endsWith('-light') ? '0 4px 15px rgba(0,0,0,0.08)' : '0 4px 20px rgba(0,0,0,0.2)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <SearchIcon size={20} className="search-icon-anim" style={{ color: 'var(--primary)' }} />
-              <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.8 }}>Search {scope}...</span>
-            </button>
-          </div>
-        </header>
+        {user && (
+          <header className="main-header" style={{ padding: '0 16px 8px' }}>
+            <div className="header-content" style={{ display: 'block' }}>
+              <button 
+                className="header-action-btn search-trigger" 
+                onClick={() => setIsSearchOpen(true)}
+                style={{ 
+                  width: '100%',
+                  background: theme.endsWith('-dark') ? 'rgba(255,255,255,0.08)' : '#fff', 
+                  border: theme === 'setx-light' ? '2px solid var(--primary)' : theme.endsWith('-light') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', 
+                  color: 'var(--text-muted)', 
+                  padding: '12px 20px', 
+                  borderRadius: '30px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '14px',
+                  justifyContent: 'flex-start',
+                  boxShadow: theme.endsWith('-light') ? '0 4px 15px rgba(0,0,0,0.08)' : '0 4px 20px rgba(0,0,0,0.2)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <SearchIcon size={20} className="search-icon-anim" style={{ color: 'var(--primary)' }} />
+                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.8 }}>Search {scope}...</span>
+              </button>
+            </div>
+          </header>
+        )}
     </div>
 
       <Suspense fallback={null}>
@@ -976,93 +973,101 @@ const App: React.FC = () => {
       )}
 
       {/* Main Content Area */}
-      <main className="content-area">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={env + activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="view-container"
-          >
-            <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}><Loader2 className="animate-spin" size={32} color="var(--primary)" /></div>}>
-              {renderView()}
-            </Suspense>
-          </motion.div>
-        </AnimatePresence>
+      <main className="content-area" style={{ paddingTop: !user ? '40px' : '0' }}>
+        {!user ? (
+          <SignUpFlow />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={env + activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="view-container"
+            >
+              <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}><Loader2 className="animate-spin" size={32} color="var(--primary)" /></div>}>
+                {renderView()}
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
+        )}
       </main>
 
       {/* Environment Switcher Footer */}
-      <div className="env-switcher-footer">
-        <div className="switcher-wrapper glass">
-          <div className="switcher-scroll" ref={envSwitcherRef} onScroll={() => {
-            handleSwitcherScroll();
-            // Verify scroll completion to update state if needed
-            if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-            scrollTimeout.current = setTimeout(() => {
-              isInternalScroll.current = false;
-            }, 100);
-          }}>
-            {/* Invisible Spacer */}
-            <div className="sw-btn spacer" aria-hidden="true" />
-            
-            {['discover', 'social', 'market', 'events', 'news', 'faith'].map(id => {
-              const item = id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
-                           id === 'social'   ? { id: 'social',   icon: <Rss size={18} />, label: 'Social' } :
-                           id === 'market'   ? { id: 'market',   icon: <Store size={18} />, label: 'Market' } :
-                           id === 'events'   ? { id: 'events',   icon: <Calendar size={18} />, label: 'Events' } :
-                           id === 'news'     ? { id: 'news',     icon: <Newspaper size={18} />, label: 'News' } :
-                           { id: 'faith',    icon: <Church size={18} />, label: 'Faith' };
-              return (
-                <button 
-                  key={item.id}
-                  className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} 
-                  onClick={() => handleEnvClick(item.id as Env)}
-                >
-                  {item.icon} {item.label}
+      {user && (
+        <div className="env-switcher-footer">
+          <div className="switcher-wrapper glass">
+            <div className="switcher-scroll" ref={envSwitcherRef} onScroll={() => {
+              handleSwitcherScroll();
+              // Verify scroll completion to update state if needed
+              if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+              scrollTimeout.current = setTimeout(() => {
+                isInternalScroll.current = false;
+              }, 100);
+            }}>
+              {/* Invisible Spacer */}
+              <div className="sw-btn spacer" aria-hidden="true" />
+              
+              {['discover', 'social', 'market', 'events', 'news', 'faith'].map(id => {
+                const item = id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
+                             id === 'social'   ? { id: 'social',   icon: <Rss size={18} />, label: 'Social' } :
+                             id === 'market'   ? { id: 'market',   icon: <Store size={18} />, label: 'Market' } :
+                             id === 'events'   ? { id: 'events',   icon: <Calendar size={18} />, label: 'Events' } :
+                             id === 'news'     ? { id: 'news',     icon: <Newspaper size={18} />, label: 'News' } :
+                             { id: 'faith',    icon: <Church size={18} />, label: 'Faith' };
+                return (
+                  <button 
+                    key={item.id}
+                    className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} 
+                    onClick={() => handleEnvClick(item.id as Env)}
+                  >
+                    {item.icon} {item.label}
+                  </button>
+                );
+              })}
+
+              {( (user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role)) || (user?.clearances && user.clearances.length > 0) ) && user.role !== 'admin' && (
+                <button className={`sw-btn dashboard ${env === 'dashboard' ? 'active' : ''}`} onClick={() => handleEnvClick('dashboard')}>
+                  <Store size={18} /> Dashboard
                 </button>
-              );
-            })}
+              )}
 
-            {( (user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role)) || (user?.clearances && user.clearances.length > 0) ) && user.role !== 'admin' && (
-              <button className={`sw-btn dashboard ${env === 'dashboard' ? 'active' : ''}`} onClick={() => handleEnvClick('dashboard')}>
-                <Store size={18} /> Dashboard
-              </button>
-            )}
-
-            {user?.role === 'admin' && (
-              <button className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`} onClick={() => handleEnvClick('admin')}>
-                <ShieldCheck size={18} /> Admin Control
-              </button>
-            )}
+              {user?.role === 'admin' && (
+                <button className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`} onClick={() => handleEnvClick('admin')}>
+                  <ShieldCheck size={18} /> Admin Control
+                </button>
+              )}
 
 
-            {/* Spacer for centering last item */}
-            <div className="sw-btn spacer" aria-hidden="true" />
+              {/* Spacer for centering last item */}
+              <div className="sw-btn spacer" aria-hidden="true" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* FOOTER: Bottom Navigation */}
-      <nav className="bottom-nav glass">
-        <div className="nav-items-scroll">
-          {currentNav.map((item, index) => (
-            <button
-              key={item.label}
-              className={`nav-btn ${activeTab === index ? 'active' : ''}`}
-              onClick={() => setActiveTab(index)}
-            >
-              <div className="icon-wrapper">
-                {item.icon}
-                {item.label === 'Alerts' && unreadCount > 0 && <span className="badge">{unreadCount}</span>}
-                {item.label === 'Cart' && <span className="badge">1</span>}
-              </div>
-              <span className="label">{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      {user && (
+        <nav className="bottom-nav glass">
+          <div className="nav-items-scroll">
+            {currentNav.map((item, index) => (
+              <button
+                key={item.label}
+                className={`nav-btn ${activeTab === index ? 'active' : ''}`}
+                onClick={() => setActiveTab(index)}
+              >
+                <div className="icon-wrapper">
+                  {item.icon}
+                  {item.label === 'Alerts' && unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+                  {item.label === 'Cart' && <span className="badge">1</span>}
+                </div>
+                <span className="label">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
 
       <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
     </div>

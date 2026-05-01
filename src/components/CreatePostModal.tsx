@@ -100,7 +100,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user,
       }
 
       // Detect YouTube URL
-      const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/g;
+      const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:shorts\/|live\/|embed\/|v\/|watch\?v=|watch\?.+&v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
       const hasYoutube = youtubeRegex.test(postContent);
 
       const pollData = selectedTab === 'poll' ? {

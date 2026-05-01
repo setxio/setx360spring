@@ -184,14 +184,14 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       query = query.in('group_id', groupIds);
     }
     else if (activeCategory === 'News') {
-      // News comes from Media roles
-      query = query.filter('author.role', 'in', '(media,v_media)');
+      // News comes from Media roles OR posts explicitly marked as news
+      query = query.or(`type.eq.news,author.role.in.(media,v_media)`);
     }
     else if (activeCategory === 'Events') {
-      // Events from Venue, Non-Profit, Church + type event
+      // Events from Venue, Non-Profit, Church, Official, or Admin + type event
       query = query
         .eq('type', 'event')
-        .filter('author.role', 'in', '(venue,v_venue,non_profit,v_non_profit,church,v_church)');
+        .filter('author.role', 'in', '(venue,v_venue,non_profit,v_non_profit,church,v_church,official,v_official,admin)');
     }
     else if (activeCategory === 'Faith') {
       // Faith from Church roles OR specific post types
