@@ -11,10 +11,11 @@ interface Message {
 
 interface TevisChatProps {
   user?: any;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export const TevisChat: React.FC<TevisChatProps> = ({ user }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const TevisChat: React.FC<TevisChatProps> = ({ user, isOpen, onClose }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -77,14 +78,7 @@ export const TevisChat: React.FC<TevisChatProps> = ({ user }) => {
     }
   };
 
-  if (!isOpen) {
-    return (
-      <button className="tevis-fab bounce-in" onClick={() => setIsOpen(true)}>
-        <Bot size={28} />
-        <span className="fab-label">Ask Tevis</span>
-      </button>
-    );
-  }
+  if (!isOpen) return null;
 
   return (
     <div className={`tevis-container ${isMinimized ? 'minimized' : ''} slide-up`}>
@@ -100,7 +94,7 @@ export const TevisChat: React.FC<TevisChatProps> = ({ user }) => {
           <button onClick={() => setIsMinimized(!isMinimized)}>
             {isMinimized ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
           </button>
-          <button onClick={() => setIsOpen(false)}><X size={18} /></button>
+          <button onClick={() => onClose()}><X size={18} /></button>
         </div>
       </div>
 

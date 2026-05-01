@@ -162,6 +162,7 @@ const App: React.FC = () => {
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  const [isTevisOpen, setIsTevisOpen] = useState(false);
 
   // Clear store/post detail views whenever the user navigates away
   useEffect(() => {
@@ -792,7 +793,9 @@ const App: React.FC = () => {
 
           {/* Center: Theme Logo with Restored Dynamic Ring */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div style={{ 
+            <div 
+              onClick={() => setIsTevisOpen(!isTevisOpen)}
+              style={{ 
               position: 'relative', 
               width: 56, 
               height: 56, 
@@ -800,8 +803,10 @@ const App: React.FC = () => {
               alignItems: 'center', 
               justifyContent: 'center',
               borderRadius: '50%',
+              cursor: 'pointer',
               // The Dynamic Soft Glow (The Ring)
-              boxShadow: theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none',
+              boxShadow: isTevisOpen ? `0 0 35px 5px var(--primary)` : (theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none'),
+              transform: isTevisOpen ? 'scale(1.1)' : 'scale(1)',
               transition: 'all 0.4s ease'
             }}>
               <img
@@ -1059,7 +1064,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <TevisChat user={user} />
+      <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
     </div>
   );
 };
