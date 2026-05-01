@@ -346,7 +346,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
             // Check if any media url implies an image
             return hasMedia && post.media_urls.some((url: string) => !url.match(/\.(mp4|webm|ogg)$/i));
           } else if (activeType === 'videos') {
-            return hasMedia && post.media_urls.some((url: string) => url.match(/\.(mp4|webm|ogg)$/i));
+            const hasVideoFile = hasMedia && post.media_urls.some((url: string) => url.match(/\.(mp4|webm|ogg)$/i));
+            return hasVideoFile || post.type === 'video';
           }
           return true;
         });
