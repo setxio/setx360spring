@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const { message, history, userProfile } = await req.json();
     
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY')?.trim();
     if (!geminiApiKey) {
       throw new Error("GEMINI_API_KEY missing");
     }
@@ -50,7 +50,7 @@ serve(async (req) => {
 
     if (history && Array.isArray(history)) {
       // Filter history to ensure it starts with 'user' after our initial pair
-      // and alternates correctly.
+      // and alternates correctly. Gemini strictly requires alternating roles.
       let lastRole = 'model';
       history.forEach((msg: any) => {
         const currentRole = msg.role === 'user' ? 'user' : 'model';
@@ -60,6 +60,10 @@ serve(async (req) => {
             parts: [{ text: msg.content }]
           });
           lastRole = currentRole;
+        } else {
+          // If we have consecutive messages from the same role, append the text 
+          // to the previous message instead of ignoring it.
+          contents[contents.length - 1].parts[0].text += `\n\n${msg.content}`;
         }
       });
     }
@@ -75,7 +79,7 @@ serve(async (req) => {
       });
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -92,17 +96,13 @@ serve(async (req) => {
     if (!response.ok) {
       const errText = await response.text();
       console.error("Gemini API Error:", errText);
-      // Check if it's a safety block or something else
-      try {
-        const errJson = JSON.parse(errText);
-        if (errJson.error?.message?.includes('safety')) {
-          return new Response(JSON.stringify({ reply: "I'm sorry, but I can't discuss that topic. Let's keep our conversation focused on Southeast Texas!" }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          });
-        }
-      } catch (e) {}
-      throw new Error(`AI Gateway Error: ${response.status}`);
+      
+      return new Response(JSON.stringify({ 
+        reply: "I'm sorry, I'm having a bit of trouble connecting to my local roots. Can you try asking me again?"
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
     }
 
     const result = await response.json();
@@ -125,11 +125,10 @@ serve(async (req) => {
   } catch (error) {
     console.error("Tevis AI Exception:", error);
     return new Response(JSON.stringify({ 
-      error: error.message,
       reply: "I'm sorry, I'm having a bit of trouble connecting to my local roots. Can you try asking me again?"
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200, // Return 200 so the UI can show the graceful error message from 'reply'
+      status: 200, 
     });
   }
 });

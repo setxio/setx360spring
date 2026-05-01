@@ -21,6 +21,8 @@ import './EditProfilePage.css';
 
 type CityOption = { city_name: string; county_name: string };
 
+import { isProfessional as checkProfessional, isVendor as checkVendor, isOfficial as checkOfficial } from '../utils/roles';
+
 interface EditProfilePageProps {
   user: any;
   onUpdate: (data: any) => void;
@@ -62,9 +64,9 @@ export const EditProfilePage: React.FC<EditProfilePageProps> = ({ user, onUpdate
     handle: ''
   });
 
-  const isProfessional = ['business', 'media', 'official', 'non_profit', 'church', 'chamber', 'venue', 'v_business', 'v_media', 'v_official', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue'].includes(user.role);
-  const isVendor = ['business', 'v_business'].includes(user.role);
-  const isOfficial = ['official', 'v_official'].includes(user.role);
+  const isProfessional = checkProfessional(user.role);
+  const isVendor = checkVendor(user.role);
+  const isOfficial = checkOfficial(user.role);
 
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [isZipLoading, setIsZipLoading] = useState(false);

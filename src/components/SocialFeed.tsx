@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { Plus, Loader2, Megaphone, MapPin, TrendingUp, Rss } from 'lucide-react';
 import { FeedFilters } from './FeedFilters';
@@ -121,13 +122,12 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       )
     `;
 
-    // 1a. Build dynamic inner join for geographic filtering if needed
-    if (user && !filterUserId) {
-      if (scope === 'county' && user.county) {
-        selectString = selectString.replace('author:profiles!posts_profile_id_fkey', 'author:profiles!posts_profile_id_fkey!inner');
-      } else if (scope === 'state' && user.state) {
-        selectString = selectString.replace('author:profiles!posts_profile_id_fkey', 'author:profiles!posts_profile_id_fkey!inner');
-      }
+    // 1a. Build dynamic inner join for geographic or role-based filtering
+    const roleBasedCategories = ['Official', 'Events', 'Services', 'Non Profit'];
+    const needsInnerJoin = (user && !filterUserId && (scope === 'county' || scope === 'state')) || roleBasedCategories.includes(activeCategory);
+
+    if (needsInnerJoin) {
+      selectString = selectString.replace('author:profiles!posts_profile_id_fkey', 'author:profiles!posts_profile_id_fkey!inner');
     }
 
     let query = supabase
@@ -184,22 +184,17 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       query = query.in('group_id', groupIds);
     }
     else if (activeCategory === 'News') {
-      // News comes from Media roles OR posts explicitly marked as news
-      query = query.or(`type.eq.news,author.role.in.(media,v_media)`);
+      // News comes from verified media roles OR posts explicitly marked as news
+      query = query.or(`category.eq.News,type.eq.news`);
     }
     else if (activeCategory === 'Events') {
-      // Events from Venue, Non-Profit, Church, Official, or Admin + type event
-      query = query
-        .eq('type', 'event')
-        .filter('author.role', 'in', '(venue,v_venue,non_profit,v_non_profit,church,v_church,official,v_official,admin)');
+      // Events explicitly tagged or type event from specific roles
+      query = query.or(`category.eq.Events,type.eq.event`);
+      query = query.filter('author.role', 'in', '(venue,v_venue,non_profit,v_non_profit,church,v_church,official,v_official,admin)');
     }
     else if (activeCategory === 'Faith') {
-      // Faith from Church roles OR specific post types
-      if (user) {
-        query = query.or(`type.in.(prayer_request,bible_verse),author.role.in.(church,v_church)`);
-      } else {
-        query = query.or(`type.in.(prayer_request,bible_verse)`);
-      }
+      // Faith content: Explicitly tagged OR specific faith types
+      query = query.or(`category.eq.Faith,type.in.(prayer_request,bible_verse,testament,bible_question)`);
     }
     else if (activeCategory === 'Official') {
       // Official feed - from officials and admins
@@ -655,55 +650,78 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         />
       )}
       
-      {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-          <Loader2 className="animate-spin" size={32} color="var(--primary)" />
-        </div>
-      ) : posts.length === 0 ? (
-        <EmptyState 
-          icon={Rss}
-          title="The Feed is Quiet"
-          message={`No posts found in this ${scope} yet. Be the first to start the conversation!`}
-          action={{
-            label: "Create Post",
-            onClick: () => setIsPosting(true)
-          }}
-        />
-      ) : (
-        <>
-          {/* Trending Bar — shows AI-detected hot topics in user's community */}
-          {trendingTopics.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', padding: '0 0 12px', scrollbarWidth: 'none' }}>
-              <TrendingUp size={14} color="#f59e0b" style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: 700, flexShrink: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trending</span>
-              {trendingTopics.map(t => (
-                <span key={t.topic} style={{ whiteSpace: 'nowrap', fontSize: '0.72rem', padding: '3px 10px', borderRadius: '12px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 600, flexShrink: 0 }}>
-                  {t.topic.replace(/_/g, ' ')} · {t.post_count}
-                </span>
-              ))}
-            </div>
-          )}
-          {escalatedScope && (
-            <div style={{
-              padding: '10px 16px',
-              marginBottom: '12px',
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(157,0,255,0.08))',
-              border: '1px solid rgba(99,102,241,0.2)',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '0.82rem',
-              color: 'var(--text-muted)',
-              fontWeight: 500
-            }}>
-              <MapPin size={14} color="var(--primary)" />
-              <span>Expanded to <strong style={{ color: 'var(--primary)' }}>{escalatedScope}</strong> — not enough local posts yet</span>
-            </div>
-          )}
-          {renderFeedContent()}
-        </>
-      )}
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div 
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}
+          >
+            <Loader2 className="animate-spin" size={32} color="var(--primary)" />
+          </motion.div>
+        ) : posts.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <EmptyState 
+              icon={Rss}
+              title="The Feed is Quiet"
+              message={`No posts found in this ${scope} yet. Be the first to start the conversation!`}
+              action={{
+                label: "Create Post",
+                onClick: () => setIsPosting(true)
+              }}
+            />
+          </motion.div>
+        ) : (
+          <motion.div 
+            key={activeCategory}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <>
+              {/* Trending Bar — shows AI-detected hot topics in user's community */}
+              {trendingTopics.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', padding: '0 0 12px', scrollbarWidth: 'none' }}>
+                  <TrendingUp size={14} color="#f59e0b" style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: 700, flexShrink: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trending</span>
+                  {trendingTopics.map(t => (
+                    <span key={t.topic} style={{ whiteSpace: 'nowrap', fontSize: '0.72rem', padding: '3px 10px', borderRadius: '12px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 600, flexShrink: 0 }}>
+                      {t.topic.replace(/_/g, ' ')} · {t.post_count}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {escalatedScope && (
+                <div style={{
+                  padding: '10px 16px',
+                  marginBottom: '12px',
+                  background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(157,0,255,0.08))',
+                  border: '1px solid rgba(99,102,241,0.2)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '0.82rem',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500
+                }}>
+                  <MapPin size={14} color="var(--primary)" />
+                  <span>Expanded to <strong style={{ color: 'var(--primary)' }}>{escalatedScope}</strong> — not enough local posts yet</span>
+                </div>
+              )}
+              {renderFeedContent()}
+            </>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {showFAB && (
         <>

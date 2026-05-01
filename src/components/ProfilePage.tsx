@@ -18,6 +18,8 @@ import {
 import { SocialFeed } from './SocialFeed';
 import './ProfilePage.css';
 
+import { isProfessional as checkProfessional, isVendor as checkVendor, isOfficial as checkOfficial } from '../utils/roles';
+
 interface ProfilePageProps {
   user: any;
   profileId?: string;
@@ -38,9 +40,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('Posts');
 
-  const isOfficial = ['official', 'v_official'].includes(profile?.role || user.role);
-  const isVendor = ['business', 'v_business'].includes(profile?.role || user.role);
-  const isProfessional = ['media', 'non_profit', 'church', 'chamber', 'venue', 'v_media', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue'].includes(profile?.role || user.role) || isVendor || isOfficial;
+  const currentRole = profile?.role || user.role;
+  const isOfficial = checkOfficial(currentRole);
+  const isVendor = checkVendor(currentRole);
+  const isProfessional = checkProfessional(currentRole);
 
   useEffect(() => {
     const fetchProfile = async () => {
