@@ -70,6 +70,7 @@ import { ThemeTopBar } from './components/ThemeTopBar';
 import { Avatar } from './components/Avatar';
 import { SignUpFlow } from './components/SignUpFlow';
 import { VerificationModal } from './components/VerificationModal';
+import { TevisChat } from './components/TevisChat';
 
 // Heavy page-level components (lazy loaded on demand)
 const SearchOverlay    = lazy(() => import('./components/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
@@ -1057,6 +1058,8 @@ const App: React.FC = () => {
           ))}
         </div>
       </nav>
+
+      <TevisChat user={user} />
     </div>
   );
 };
