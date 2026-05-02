@@ -32,10 +32,10 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   const [isSending, setIsSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [isTyping, setIsTyping] = useState(false);
-  const { onlineUsers, pendingDirectMessage, clearPendingDirectMessage } = useApp();
+  const { onlineUsers } = useApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<any>(null);
   const typingChannelRef = useRef<any>(null);
+  const isTypingRef = useRef(false);
 
   useEffect(() => {
     if (!user) return;
@@ -54,32 +54,6 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
     return () => { supabase.removeChannel(channel); };
   }, [user]);
-  
-  // Listen for external "Message" button clicks
-  useEffect(() => {
-    if (pendingDirectMessage) {
-      const { id, name, avatar } = pendingDirectMessage;
-      
-      setSessions(prev => {
-        if (!prev[id]) {
-          return {
-            ...prev,
-            [id]: {
-              profileId: id,
-              name: name,
-              avatar_url: avatar,
-              messages: [],
-              unread: 0
-            }
-          };
-        }
-        return prev;
-      });
-      
-      setExpandedChatId(id);
-      clearPendingDirectMessage();
-    }
-  }, [pendingDirectMessage, clearPendingDirectMessage]);
 
   // Scroll to bottom when a chat is expanded or new message arrives
   useEffect(() => {
@@ -88,15 +62,9 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
     }
   }, [sessions, expandedChatId, typingUsers]);
 
-  // Typing presence channel management
+  // Typing presence — stable channel ref, doesn't re-subscribe on every keystroke
   useEffect(() => {
-    if (!expandedChatId || !user) {
-      if (typingChannelRef.current) {
-        typingChannelRef.current.unsubscribe();
-        typingChannelRef.current = null;
-      }
-      return;
-    }
+    if (!expandedChatId || !user) return;
 
     const channelId = [user.id, expandedChatId].sort().join('-');
     const channel = supabase.channel(`typing-${channelId}`, {
@@ -113,23 +81,27 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
         else newSet.delete(expandedChatId);
         return newSet;
       });
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.track({ user_id: user.id, is_typing: isTypingRef.current });
+      }
     });
 
-    channel.subscribe();
     typingChannelRef.current = channel;
-
-    return () => { 
+    return () => {
       channel.unsubscribe();
       typingChannelRef.current = null;
     };
-  }, [expandedChatId, user]);
+  }, [expandedChatId, user]); // ← removed isTyping to prevent channel teardown on every keystroke
 
-  // Track typing state changes without re-subscribing
+  // Update typing state on existing channel without re-subscribing
   useEffect(() => {
-    if (typingChannelRef.current && typingChannelRef.current.state === 'joined') {
+    isTypingRef.current = isTyping;
+    if (typingChannelRef.current) {
       typingChannelRef.current.track({ user_id: user.id, is_typing: isTyping });
     }
-  }, [isTyping, user.id]);
+  }, [isTyping]);
 
   const handleIncomingMessage = async (message: Message) => {
     const senderId = message.sender_id;
@@ -242,16 +214,8 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
     setInputValues(prev => ({ ...prev, [profileId]: value }));
     if (!isTyping) {
       setIsTyping(true);
+      setTimeout(() => setIsTyping(false), 3000);
     }
-    
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      typingTimeoutRef.current = null;
-    }, 3000);
   };
 
   if (!user || Object.keys(sessions).length === 0) return null;

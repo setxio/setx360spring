@@ -16,7 +16,6 @@ import {
   Building2
 } from 'lucide-react';
 import { SocialFeed } from './SocialFeed';
-import { useApp } from '../context/AppContext';
 import './ProfilePage.css';
 
 import { isProfessional as checkProfessional, isVendor as checkVendor, isOfficial as checkOfficial } from '../utils/roles';
@@ -36,7 +35,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onNavigateToPost,
   onNavigateToProfile
 }) => {
-  const { startDirectMessage } = useApp();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -157,10 +155,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <button className="edit-profile-btn" onClick={() => onNavigate(10)}>Edit Profile</button>
             </>
           ) : (
-            <>
-              <button className="edit-profile-btn primary" onClick={() => startDirectMessage(profile.id, profile.name, profile.avatar_url)}>Message</button>
-              <button className="edit-profile-btn" style={{ marginLeft: '8px' }}>Follow</button>
-            </>
+            <button className="edit-profile-btn primary">Follow</button>
           )}
         </div>
       </div>

@@ -44,8 +44,8 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const typingTimeoutRef = useRef<any>(null);
   const typingChannelRef = useRef<any>(null);
+  const isTypingRef = useRef(false);
 
   const calculateAge = (m: number, d: number, y: number) => {
     if (!m || !d || !y) return 0;
@@ -68,15 +68,9 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     scrollToBottom();
   }, [allMessages, activeChatId, otherUserTyping]);
 
-  // Typing presence channel management
+  // Typing presence — use a stable channel ref so it doesn't re-subscribe on every keystroke
   useEffect(() => {
-    if (!activeChatId || !user) {
-      if (typingChannelRef.current) {
-        typingChannelRef.current.unsubscribe();
-        typingChannelRef.current = null;
-      }
-      return;
-    }
+    if (!activeChatId || !user) return;
 
     const channelId = [user.id, activeChatId].sort().join('-');
     const channel = supabase.channel(`typing-${channelId}`, {
@@ -88,31 +82,44 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
         p[0]?.user_id === activeChatId && p[0]?.is_typing
       );
       setOtherUserTyping(typing);
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.track({ user_id: user.id, is_typing: isTypingRef.current });
+      }
     });
 
-    channel.subscribe();
     typingChannelRef.current = channel;
-
-    return () => { 
+    return () => {
       channel.unsubscribe();
       typingChannelRef.current = null;
     };
-  }, [activeChatId, user]);
+  }, [activeChatId, user]); // ← removed isTyping to prevent channel teardown on every keystroke
 
-  // Track typing state changes without re-subscribing
+  // Update typing state on the existing channel without re-subscribing
   useEffect(() => {
-    if (typingChannelRef.current && typingChannelRef.current.state === 'joined') {
+    isTypingRef.current = isTyping;
+    if (typingChannelRef.current) {
       typingChannelRef.current.track({ user_id: user.id, is_typing: isTyping });
     }
-  }, [isTyping, user.id]);
+  }, [isTyping]);
 
   useEffect(() => {
     fetchInitialData();
-    const channel = supabase.channel('public:messages')
+
+    // FIX: Two separate channels — Supabase only allows ONE filter per channel subscription
+    const rxChannel = supabase.channel(`messages-rx-${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, (payload) => handleIncomingMessage(payload.new as MessageData))
+      .subscribe();
+
+    const txChannel = supabase.channel(`messages-tx-${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `sender_id=eq.${user.id}` }, (payload) => handleIncomingMessage(payload.new as MessageData))
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    return () => {
+      supabase.removeChannel(rxChannel);
+      supabase.removeChannel(txChannel);
+    };
   }, [user.id]);
 
   const handleIncomingMessage = (newMsg: MessageData) => {
@@ -132,19 +139,10 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
 
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
-    
     if (!isTyping) {
       setIsTyping(true);
+      setTimeout(() => setIsTyping(false), 3000);
     }
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      typingTimeoutRef.current = null;
-    }, 3000);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
