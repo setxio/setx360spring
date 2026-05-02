@@ -25,6 +25,7 @@ export const FaithView: React.FC<{ user?: any; scope?: string }> = ({ user: prop
   const [churches, setChurches] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDenom, setSelectedDenom] = useState('All Denominations');
+  const [dailyManna, setDailyManna] = useState<any>(null);
 
   const { user: contextUser } = useApp();
   const user = propUser || contextUser;
@@ -38,9 +39,20 @@ export const FaithView: React.FC<{ user?: any; scope?: string }> = ({ user: prop
   useEffect(() => {
     if (view === 'feed') {
       setIsLoading(true);
+      fetchDailyManna();
       setTimeout(() => setIsLoading(false), 400);
     }
   }, [view, scope]);
+
+  const fetchDailyManna = async () => {
+    const { data } = await supabase
+      .from('daily_manna')
+      .select('*')
+      .order('date', { ascending: false })
+      .limit(1)
+      .single();
+    if (data) setDailyManna(data);
+  };
 
   const fetchChurches = async () => {
     setIsLoading(true);
@@ -68,9 +80,14 @@ export const FaithView: React.FC<{ user?: any; scope?: string }> = ({ user: prop
       <section className="faith-hero">
         <div className="hero-content">
           <Sparkles className="hero-icon" size={32} />
-          <h1 className="hero-title">Daily Inspiration</h1>
-          <p className="verse-text">"For I know the plans I have for you," declares the Lord, "plans to prosper you and not to harm you, plans to give you hope and a future."</p>
-          <span className="verse-ref">— Jeremiah 29:11</span>
+          <h1 className="hero-title">Daily Manna</h1>
+          <p className="verse-text">{dailyManna?.verse_text || '"For I know the plans I have for you," declares the Lord, "plans to prosper you and not to harm you, plans to give you hope and a future."'}</p>
+          <span className="verse-ref">— {dailyManna?.verse_reference || 'Jeremiah 29:11'}</span>
+          {dailyManna?.reflection && (
+            <p className="verse-reflection" style={{ marginTop: '16px', fontSize: '0.9rem', opacity: 0.9, fontStyle: 'italic' }}>
+              {dailyManna.reflection}
+            </p>
+          )}
         </div>
       </section>
 
