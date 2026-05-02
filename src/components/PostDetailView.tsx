@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Loader2, Send, ThumbsUp, ThumbsDown, MessageCircle, Repeat, Share2, Eye, Flag, X, MapPin, Sparkles, Bot } from 'lucide-react';
+import { ChevronLeft, Loader2, Send, ThumbsUp, ThumbsDown, MessageCircle, Share2, Eye, Flag, X, MapPin, Sparkles, Bot } from 'lucide-react';
 import { PostCard } from './PostCard';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
@@ -93,10 +93,17 @@ const CommentNode = ({
                 <button className="c-action-btn" onClick={() => onReply(comment)}>
                   <MessageCircle size={14} /> <span>Reply</span>
                 </button>
-                <button className="c-action-btn">
-                  <Repeat size={14} />
-                </button>
-                <button className="c-action-btn" title="Share">
+                <button className="c-action-btn" title="Share Comment" onClick={(e) => {
+                  e.stopPropagation();
+                  const url = `${window.location.origin}/?post=${comment.post_id}&comment=${comment.id}`;
+                  navigator.clipboard?.writeText(url).then(() => {
+                    const t = document.createElement('div');
+                    t.textContent = '✓ Link copied!';
+                    Object.assign(t.style, { position:'fixed', bottom:'80px', left:'50%', transform:'translateX(-50%)', background:'var(--primary)', color:'#fff', padding:'8px 18px', borderRadius:'24px', fontSize:'0.85rem', fontWeight:'600', zIndex:'9999' });
+                    document.body.appendChild(t);
+                    setTimeout(() => t.remove(), 2000);
+                  });
+                }}>
                   <Share2 size={14} />
                 </button>
                 {user && user.id !== comment.profile_id && (
@@ -318,8 +325,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
 
   const handleCommentVote = async (commentId: string, type: 1 | -1) => {
     if (!user) return;
-    // In a real app, this would use a comment_votes table
-    // For now, we'll increment local state to show the UI
+    // Optimistic UI update for instant feedback
     setComments((prev: any[]) => prev.map((c: any) => {
       if (c.id === commentId) {
         return {
@@ -330,6 +336,11 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
       }
       return c;
     }));
+    // Persist to DB (fire-and-forget, errors are non-critical)
+    const rpcName = type === 1 ? 'increment_comment_upvotes' : 'increment_comment_downvotes';
+    supabase.rpc(rpcName, { comment_id_val: commentId }).then(({ error }) => {
+      if (error) console.warn('Comment vote RPC failed:', error.message);
+    });
   };
 
   const handleDeleteComment = async (commentId: string) => {
@@ -384,8 +395,20 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
           hideCommentPreview={true} 
           onPollVote={() => fetchPostAndComments()}
           onDelete={() => onBack()}
-          onRepost={() => {}}
-          onShare={() => {}}
+          onRepost={async (postId) => {
+            if (!user) return;
+            await supabase.from('posts').insert({ profile_id: user.id, type: 'repost', original_post_id: postId, content: '' });
+            const t = document.createElement('div');
+            t.textContent = '\u2713 Reposted to your timeline';
+            Object.assign(t.style, { position:'fixed', bottom:'80px', left:'50%', transform:'translateX(-50%)', background:'var(--primary)', color:'#fff', padding:'10px 20px', borderRadius:'24px', fontSize:'0.9rem', fontWeight:'600', zIndex:'9999' });
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
+          }}
+          onShare={async (postId) => {
+            const url = `${window.location.origin}/?post=${postId}`;
+            if (navigator.share) { try { await navigator.share({ title: 'SETX 360', url }); } catch(e) {} }
+            else { await navigator.clipboard?.writeText(url); alert('Link copied!'); }
+          }}
           onNavigateToProfile={onNavigateToProfile}
         />
 

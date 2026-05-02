@@ -487,9 +487,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       alert("Please log in to repost.");
       return;
     }
-    if (!window.confirm("Repost this to your timeline?")) return;
     
-    // Increment reposts count (Optimistic or rely on DB depending on needs, but let's just insert here)
     const { error } = await supabase.from('posts').insert({
       profile_id: user.id,
       type: 'repost',
@@ -501,6 +499,18 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       console.error("Repost failed", error);
       alert("Failed to repost.");
     } else {
+      // Show a subtle toast instead of window.confirm for premium UX
+      const toastEl = document.createElement('div');
+      toastEl.textContent = '✓ Reposted to your timeline';
+      Object.assign(toastEl.style, {
+        position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)',
+        background: 'var(--primary)', color: '#fff', padding: '10px 20px',
+        borderRadius: '24px', fontSize: '0.9rem', fontWeight: '600',
+        zIndex: '9999', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        animation: 'fadeInUp 0.3s ease'
+      });
+      document.body.appendChild(toastEl);
+      setTimeout(() => toastEl.remove(), 2500);
       fetchContent();
     }
   };
@@ -519,9 +529,9 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
   const handleShare = async (postId: string) => {
     const shareData = {
-      title: 'Check out this post on Efutura',
-      text: 'Found something interesting on Efutura!',
-      url: `${window.location.origin}/post/${postId}`
+      title: 'Check out this post on SETX 360',
+      text: 'Found something interesting on SETX 360!',
+      url: `${window.location.origin}/?post=${postId}`
     };
 
     if (navigator.share && navigator.canShare?.(shareData)) {

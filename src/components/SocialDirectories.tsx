@@ -107,7 +107,7 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
               <div className="user-info">
                 <h4 className="user-name">{user.name}</h4>
                 <p className="user-handle">@{user.role || 'resident'}</p>
-                <span className="user-mutuals">{user.community || 'E Community'}</span>
+                <span className="user-mutuals">{user.community || 'SETX 360'}</span>
               </div>
               {currentUser?.id !== user.id && (
                 <button 
@@ -274,7 +274,7 @@ export const GroupDirectory: React.FC<{
               <div className="group-content">
                 <h4 className="group-name">{group.name}</h4>
                 <div className="group-meta">
-                  <Users size={14} /> <span>{joinedGroupsMap[group.id] ? 'Member' : 'Join today!'}</span>
+                  <Users size={14} /> <span>{group.member_count || 0} members · {joinedGroupsMap[group.id] ? 'Member ✓' : 'Join today!'}</span>
                 </div>
                 <button 
                   className={`join-btn ${joinedGroupsMap[group.id] ? 'joined' : ''}`}
