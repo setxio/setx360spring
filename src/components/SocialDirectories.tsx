@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Users, Unlock, Plus, Loader2 } from 'lucide-react';
+import { Search, UserPlus, Users, Unlock, Plus, Loader2, MessageCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 import { GroupCreationModal } from './GroupCreationModal';
 import { getAvatarUrl } from '../lib/utils';
 import './SocialDirectories.css';
@@ -11,6 +12,7 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+  const { startDirectMessage } = useApp();
 
   useEffect(() => {
     fetchInitialData();
@@ -110,13 +112,22 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
                 <span className="user-mutuals">{user.community || 'E Community'}</span>
               </div>
               {currentUser?.id !== user.id && (
-                <button 
-                  className={`follow-btn ${followingMap[user.id] ? 'following' : ''}`}
-                  onClick={() => handleFollow(user.id)}
-                  style={followingMap[user.id] ? { background: 'var(--bg-soft)', color: 'var(--text-muted)' } : {}}
-                >
-                  {followingMap[user.id] ? 'Following' : <><UserPlus size={16} /> Follow</>}
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    className={`follow-btn ${followingMap[user.id] ? 'following' : ''}`}
+                    onClick={() => handleFollow(user.id)}
+                    style={followingMap[user.id] ? { background: 'var(--bg-soft)', color: 'var(--text-muted)' } : {}}
+                  >
+                    {followingMap[user.id] ? 'Following' : <><UserPlus size={16} /> Follow</>}
+                  </button>
+                  <button 
+                    className="follow-btn"
+                    onClick={() => startDirectMessage(user.id, user.name, user.avatar_url)}
+                    style={{ background: 'var(--primary)', color: 'white' }}
+                  >
+                    <MessageCircle size={16} />
+                  </button>
+                </div>
               )}
             </div>
           ))

@@ -44,6 +44,8 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<any>(null);
+  const typingChannelRef = useRef<any>(null);
 
   const calculateAge = (m: number, d: number, y: number) => {
     if (!m || !d || !y) return 0;
@@ -66,31 +68,43 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     scrollToBottom();
   }, [allMessages, activeChatId, otherUserTyping]);
 
-  // Typing presence
+  // Typing presence channel management
   useEffect(() => {
-    if (!activeChatId || !user) return;
+    if (!activeChatId || !user) {
+      if (typingChannelRef.current) {
+        typingChannelRef.current.unsubscribe();
+        typingChannelRef.current = null;
+      }
+      return;
+    }
 
-    // Use a consistent channel name based on both user IDs so they both join the same channel
     const channelId = [user.id, activeChatId].sort().join('-');
     const channel = supabase.channel(`typing-${channelId}`, {
       config: { presence: { key: user.id } }
     })
     .on('presence', { event: 'sync' }, () => {
       const state = channel.presenceState();
-      // Check if the other user in this specific chat is typing
       const typing = Object.values(state).some((p: any) => 
         p[0]?.user_id === activeChatId && p[0]?.is_typing
       );
       setOtherUserTyping(typing);
-    })
-    .subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await channel.track({ user_id: user.id, is_typing: isTyping });
-      }
     });
 
-    return () => { channel.unsubscribe(); };
-  }, [activeChatId, isTyping, user]);
+    channel.subscribe();
+    typingChannelRef.current = channel;
+
+    return () => { 
+      channel.unsubscribe();
+      typingChannelRef.current = null;
+    };
+  }, [activeChatId, user]);
+
+  // Track typing state changes without re-subscribing
+  useEffect(() => {
+    if (typingChannelRef.current && typingChannelRef.current.state === 'joined') {
+      typingChannelRef.current.track({ user_id: user.id, is_typing: isTyping });
+    }
+  }, [isTyping, user.id]);
 
   useEffect(() => {
     fetchInitialData();
@@ -118,10 +132,19 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
 
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
+    
     if (!isTyping) {
       setIsTyping(true);
-      setTimeout(() => setIsTyping(false), 3000);
     }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      typingTimeoutRef.current = null;
+    }, 3000);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

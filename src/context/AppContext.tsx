@@ -37,6 +37,9 @@ interface AppContextType {
   updateUser: (data: any) => void;
   refreshUser: () => Promise<void>;
   isSetxDomain: boolean;
+  startDirectMessage: (profileId: string, name: string, avatar?: string) => void;
+  pendingDirectMessage: { id: string, name: string, avatar?: string } | null;
+  clearPendingDirectMessage: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -78,6 +81,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [pendingDirectMessage, setPendingDirectMessage] = useState<{ id: string, name: string, avatar?: string } | null>(null);
+
+  const startDirectMessage = (id: string, name: string, avatar?: string) => {
+    setPendingDirectMessage({ id, name, avatar });
+  };
+
+  const clearPendingDirectMessage = () => {
+    setPendingDirectMessage(null);
+  };
 
   // Persistence wrappers
   const setEnv = (val: Env) => {
@@ -320,7 +332,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await handleAuth(session.user);
       }
     },
-    isSetxDomain
+    isSetxDomain,
+    startDirectMessage,
+    pendingDirectMessage,
+    clearPendingDirectMessage
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
