@@ -61,7 +61,9 @@ import {
   Newspaper,
   AlertTriangle,
   Megaphone,
-  Bot
+  Bot,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
@@ -160,6 +162,40 @@ const App: React.FC = () => {
   const isInternalScroll = React.useRef(false);
   const isInitialized = React.useRef(false);
   const scrollTimeout = React.useRef<any>(null);
+
+  // Desktop Drag to scroll logic for switcher
+  const isDragging = React.useRef(false);
+  const startX = React.useRef(0);
+  const scrollLeft = React.useRef(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!envSwitcherRef.current) return;
+    isDragging.current = true;
+    startX.current = e.pageX - envSwitcherRef.current.offsetLeft;
+    scrollLeft.current = envSwitcherRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !envSwitcherRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - envSwitcherRef.current.offsetLeft;
+    const walk = (x - startX.current) * 2;
+    envSwitcherRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
+  const scrollSwitcher = (dir: 'left' | 'right') => {
+    if (!envSwitcherRef.current) return;
+    const amount = window.innerWidth > 600 ? 300 : 200;
+    envSwitcherRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
+  };
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
@@ -1026,14 +1062,26 @@ const App: React.FC = () => {
       {user && (
         <div className="env-switcher-footer">
           <div className="switcher-wrapper glass">
-            <div className="switcher-scroll" ref={envSwitcherRef} onScroll={() => {
-              handleSwitcherScroll();
-              // Verify scroll completion to update state if needed
-              if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-              scrollTimeout.current = setTimeout(() => {
-                isInternalScroll.current = false;
-              }, 100);
-            }}>
+            <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}>
+              <ChevronLeft size={20} />
+            </button>
+            
+            <div 
+              className="switcher-scroll" 
+              ref={envSwitcherRef} 
+              onMouseDown={handleMouseDown}
+              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              onScroll={() => {
+                handleSwitcherScroll();
+                // Verify scroll completion to update state if needed
+                if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+                scrollTimeout.current = setTimeout(() => {
+                  isInternalScroll.current = false;
+                }, 100);
+              }}
+            >
               {/* Invisible Spacer */}
               <div className="sw-btn spacer" aria-hidden="true" />
               
@@ -1071,6 +1119,10 @@ const App: React.FC = () => {
               {/* Spacer for centering last item */}
               <div className="sw-btn spacer" aria-hidden="true" />
             </div>
+
+            <button className="desktop-scroll-btn right" onClick={() => scrollSwitcher('right')}>
+              <ChevronRight size={20} />
+            </button>
           </div>
         </div>
       )}

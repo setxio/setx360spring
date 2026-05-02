@@ -109,6 +109,11 @@
   padding: 4px 0;
   gap: 0;
   -webkit-overflow-scrolling: touch;
+  cursor: grab;
+}
+
+.switcher-scroll:active {
+  cursor: grabbing;
 }
 
 .switcher-scroll::-webkit-scrollbar {
@@ -178,6 +183,45 @@
 
 .sw-btn.active svg {
   transform: translateY(-2px);
+}
+
+/* Desktop Scroll Buttons */
+.desktop-scroll-btn {
+  display: none; /* Hidden by default (mobile) */
+  background: transparent;
+  border: none;
+  color: var(--text);
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0 8px;
+  height: 100%;
+  transition: opacity 0.2s, background 0.2s;
+  z-index: 10;
+}
+
+.desktop-scroll-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.desktop-scroll-btn.left {
+  border-right: 1px solid var(--border);
+  border-top-left-radius: 30px;
+  border-bottom-left-radius: 30px;
+}
+
+.desktop-scroll-btn.right {
+  border-left: 1px solid var(--border);
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
+}
+
+@media (min-width: 768px) {
+  .desktop-scroll-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* Top 4-Way Notch Placeholder */
