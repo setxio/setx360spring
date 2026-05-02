@@ -591,8 +591,6 @@ const App: React.FC = () => {
     }
 
 
-      );
-    }
     
     // Group detail view
     if (activeGroupId && (env === 'social' || env === 'discover')) {
