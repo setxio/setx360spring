@@ -271,22 +271,21 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       const isSETX = theme.startsWith('setx-');
 
       if (scope === 'national') {
-        // National View: Show National posts + EVERYTHING else (it's the broadest view)
-        // No filter needed on visibility_scope if we want to see everything
+        // National View: Show EVERYTHING (broadest view)
       } else if (scope === 'state' && user.state) {
         // State View: State/County/City Posts for this state OR National Posts
-        query = query.or(`author_state.eq.${user.state},visibility_scope.eq.national`);
+        query = query.or(`author_state.eq."${user.state}",visibility_scope.eq.national`);
       } else if (scope === 'county') {
         if (isSETX) {
-          // SETX Region View: Jefferson & Orange Counties ONLY (Include all city/county posts in these areas)
-          query = query.or(`author_county.in.("Jefferson","Orange","Jefferson County","Orange County")`);
+          // SETX Region View: Jefferson & Orange Counties ONLY
+          query = query.or('author_county.in.("Jefferson","Orange","Jefferson County","Orange County")');
         } else if (user.county) {
           // Standard County View: Show County/City posts for this county + State/National
-          query = query.or(`author_county.eq.${user.county},and(visibility_scope.eq.state,author_state.eq.${user.state}),visibility_scope.eq.national`);
+          query = query.or(`author_county.eq."${user.county}",and(visibility_scope.eq.state,author_state.eq."${user.state}"),visibility_scope.eq.national`);
         }
       } else if (scope === 'city' && user.community) {
-        // City View: City Posts (this city) OR County (this county) OR State (this state) OR National
-        query = query.or(`and(visibility_scope.eq.city,author_community.eq.${user.community}),and(visibility_scope.eq.county,author_county.eq.${user.county}),and(visibility_scope.eq.state,author_state.eq.${user.state}),visibility_scope.eq.national`);
+        // City View: Hierarchical trickle-down
+        query = query.or(`and(visibility_scope.eq.city,author_community.eq."${user.community}"),and(visibility_scope.eq.county,author_county.eq."${user.county}"),and(visibility_scope.eq.state,author_state.eq."${user.state}"),visibility_scope.eq.national`);
       }
     }
 
