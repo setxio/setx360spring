@@ -207,28 +207,28 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
               </div>
               
               <div className="trending-bubbles-grid">
-                <div className="trending-bubble-card" onClick={() => onNavigate?.('market', 2)}>
+                <div className="trending-bubble-card" onClick={() => { onClose(); onNavigate?.('market', 2); }}>
                   <div className="bubble-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><Store size={22} /></div>
                   <div className="bubble-text">
                     <span className="bubble-title">Nearby Stores</span>
                     <span className="bubble-desc">Shop local gems</span>
                   </div>
                 </div>
-                <div className="trending-bubble-card" onClick={() => onNavigate?.('social', 2)}>
+                <div className="trending-bubble-card" onClick={() => { onClose(); onNavigate?.('social', 2); }}>
                   <div className="bubble-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}><User size={22} /></div>
                   <div className="bubble-text">
                     <span className="bubble-title">Discover People</span>
                     <span className="bubble-desc">Build your network</span>
                   </div>
                 </div>
-                <div className="trending-bubble-card" onClick={() => onNavigate?.('discover', 4)}>
+                <div className="trending-bubble-card" onClick={() => { onClose(); onNavigate?.('discover', 4); }}>
                   <div className="bubble-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Map size={22} /></div>
                   <div className="bubble-text">
                     <span className="bubble-title">Alert Radar</span>
                     <span className="bubble-desc">Real-time safety</span>
                   </div>
                 </div>
-                <div className="trending-bubble-card" onClick={() => onNavigate?.('market', 0)}>
+                <div className="trending-bubble-card" onClick={() => { onClose(); onNavigate?.('market', 0); }}>
                   <div className="bubble-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><ShoppingBag size={22} /></div>
                   <div className="bubble-text">
                     <span className="bubble-title">Hot Deals</span>
@@ -331,9 +331,9 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
                 </section>
               )}
 
-              {Object.values(results).every((arr: any) => !arr || arr.length === 0) && (
+              {getTotalResults() === 0 && (
                 <div className="search-empty">
-                  <p>No results found for "{query}"</p>
+                  <p>No results found for "{query}" {activeTab !== 'all' ? `in ${activeTab}` : ''}</p>
                 </div>
               )}
             </div>
