@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
+import { useApp } from '../context/AppContext';
 import { X, Send, Loader2, Minimize2 } from 'lucide-react';
 import './GlobalChatBubbles.css';
 
@@ -29,6 +30,9 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+  const [isTyping, setIsTyping] = useState(false);
+  const { onlineUsers } = useApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,7 +58,36 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
     if (expandedChatId) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [sessions, expandedChatId]);
+  }, [sessions, expandedChatId, typingUsers]);
+
+  // Typing presence for the expanded chat
+  useEffect(() => {
+    if (!expandedChatId || !user) return;
+
+    const channelId = [user.id, expandedChatId].sort().join('-');
+    const channel = supabase.channel(`typing-${channelId}`, {
+      config: { presence: { key: user.id } }
+    })
+    .on('presence', { event: 'sync' }, () => {
+      const state = channel.presenceState();
+      const typing = Object.values(state).some((p: any) => 
+        p[0]?.user_id === expandedChatId && p[0]?.is_typing
+      );
+      setTypingUsers(prev => {
+        const newSet = new Set(prev);
+        if (typing) newSet.add(expandedChatId);
+        else newSet.delete(expandedChatId);
+        return newSet;
+      });
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.track({ user_id: user.id, is_typing: isTyping });
+      }
+    });
+
+    return () => { channel.unsubscribe(); };
+  }, [expandedChatId, isTyping, user]);
 
   const handleIncomingMessage = async (message: Message) => {
     const senderId = message.sender_id;
@@ -165,6 +198,10 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
   const handleInputChange = (profileId: string, value: string) => {
     setInputValues(prev => ({ ...prev, [profileId]: value }));
+    if (!isTyping) {
+      setIsTyping(true);
+      setTimeout(() => setIsTyping(false), 3000);
+    }
   };
 
   if (!user || Object.keys(sessions).length === 0) return null;
@@ -181,6 +218,9 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
             <div className="bubble-head" onClick={() => toggleExpand(session.profileId)}>
               <div className="avatar-wrapper">
                 <Avatar name={session.name} url={session.avatar_url} size={48} />
+                {onlineUsers.has(session.profileId) && (
+                  <span className="global-online-indicator" title="Online"></span>
+                )}
                 {session.unread > 0 && !isExpanded && (
                   <span className="unread-badge">{session.unread}</span>
                 )}
@@ -195,8 +235,20 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
               <div className="mini-chat-window glass slide-up">
                 <div className="mini-chat-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Avatar name={session.name} url={session.avatar_url} size={28} />
-                    <span className="mini-chat-name">{session.name}</span>
+                    <div style={{ position: 'relative' }}>
+                      <Avatar name={session.name} url={session.avatar_url} size={28} />
+                      {onlineUsers.has(session.profileId) && (
+                        <span className="global-online-indicator" title="Online" style={{ width: 8, height: 8, bottom: 0, right: 0 }}></span>
+                      )}
+                    </div>
+                    <div className="mini-chat-info-stack">
+                      <span className="mini-chat-name">{session.name}</span>
+                      {typingUsers.has(session.profileId) ? (
+                        <span className="global-typing-text">typing...</span>
+                      ) : onlineUsers.has(session.profileId) ? (
+                        <span className="global-online-text">Active now</span>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="mini-chat-actions">
                     <button onClick={() => toggleExpand(session.profileId)}><Minimize2 size={16} /></button>
@@ -215,6 +267,15 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
                       </div>
                     );
                   })}
+                  {typingUsers.has(session.profileId) && (
+                    <div className="mini-bubble-wrapper received">
+                      <div className="typing-indicator-bubble mini-bubble">
+                        <div className="typing-dot" />
+                        <div className="typing-dot" />
+                        <div className="typing-dot" />
+                      </div>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 

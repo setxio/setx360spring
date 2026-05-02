@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 import { EmptyState } from './EmptyState';
+import { useApp } from '../context/AppContext';
 import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
 import './MessagesView.css';
 
@@ -39,6 +40,8 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
+  const { onlineUsers } = useApp();
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,11 +70,14 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   useEffect(() => {
     if (!activeChatId || !user) return;
 
-    const channel = supabase.channel(`typing-${activeChatId}`, {
+    // Use a consistent channel name based on both user IDs so they both join the same channel
+    const channelId = [user.id, activeChatId].sort().join('-');
+    const channel = supabase.channel(`typing-${channelId}`, {
       config: { presence: { key: user.id } }
     })
     .on('presence', { event: 'sync' }, () => {
       const state = channel.presenceState();
+      // Check if the other user in this specific chat is typing
       const typing = Object.values(state).some((p: any) => 
         p[0]?.user_id === activeChatId && p[0]?.is_typing
       );
@@ -332,7 +338,12 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
                 className={`conversation-item ${activeChatId === conv.otherId ? 'active' : ''}`}
                 onClick={() => setActiveChatId(conv.otherId)}
               >
-                <Avatar name={conv.name} url={conv.avatar} size={48} />
+                <div style={{ position: 'relative' }}>
+                  <Avatar name={conv.name} url={conv.avatar} size={48} />
+                  {onlineUsers.has(conv.otherId) && (
+                    <span className="online-indicator" title="Online"></span>
+                  )}
+                </div>
                 <div className="conversation-info">
                   <div className="conv-header-row">
                     <span className="conv-name">{conv.name}</span>
@@ -365,8 +376,20 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
               </button>
               {activeConversation && (
                 <>
-                  <Avatar name={activeConversation.name} url={activeConversation.avatar} size={40} />
-                  <span className="chat-user-name">{activeConversation.name}</span>
+                  <div style={{ position: 'relative' }}>
+                    <Avatar name={activeConversation.name} url={activeConversation.avatar} size={40} />
+                    {onlineUsers.has(activeConversation.otherId) && (
+                      <span className="online-indicator" title="Online" style={{ width: 10, height: 10, bottom: 2, right: 2 }}></span>
+                    )}
+                  </div>
+                  <div className="chat-user-info-stack">
+                    <span className="chat-user-name">{activeConversation.name}</span>
+                    {otherUserTyping ? (
+                      <span className="typing-status-text">typing...</span>
+                    ) : onlineUsers.has(activeConversation.otherId) ? (
+                      <span className="online-status-text">Active now</span>
+                    ) : null}
+                  </div>
                 </>
               )}
             </div>

@@ -216,6 +216,42 @@
   color: white;
 }
 
+/* Online & Typing Indicators for Global Bubbles */
+.global-online-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  background-color: #10b981;
+  border: 2px solid var(--bg);
+  border-radius: 50%;
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.mini-chat-info-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.global-online-text {
+  font-size: 0.7rem;
+  color: #10b981;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.global-typing-text {
+  font-size: 0.7rem;
+  color: var(--primary);
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1;
+  animation: pulse-opacity 1.5s infinite;
+}
+
 @media (max-width: 768px) {
   .global-bubbles-container {
     bottom: 80px;

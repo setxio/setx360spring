@@ -379,6 +379,50 @@
   40% { transform: translateY(-6px); }
 }
 
+/* Online & Typing Indicators */
+.online-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 4px;
+  width: 14px;
+  height: 14px;
+  background-color: #10b981; /* Emerald green */
+  border: 2px solid var(--bg);
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.chat-user-info-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.online-status-text {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.typing-status-text {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+  font-style: italic;
+  animation: pulse-opacity 1.5s infinite;
+}
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Make sure Avatar wrapper isn't cutting off the absolute indicator */
+.conversation-item .avatar-container {
+  overflow: visible !important;
+}
+
 @media (max-width: 768px) {
   .messages-layout {
     height: calc(100vh - 100px);

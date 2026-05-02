@@ -26,6 +26,7 @@ interface AppContextType {
   unreadCount: number;
   isLoading: boolean;
   isSearchOpen: boolean;
+  onlineUsers: Set<string>;
   setIsSearchOpen: (open: boolean) => void;
   setEnv: (env: Env) => void;
   setTheme: (theme: Theme) => void;
@@ -54,6 +55,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   // Persistence wrappers
   const setEnv = (val: Env) => {
@@ -232,6 +234,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user]);
 
+  // Online Presence Sync
+  useEffect(() => {
+    if (user) {
+      const presenceChannel = supabase.channel('global-online-presence', {
+        config: { presence: { key: user.id } }
+      });
+
+      presenceChannel.on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const activeIds = new Set<string>();
+        Object.keys(state).forEach(key => activeIds.add(key));
+        setOnlineUsers(activeIds);
+      });
+
+      presenceChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({ online_at: new Date().toISOString() });
+        }
+      });
+
+      return () => { supabase.removeChannel(presenceChannel); };
+    } else {
+      setOnlineUsers(new Set());
+    }
+  }, [user]);
+
   // Sync data-env/theme attributes
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -247,6 +275,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     unreadCount,
     isLoading,
     isSearchOpen,
+    onlineUsers,
     setIsSearchOpen,
     setEnv,
     setTheme,
