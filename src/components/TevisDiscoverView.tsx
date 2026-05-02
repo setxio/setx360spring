@@ -12,14 +12,13 @@ import {
   Clock,
   Trash2
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import './TevisDiscoverView.css';
 
 interface TevisDiscoverViewProps {
   user: any;
 }
 
-export const TevisDiscoverView: React.FC<TevisDiscoverViewProps> = ({ user }) => {
+export const TevisDiscoverView: React.FC<TevisDiscoverViewProps> = () => {
   const [activeView, setActiveView] = useState<'history' | 'settings'>('history');
   const [conversations, setConversations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

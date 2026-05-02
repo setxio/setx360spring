@@ -68,7 +68,7 @@ export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments, onComm
             >
               {currentComment.profiles?.name || 'Anonymous'}
               {currentComment.profiles?.email?.includes('setxplatform+') && (
-                <Bot size={12} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: '4px', display: 'inline' }} title="AI Bot" />
+                <Bot size={12} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: '4px', display: 'inline' }} />
               )}
             </span>
             <p className="comment-text">{currentComment.content}</p>

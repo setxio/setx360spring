@@ -67,7 +67,7 @@ const CommentNode = ({
               >
                 {comment.profiles?.name}
                 {comment.profiles?.email?.includes('setxplatform+') && (
-                  <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: '4px', display: 'inline' }} title="AI Bot" />
+                  <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: '4px', display: 'inline' }} />
                 )}
               </span>
               {comment.profiles?.community && (

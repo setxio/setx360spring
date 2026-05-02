@@ -121,7 +121,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             >
               {contentPost.author?.name || 'E User'}
               {contentPost.author?.is_verified && <ShieldCheck size={14} className="verified-tick" style={{ marginLeft: 4, display: 'inline' }} />}
-              {contentPost.author?.email?.includes('setxplatform+') && <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: 4, display: 'inline' }} title="AI Bot" />}
+              {contentPost.author?.email?.includes('setxplatform+') && <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: 4, display: 'inline' }} />}
             </h4>
             <div className="post-meta">
               <span className="post-date">
