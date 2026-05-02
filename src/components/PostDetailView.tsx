@@ -157,6 +157,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTevisThinking, setIsTevisThinking] = useState(false);
 
   useEffect(() => {
     fetchPostAndComments();
@@ -173,8 +174,12 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
           table: 'comments',
           filter: `post_id=eq.${postId}`
         },
-        () => {
-          fetchPostAndComments(); // Refresh list when a new comment arrives
+        (payload) => {
+          // If the new comment is from Tevis, stop the thinking indicator
+          if (payload.new.profile_id === 'bc1216fe-057f-4fed-8555-8c0e66ed29d3') {
+            setIsTevisThinking(false);
+          }
+          refreshCommentsOnly(); // Silent refresh
         }
       )
       .subscribe();
@@ -203,6 +208,25 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
       }, 500);
     }
   }, [isLoading, highlightCommentId]);
+
+  const refreshCommentsOnly = async () => {
+    const { data: commentsData } = await supabase
+      .from('comments')
+      .select(`
+        *,
+        profiles!comments_profile_id_fkey (
+          id,
+          name,
+          avatar_url,
+          role,
+          community
+        )
+      `)
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+
+    if (commentsData) setComments(commentsData);
+  };
 
   const fetchPostAndComments = async () => {
     setIsLoading(true);
@@ -248,59 +272,41 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
     setPost(postData);
 
     // Fetch Comments
-    const { data: commentsData } = await supabase
-      .from('comments')
-      .select(`
-        *,
-        profiles!comments_profile_id_fkey (
-          id,
-          name,
-          avatar_url,
-          role,
-          community
-        )
-      `)
-      .eq('post_id', postId)
-      .order('created_at', { ascending: true });
-
-    setComments(commentsData || []);
+    await refreshCommentsOnly();
     setIsLoading(false);
   };
 
   const handlePostComment = async () => {
-    if (!newComment.trim() || !user) return;
-
+    if (!newComment.trim()) return;
+    
     setIsSubmitting(true);
-    setError(null);
-
+    const isSummoningTevis = newComment.toLowerCase().includes('@tevis');
+    
     const { error: submitError } = await supabase
       .from('comments')
       .insert({
         post_id: postId,
         profile_id: user.id,
-        content: newComment.trim(),
+        content: newComment,
         parent_id: replyTo?.id || null
       });
 
     if (submitError) {
-      console.error('Error submitting comment:', submitError);
+      console.error('Error posting comment:', submitError);
       setError(submitError.message);
       setIsSubmitting(false);
-      return;
+    } else {
+      setNewComment('');
+      setReplyTo(null);
+      if (isSummoningTevis) {
+        setIsTevisThinking(true);
+        // Auto-refresh fallback after 10 seconds if realtime fails or Gemini is slow
+        setTimeout(() => setIsTevisThinking(false), 10000);
+      }
+      // fetchPostAndComments() is NOT needed here because the Realtime subscription 
+      // will trigger refreshCommentsOnly() as soon as the database insert is complete.
+      setIsSubmitting(false);
     }
-
-    setNewComment('');
-    setReplyTo(null);
-    
-    try {
-      // Increment comment count
-      await supabase.rpc('increment_post_comments', { post_id_val: postId });
-    } catch (e) {
-      console.error('RPC failed:', e);
-    }
-
-    fetchPostAndComments();
-    setIsSubmitting(false);
   };
 
   const handleCommentVote = async (commentId: string, type: 1 | -1) => {
@@ -380,7 +386,13 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
           <h3 className="comments-title">Comments ({comments.length})</h3>
           
           <div className="comments-list">
-            {comments.length === 0 ? (
+            {isTevisThinking && (
+              <div className="tevis-thinking-indicator animate-pulse">
+                <Sparkles size={16} color="var(--primary)" />
+                <span>Tevis is researching and typing...</span>
+              </div>
+            )}
+            {comments.length === 0 && !isTevisThinking ? (
               <div className="empty-comments">
                 <p>No comments yet. Start the conversation!</p>
               </div>
