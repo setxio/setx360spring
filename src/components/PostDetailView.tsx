@@ -223,6 +223,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
         )
       `)
       .eq('post_id', postId)
+      .order('priority', { ascending: false })
       .order('created_at', { ascending: true });
 
     if (commentsData) setComments(commentsData);

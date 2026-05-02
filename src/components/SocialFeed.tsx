@@ -159,9 +159,13 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
     // DEFAULT SORT: HOT vs LATEST
     if (!filterUserId && (activeCategory === 'Hot' || activeCategory === 'Everybody')) {
-      query = query.is('group_id', null).order('hot_score', { ascending: false });
+      query = query.is('group_id', null)
+        .order('priority', { ascending: false })
+        .order('hot_score', { ascending: false });
     } else {
-      query = query.order('created_at', { ascending: false });
+      query = query
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false });
     }
 
     // APPLY PROFILE FILTER OR CATEGORY MAPPING

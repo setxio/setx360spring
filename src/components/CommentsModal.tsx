@@ -134,6 +134,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
         )
       `)
       .eq('post_id', postId)
+      .order('priority', { ascending: false })
       .order('created_at', { ascending: true });
 
     if (error) {
