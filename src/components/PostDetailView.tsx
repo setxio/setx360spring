@@ -4,6 +4,7 @@ import { PostCard } from './PostCard';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
 import { formatText } from '../utils/textFormatting';
+import { formatRelativeTime } from '../utils/dateUtils';
 import { FlagContentModal } from './FlagContentModal';
 import './PostDetailView.css';
 
@@ -73,7 +74,7 @@ const CommentNode = ({
                 </span>
               )}
               <span className="comment-date">
-                {new Date(comment.created_at).toLocaleDateString()}
+                {formatRelativeTime(comment.created_at)}
               </span>
             </div>
             <p className="comment-text">{formatText(comment.content)}</p>

@@ -10,6 +10,7 @@ import { FlagContentModal } from './FlagContentModal';
 import { getCommunityNotes } from '../lib/communityNotes';
 import { OptimizedImage } from './OptimizedImage';
 import { formatText } from '../utils/textFormatting';
+import { formatRelativeTime } from '../utils/dateUtils';
 import { PostStatsModal } from './PostStatsModal';
 import './PostCard.css';
 
@@ -123,7 +124,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             </h4>
             <div className="post-meta">
               <span className="post-date">
-                {new Date(contentPost.created_at).toLocaleDateString()}
+                {formatRelativeTime(contentPost.created_at)}
               </span>
               {contentPost.location && (
                 <span className="post-location">

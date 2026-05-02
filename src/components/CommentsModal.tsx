@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Send, Loader2 } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
+import { formatRelativeTime } from '../utils/dateUtils';
 import './CommentsModal.css';
 
 interface CommentsModalProps {
@@ -51,7 +52,7 @@ const SimpleCommentNode = ({ comment, onReply, depth = 0 }: any) => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{comment.profiles?.name || 'User'}</span>
             <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-              {new Date(comment.created_at).toLocaleDateString()}
+              {formatRelativeTime(comment.created_at)}
             </span>
           </div>
           <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-light)', lineHeight: 1.4, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
