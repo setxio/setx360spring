@@ -45,9 +45,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const isSetxDomain = hostname.includes('setx360.com') || hostname.includes('setx360spring') || hostname.includes('project-xjdn2');
 
-  const [env, setEnvState] = useState<Env>(() => (localStorage.getItem('ecity_env') as Env) || 'social');
+  const [env, setEnvState] = useState<Env>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlEnv = params.get('env') as Env;
+      if (urlEnv) {
+        localStorage.setItem('ecity_env', urlEnv);
+        return urlEnv;
+      }
+    }
+    return (localStorage.getItem('ecity_env') as Env) || 'social';
+  });
+
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('ecity_theme') as Theme) || 'setx-dark');
-  const [activeTab, setActiveTabState] = useState(() => Number(localStorage.getItem('ecity_tab')) || 0);
+  
+  const [activeTab, setActiveTabState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab');
+      if (urlTab !== null) {
+        localStorage.setItem('ecity_tab', urlTab);
+        return Number(urlTab);
+      }
+    }
+    return Number(localStorage.getItem('ecity_tab')) || 0;
+  });
   const [scope, setScopeState] = useState<Scope>(() => {
     return (localStorage.getItem('ecity_scope') as Scope) || 'county';
   });
@@ -260,11 +282,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user]);
 
-  // Sync data-env/theme attributes
+  // Sync data-env/theme attributes and URL
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-env', env);
-  }, [theme, env]);
+    
+    // Update URL without reloading
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('env', env);
+      url.searchParams.set('tab', activeTab.toString());
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [theme, env, activeTab]);
 
   const value = {
     user,

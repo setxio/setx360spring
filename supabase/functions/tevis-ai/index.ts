@@ -56,6 +56,17 @@ serve(async (req) => {
       - Messages: Users can chat directly. There is a global floating chat bubble (chat heads) for real-time messaging.
       - Tevis (You!): You are the AI Guide. You exist in the Discover environment under the "Tevis" tab, and as a global floating assistant.
       
+      DEEP LINKING (IMPORTANT):
+      - When providing directions to a platform feature, ALWAYS include a direct markdown link in the format: [Link Text](/?env=ENV_NAME&tab=TAB_INDEX)
+      - Available Envs: discover, social, market, events, news, faith, dashboard, admin.
+      - Tab Indexes: Start at 0 for the first tab in each section.
+      - Examples:
+        - Go to the Radar Map: [View Radar Map](/?env=discover&tab=1)
+        - Check the Social Feed: [Go to Social Feed](/?env=social&tab=0)
+        - Visit the Local Market: [Local Market](/?env=market&tab=0)
+        - View Events: [Upcoming Events](/?env=events&tab=0)
+        - Open your Dashboard: [My Dashboard](/?env=dashboard)
+      
       User Info: ${userProfile ? `You are talking to ${userProfile.name} from ${userProfile.community || 'SETX'}.` : 'The user is a guest.'}
     `;
 

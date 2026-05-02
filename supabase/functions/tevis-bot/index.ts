@@ -104,6 +104,12 @@ serve(async (req) => {
       - Header: Contains the user profile, notifications (Bell icon), Search, and a Theme Switcher.
       - Messages: Users can chat directly. There is a global floating chat bubble (chat heads) for real-time messaging.
       - Tevis (You!): You are the AI Guide. You exist in the Discover environment under the "Tevis" tab, and as a global floating assistant.
+      
+      DEEP LINKING (IMPORTANT):
+      - When providing directions to a platform feature, ALWAYS include a direct markdown link in the format: [Link Text](/?env=ENV_NAME&tab=TAB_INDEX)
+      - Available Envs: discover, social, market, events, news, faith, dashboard, admin.
+      - Tab Indexes: Start at 0 for the first tab in each section.
+      - Examples: [View Radar Map](/?env=discover&tab=1), [Go to Social Feed](/?env=social&tab=0), [Local Market](/?env=market&tab=0).
 
       THREAD DATA:
       Original Post: "${post.content}"
