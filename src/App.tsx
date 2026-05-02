@@ -903,9 +903,12 @@ const App: React.FC = () => {
         <SearchOverlay 
           isOpen={isSearchOpen} 
           onClose={() => setIsSearchOpen(false)}
-          onNavigate={(newEnv, newTab) => {
+          onNavigate={(newEnv, newTab, params) => {
             setEnv(newEnv as any);
             setActiveTab(newTab);
+            if (params?.userId) setActiveProfileId(params.userId);
+            if (params?.storeId) setActiveStoreId(params.storeId);
+            if (params?.postId) { setActivePostId(params.postId); setActiveCommentId(null); }
           }}
           scope={scope}
           user={user}

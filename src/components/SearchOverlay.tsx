@@ -120,13 +120,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
 
     switch (type) {
       case 'profiles':
-        onNavigate('social', 8, { userId: item.id }); // Fixed: Profile tab is index 8
+        onNavigate('social', 2, { userId: item.id }); // Route to directory as base, then open profile
         break;
       case 'posts':
-        onNavigate('social', 0); // Home/Feed
+        onNavigate('social', 0, { postId: item.id }); // Home/Feed as base, then open post
         break;
       case 'stores':
-        onNavigate('market', 2); // Stores directory
+        onNavigate('market', 2, { storeId: item.id }); // Stores directory as base, then open store
         break;
       case 'products':
         onNavigate('market', 0); // Market home
