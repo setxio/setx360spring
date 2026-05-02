@@ -88,6 +88,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. GEO-AWARE TRENDING VIEW
+DROP VIEW IF EXISTS public.trending_content;
 CREATE OR REPLACE VIEW public.trending_content AS
 SELECT 
     p.id, 

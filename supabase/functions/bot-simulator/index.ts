@@ -36,12 +36,26 @@ serve(async (req) => {
     // 2. Pick a random author
     const authorBot = bots[Math.floor(Math.random() * bots.length)];
     
-    // 3. Generate a Sci-Fi Post using Gemini
+    // 3. Select a content category for variety
+    const contentTypes = [
+      "Community News: Share a short update about a local event, school board meeting, or community project in Southeast Texas (Jefferson, Orange, Hardin, or Jasper counties).",
+      "Helpful Tip: Share a useful tip for locals (e.g., best place for gumbo, traffic warnings, weather prep, or a hidden gem in the region).",
+      "Fun Goofy Story: Tell a short, humorous story about daily life in Southeast Texas (e.g., giant mosquitoes, humidity struggles, or a local legend).",
+      "Futuristic SETX: A sci-fi take on Southeast Texas (plasma plants, hoverboats in the marshes, etc.), but keep it grounded in local culture."
+    ];
+    const selectedType = contentTypes[Math.floor(Math.random() * contentTypes.length)];
+
     const prompt = `
-      You are generating content for a futuristic, sci-fi version of a social media platform based in Jefferson County, Texas.
+      You are generating content for SETX 360, a social media platform for Southeast Texas.
       Write a short, engaging social media post (1-3 sentences) from the perspective of a resident named "${authorBot.name}" who lives in "${authorBot.community}, Texas".
-      The post should blend futuristic/sci-fi elements (hover cars, neon lights, spaceports, androids, energy fields) with real locations or vibes from Southeast Texas (e.g., the Neches River, oil refineries turned into plasma plants, humidity, Spindletop dome, Gulf Coast).
-      Do not include hashtags. Keep it conversational.
+      
+      CATEGORY: ${selectedType}
+      
+      STRICT RULES:
+      - Stay focused on Southeast Texas culture and locations.
+      - Be conversational, authentic, and regional.
+      - CONTEXT: Cory Crenshaw is a local figure often called "Snack". ONLY reference this if it is highly relevant and funny; otherwise, avoid it to prevent repetition.
+      - Do not include hashtags.
     `;
 
     const generateAIResponse = async (promptText: string) => {
@@ -89,9 +103,10 @@ serve(async (req) => {
       potentialCommenters.splice(commenterIndex, 1);
 
       const commentPrompt = `
-        You are "${commenter.name}" living in "${commenter.community}, Texas" in a futuristic sci-fi timeline.
+        You are "${commenter.name}" living in "${commenter.community}, Texas".
         Reply to the following social media post with a short, conversational comment (1-2 sentences). 
         Original Post: "${postContent}"
+        CONTEXT: Cory Crenshaw is a local figure often called "Snack". ONLY reference this if the original post mentions it or if it is highly relevant.
       `;
 
       const commentContent = await generateAIResponse(commentPrompt);

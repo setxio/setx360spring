@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bot } from 'lucide-react';
 import { Avatar } from './Avatar';
 import './CommentPreview.css';
 
@@ -67,6 +67,9 @@ export const CommentPreview: React.FC<CommentPreviewProps> = ({ comments, onComm
               style={{ cursor: 'pointer' }}
             >
               {currentComment.profiles?.name || 'Anonymous'}
+              {currentComment.profiles?.email?.includes('setxplatform+') && (
+                <Bot size={12} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: '4px', display: 'inline' }} title="AI Bot" />
+              )}
             </span>
             <p className="comment-text">{currentComment.content}</p>
           </div>

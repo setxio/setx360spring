@@ -83,7 +83,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         country,
         is_public,
         is_verified,
-        birth_year
+        birth_year,
+        email
       ),
       original_post:original_post_id (
         *,
@@ -99,7 +100,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           country,
           is_public,
           is_verified,
-          birth_year
+          birth_year,
+          email
         ),
         comments:comments (
           id,
@@ -108,7 +110,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           profiles:profile_id (
             id,
             name,
-            avatar_url
+            avatar_url,
+            email
           )
         )
       ),
@@ -119,7 +122,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         profiles:profile_id (
           id,
           name,
-          avatar_url
+          avatar_url,
+          email
         )
       )
     `;
@@ -249,23 +253,36 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
                    .order('created_at', { ascending: false });
     }
     else if (activeCategory === 'Emergency') {
-      // Emergency mode — bypass geo scope, show all official + community alerts
+      // Emergency mode — isolate emergencies based on environment
       query = supabase
         .from('posts')
         .select(selectString)
         .in('ai_category', ['official_alert', 'community_alert'])
-        .neq('moderation_status', 'hidden')
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .neq('moderation_status', 'hidden');
+        
+      if (theme.startsWith('setx-')) {
+        query = query.or('author_county.in.("Jefferson","Orange","Hardin","Jasper","Jefferson County","Orange County","Hardin County","Jasper County")');
+      } else if (user?.state) {
+        query = query.eq('author_state', user.state);
+      }
+      
+      query = query.order('created_at', { ascending: false }).limit(50);
     }
 
     // Check for any active alerts in last 24h (drives Emergency chip pulse)
-    const { data: activeAlerts } = await supabase
+    let alertQuery = supabase
       .from('posts')
       .select('id')
       .in('ai_category', ['official_alert', 'community_alert'])
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .limit(1);
+      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+      
+    if (theme.startsWith('setx-')) {
+      alertQuery = alertQuery.or('author_county.in.("Jefferson","Orange","Hardin","Jasper","Jefferson County","Orange County","Hardin County","Jasper County")');
+    } else if (user?.state) {
+      alertQuery = alertQuery.eq('author_state', user.state);
+    }
+    
+    const { data: activeAlerts } = await alertQuery.limit(1);
     setHasActiveAlert(!!(activeAlerts && activeAlerts.length > 0));
 
     // 1b. APPLY HIERARCHICAL GEOGRAPHIC SCOPE FILTERING (Trickle-Down Logic)
@@ -281,8 +298,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         query = query.or(`author_state.eq."${user.state}",visibility_scope.eq.national`);
       } else if (scope === 'county') {
         if (isSETX) {
-          // SETX Region View: Jefferson & Orange Counties ONLY
-          query = query.or('author_county.in.("Jefferson","Orange","Jefferson County","Orange County")');
+          // SETX Region View: Jefferson, Orange, Hardin & Jasper Counties
+          query = query.or('author_county.in.("Jefferson","Orange","Hardin","Jasper","Jefferson County","Orange County","Hardin County","Jasper County")');
         } else if (user.county) {
           // Standard County View: Show County/City posts for this county + State/National
           query = query.or(`author_county.eq."${user.county}",and(visibility_scope.eq.state,author_state.eq."${user.state}"),visibility_scope.eq.national`);

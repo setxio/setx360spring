@@ -69,7 +69,7 @@ BEGIN
     UPDATE public.posts 
     SET 
         type = new_type,
-        ai_metadata = metadata
+        metadata = metadata
     WHERE id = post_id_val 
     AND type = 'post'; -- Only upgrade generic posts
 END;

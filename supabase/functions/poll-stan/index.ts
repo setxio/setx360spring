@@ -70,9 +70,6 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // TEMPORARILY DISABLED BY REQUEST
-    return new Response(JSON.stringify({ success: true, message: 'STAN Polling temporarily disabled' }), { headers: { 'Content-Type': 'application/json' } });
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     // Get bot account

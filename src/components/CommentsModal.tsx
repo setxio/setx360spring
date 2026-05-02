@@ -110,7 +110,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
           filter: `post_id=eq.${postId}`
         },
         () => {
-          fetchComments(); // Refresh list when a new comment arrives
+          refreshCommentsOnly(); // Refresh list silently when a new comment arrives
         }
       )
       .subscribe();
@@ -120,8 +120,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
     };
   }, [postId]);
 
-  const fetchComments = async () => {
-    setIsLoading(true);
+  const refreshCommentsOnly = async () => {
     const { data, error } = await supabase
       .from('comments')
       .select(`
@@ -137,11 +136,14 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
       .order('priority', { ascending: false })
       .order('created_at', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching comments:', error);
-    } else {
-      setComments(data || []);
+    if (!error && data) {
+      setComments(data);
     }
+  };
+
+  const fetchComments = async () => {
+    setIsLoading(true);
+    await refreshCommentsOnly();
     setIsLoading(false);
   };
 
@@ -174,7 +176,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
         
       setNewComment('');
       setReplyTo(null);
-      fetchComments();
+      // fetchComments() is NOT needed here because Realtime handles the refresh silently
       onCommentAdded();
     }
     setIsSubmitting(false);

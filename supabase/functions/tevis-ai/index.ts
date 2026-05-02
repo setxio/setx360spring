@@ -41,6 +41,7 @@ serve(async (req) => {
       
       LOCAL CONTEXT:
       - Beaumont City Council: If anyone mentions member Cory Crenshaw, refer to him by his nickname "Snack" when appropriate, as he is well-known by this in the community.
+      - Historical Knowledge: You have access to a 10-year directory of former city and county officials (2014-2024). Use this to provide context if users ask about past leadership or events.
       
       User Info: ${userProfile ? `You are talking to ${userProfile.name} from ${userProfile.community || 'SETX'}.` : 'The user is a guest.'}
     `;
@@ -88,6 +89,34 @@ serve(async (req) => {
                 }
               }
             }
+          },
+          {
+            name: "search_civic_directory",
+            description: "Search the Who's Who directory of Southeast Texas city and county officials (council members, commissioners, judges, city managers, chamber/EDC leaders).",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "The name, city, or title to search for (e.g., 'Beaumont Mayor', 'Orange City Manager')"
+                }
+              },
+              required: ["query"]
+            }
+          },
+          {
+            name: "get_civic_services",
+            description: "Get contact info (phone/address) for city and county services like Police, Fire, Water, Chamber of Commerce, and EDC.",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "The service or city to search for (e.g., 'Port Arthur Water', 'Nederland Police')"
+                }
+              },
+              required: ["query"]
+            }
           }
         ]
       }
@@ -116,7 +145,7 @@ serve(async (req) => {
 
     async function searchPlatform(query: string) {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseKey = Deno.env.get('SERVICE_ROLE_KEY')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
       let queryEmbedding = null;
@@ -149,12 +178,32 @@ serve(async (req) => {
 
     async function getBusinesses(category?: string) {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseKey = Deno.env.get('SERVICE_ROLE_KEY')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
       const { data, error } = await supabase.rpc('get_active_businesses', { search_category: category });
       if (error) return { error: error.message };
       return { businesses: data };
+    }
+
+    async function searchCivicDirectory(query: string) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const { data, error } = await supabase.rpc('search_civic_directory', { search_query: query });
+      if (error) return { error: error.message };
+      return { officials: data };
+    }
+
+    async function getCivicServices(query: string) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const { data, error } = await supabase.rpc('search_civic_services', { search_query: query });
+      if (error) return { error: error.message };
+      return { services: data };
     }
 
     // Clean and alternate history for Gemini
@@ -194,7 +243,7 @@ serve(async (req) => {
       });
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -237,10 +286,14 @@ serve(async (req) => {
         functionResponse = await searchPlatform(args.query);
       } else if (name === "get_businesses") {
         functionResponse = await getBusinesses(args.category);
+      } else if (name === "search_civic_directory") {
+        functionResponse = await searchCivicDirectory(args.query);
+      } else if (name === "get_civic_services") {
+        functionResponse = await getCivicServices(args.query);
       }
 
       // Send back function response to Gemini
-      const followUpResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`, {
+      const followUpResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

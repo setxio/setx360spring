@@ -60,10 +60,10 @@ export const VideosView: React.FC<{ user: any; scope: string }> = ({ user, scope
 
   const fetchVideos = async () => {
     setIsLoading(true);
-    let selectString = `*, author:profiles!posts_profile_id_fkey(name, avatar_url, is_verified, community, county, state, country)`;
+    let selectString = `*, author:profiles!posts_profile_id_fkey(name, avatar_url, is_verified, community, county, state, country, email)`;
     const needsGeoFilter = user && scope !== 'national';
     if (needsGeoFilter) {
-      selectString = `*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country)`;
+      selectString = `*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country, email)`;
     }
 
     let query = supabase.from('posts').select(selectString).eq('type', 'video').order('created_at', { ascending: false }).limit(20);
@@ -86,7 +86,7 @@ export const VideosView: React.FC<{ user: any; scope: string }> = ({ user, scope
       };
       const esc = escalationMap[scope];
       if (esc && esc.filterValue) {
-        let escQuery = supabase.from('posts').select(`*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country)`).eq('type', 'video').order('created_at', { ascending: false }).limit(20);
+        let escQuery = supabase.from('posts').select(`*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country, email)`).eq('type', 'video').order('created_at', { ascending: false }).limit(20);
         if (esc.nextScope !== 'national') escQuery = escQuery.eq(esc.filterKey, esc.filterValue);
         const { data: escData } = await escQuery;
         if (escData && escData.length > 0) {

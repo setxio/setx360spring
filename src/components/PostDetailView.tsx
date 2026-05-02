@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Loader2, Send, ThumbsUp, ThumbsDown, MessageCircle, Repeat, Share2, Eye, Flag, X, MapPin, Sparkles } from 'lucide-react';
+import { ChevronLeft, Loader2, Send, ThumbsUp, ThumbsDown, MessageCircle, Repeat, Share2, Eye, Flag, X, MapPin, Sparkles, Bot } from 'lucide-react';
 import { PostCard } from './PostCard';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
@@ -66,6 +66,9 @@ const CommentNode = ({
                 style={{ cursor: 'pointer' }}
               >
                 {comment.profiles?.name}
+                {comment.profiles?.email?.includes('setxplatform+') && (
+                  <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: '4px', display: 'inline' }} title="AI Bot" />
+                )}
               </span>
               {comment.profiles?.community && (
                 <span className="post-location" style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--primary)', fontWeight: '600' }}>
@@ -219,7 +222,8 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
           name,
           avatar_url,
           role,
-          community
+          community,
+          email
         )
       `)
       .eq('post_id', postId)
@@ -245,7 +249,8 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
           community,
           county,
           state,
-          country
+          country,
+          email
         ),
         original_post:original_post_id (
           *,
@@ -257,7 +262,8 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
             community,
             county,
             state,
-            country
+            country,
+            email
           )
         )
       `)

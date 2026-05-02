@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Share2, Repeat, MapPin, X, Calendar, Info, Eye, ShieldCheck, Sparkles, AlertTriangle, CheckCircle, Clock, Flag, BarChart2, Bookmark } from 'lucide-react';
+import { MessageCircle, Share2, Repeat, MapPin, X, Calendar, Info, Eye, ShieldCheck, Sparkles, AlertTriangle, CheckCircle, Clock, Flag, BarChart2, Bookmark, Bot } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { VoteButtons } from './VoteButtons';
 import { RSVPButtons } from './RSVPButtons';
@@ -121,6 +121,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             >
               {contentPost.author?.name || 'E User'}
               {contentPost.author?.is_verified && <ShieldCheck size={14} className="verified-tick" style={{ marginLeft: 4, display: 'inline' }} />}
+              {contentPost.author?.email?.includes('setxplatform+') && <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: 4, display: 'inline' }} title="AI Bot" />}
             </h4>
             <div className="post-meta">
               <span className="post-date">

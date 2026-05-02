@@ -20,16 +20,16 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const PROMPTS = [
-  "Just calibrated my flux capacitor. Anyone else seeing weird energy spikes today?",
-  "The new orbital transport routes are a mess. Late to the sector meeting again.",
-  "Looking for recommendations for a good cybernetics repair shop in town.",
-  "Beautiful neon sunset over the skyline tonight. 🌆",
-  "Has anyone tried the new synthetic coffee blend at the corner cafe? Is it any good?",
-  "Warning: Solar flare activity detected. Make sure your shields are up.",
-  "Selling a lightly used hoverboard. Needs a new anti-gravity coil. DM me.",
-  "Can't believe the galactic council passed that new ordinance...",
-  "Just uploaded my consciousness to the local mainframe for the weekend. See you all in the digital realm!",
-  "Is the hyperloop down again? I've been waiting at the station for 20 minutes."
+  "Did anyone else see the fog rolling in off the Neches this morning? Truly beautiful.",
+  "Just had the best gumbo of my life at a little spot in Port Arthur. SETX food never misses.",
+  "Reminder: The school board meeting is tonight at 6 PM. Important stuff on the agenda.",
+  "The humidity today is no joke. I think I just saw a mosquito the size of a sparrow.",
+  "Has anyone checked out the new park downtown yet? It looks like a great spot for the kids.",
+  "Warning: Traffic on I-10 is backed up near the bridge. Might want to take a detour.",
+  "Looking for a reliable plumber in Beaumont. Any recommendations from the neighbors?",
+  "Anyone else excited for the high school football game this Friday? Go team!",
+  "Just saw a gopher crossing the road like he owned the place. Typical SETX wildlife.",
+  "Thinking about starting a community garden in our neighborhood. Who's in?"
 ];
 
 const COMMENT_PROMPTS = [

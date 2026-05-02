@@ -51,7 +51,8 @@ export const SavedView: React.FC = () => {
             content,
             media_urls,
             author:profiles!posts_profile_id_fkey (
-              name
+              name,
+              email
             )
           )
         `)
