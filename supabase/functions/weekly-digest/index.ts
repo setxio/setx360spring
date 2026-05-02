@@ -12,7 +12,7 @@ const MIN_POSTS_FOR_DIGEST = 3;
 async function generateDigest(community: string, county: string, state: string, posts: any[]): Promise<string> {
   if (!GEMINI_API_KEY) {
     // Fallback: simple template
-    return `📍 This Week in ${community}: ${posts.length} new posts from your community. Topics include ${[...new Set(posts.map(p => p.ai_category))].join(', ')}. Stay connected with your neighbors on Efutura!`;
+    return `📍 This Week in ${community}: ${posts.length} new posts from your community. Topics include ${[...new Set(posts.map(p => p.ai_category))].join(', ')}. Stay connected with your neighbors on SETX 360!`;
   }
 
   const postSummaries = posts
@@ -20,7 +20,7 @@ async function generateDigest(community: string, county: string, state: string, 
     .map(p => `- [${p.ai_category}] ${p.content.slice(0, 120)}`)
     .join('\n');
 
-  const prompt = `You are writing a friendly weekly community digest for a local social platform called Efutura.
+  const prompt = `You are writing a friendly weekly community digest for a local social platform called SETX 360.
 
 Community: ${community}, ${county} County, ${state}
 Top posts this week:
