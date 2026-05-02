@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Loader2, Send, ThumbsUp, ThumbsDown, MessageCircle, Repeat, Share2, Eye, Flag, X, MapPin } from 'lucide-react';
+import { ChevronLeft, Loader2, Send, ThumbsUp, ThumbsDown, MessageCircle, Repeat, Share2, Eye, Flag, X, MapPin, Sparkles } from 'lucide-react';
 import { PostCard } from './PostCard';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
