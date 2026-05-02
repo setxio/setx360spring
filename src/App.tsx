@@ -75,6 +75,7 @@ import { SignUpFlow } from './components/SignUpFlow';
 import { VerificationModal } from './components/VerificationModal';
 import { TevisChat } from './components/TevisChat';
 import { GlobalChatBubbles } from './components/GlobalChatBubbles';
+import { OnboardingOverlay, shouldShowOnboarding } from './components/OnboardingOverlay';
 
 // Heavy page-level components (lazy loaded on demand)
 const SearchOverlay    = lazy(() => import('./components/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
@@ -136,6 +137,7 @@ const App: React.FC = () => {
   } = useApp();
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -153,6 +155,13 @@ const App: React.FC = () => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    // Show onboarding for first-time authenticated users
+    if (user && shouldShowOnboarding()) {
+      setShowOnboarding(true);
+    }
+  }, [user]);
 
   const handleUpdate = () => {
     window.location.reload();
@@ -1004,7 +1013,7 @@ const App: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Sparkles size={20} />
               <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                A new version of Efutura is ready!
+              A new version of SETX 360 is ready!
               </span>
             </div>
             <button 
@@ -1151,6 +1160,10 @@ const App: React.FC = () => {
 
       <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
       <GlobalChatBubbles user={user} />
+
+      {showOnboarding && (
+        <OnboardingOverlay onComplete={() => setShowOnboarding(false)} />
+      )}
     </div>
   );
 };
