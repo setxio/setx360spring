@@ -40,6 +40,12 @@ export const GroupCreationModal: React.FC<GroupCreationModalProps> = ({ onClose,
     e.preventDefault();
     setLoading(true);
 
+    if (!user) {
+      alert('You must be signed in to create a group.');
+      setLoading(false);
+      return;
+    }
+
     try {
       let finalAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random`;
       let finalBannerUrl = '';
