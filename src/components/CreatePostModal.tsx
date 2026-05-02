@@ -9,10 +9,17 @@ interface CreatePostModalProps {
   onClose: () => void;
   user?: any;
   activeCategory?: string;
+  groupId?: string;
   currentScope?: 'national' | 'state' | 'county' | 'city';
 }
 
-export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user, activeCategory = 'Everybody', currentScope = 'national' }) => {
+export const CreatePostModal: React.FC<CreatePostModalProps> = ({ 
+  onClose, 
+  user, 
+  activeCategory = 'Everybody', 
+  groupId,
+  currentScope = 'national' 
+}) => {
   const [postContent, setPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
@@ -22,10 +29,10 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, user,
   
   // New State for Redesign
   const [selectedTab, setSelectedTab] = useState<'post' | 'poll'>('post');
-  const [targetFeed, setTargetFeed] = useState(activeCategory === 'Hot' ? 'Everybody' : activeCategory);
+  const [targetFeed, setTargetFeed] = useState(groupId ? 'Groups' : (activeCategory === 'Hot' ? 'Everybody' : activeCategory));
   const [faithType, setFaithType] = useState('post');
   const [userGroups, setUserGroups] = useState<any[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(groupId || '');
   const [isNsfw, setIsNsfw] = useState(false);
   const [tags, setTags] = useState('');
   

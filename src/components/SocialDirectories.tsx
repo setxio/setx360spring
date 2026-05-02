@@ -130,7 +130,10 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
   );
 }
 
-export const GroupDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' | 'city' }> = ({ scope = 'national' }) => {
+export const GroupDirectory: React.FC<{ 
+  scope?: 'national' | 'state' | 'county' | 'city';
+  onNavigateToGroup: (groupId: string) => void;
+}> = ({ scope = 'national', onNavigateToGroup }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -254,7 +257,12 @@ export const GroupDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' 
           </div>
         ) : filteredGroups.length > 0 ? (
           filteredGroups.map(group => (
-            <div key={group.id} className="premium-card group-card">
+            <div 
+              key={group.id} 
+              className="premium-card group-card"
+              onClick={() => onNavigateToGroup(group.id)}
+              style={{ cursor: 'pointer' }}
+            >
               <div 
                 className="group-banner" 
                 style={{ backgroundImage: `url(${group.banner_url || 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=200&fit=crop'})` }}
@@ -270,7 +278,10 @@ export const GroupDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' 
                 </div>
                 <button 
                   className={`join-btn ${joinedGroupsMap[group.id] ? 'joined' : ''}`}
-                  onClick={() => handleJoinGroup(group.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleJoinGroup(group.id);
+                  }}
                   style={joinedGroupsMap[group.id] ? { background: 'var(--bg-soft)', color: 'var(--text-muted)' } : {}}
                 >
                   {joinedGroupsMap[group.id] ? 'Leave Group' : 'Join Group'}

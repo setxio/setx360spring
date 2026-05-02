@@ -16,6 +16,7 @@ interface SocialFeedProps {
   showFAB?: boolean;
   user?: any;
   filterUserId?: string;
+  filterGroupId?: string;
   scope?: 'national' | 'state' | 'county' | 'city';
   onNavigateToPost?: (postId: string, commentId?: string) => void;
   onNavigateToProfile?: (profileId: string) => void;
@@ -26,6 +27,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   showFAB = true, 
   user, 
   filterUserId, 
+  filterGroupId,
   scope = 'national',
   onNavigateToPost,
   onNavigateToProfile
@@ -50,7 +52,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
   useEffect(() => {
     fetchContent();
-  }, [activeCategory, activeType, scope]);
+  }, [activeCategory, activeType, scope, filterGroupId]);
 
   const calculateAge = (m: number, d: number, y: number) => {
     if (!m || !d || !y) return 0;
@@ -165,6 +167,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     // APPLY PROFILE FILTER OR CATEGORY MAPPING
     if (filterUserId) {
       query = query.eq('profile_id', filterUserId);
+    } else if (filterGroupId) {
+      query = query.eq('group_id', filterGroupId);
     } else if (activeCategory === 'Following' && user) {
       const { data: following } = await supabase
         .from('follows')
@@ -267,18 +271,18 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       const isSETX = theme.startsWith('setx-');
 
       if (scope === 'national') {
-        // National View: Only National Posts
-        query = query.eq('visibility_scope', 'national');
+        // National View: Show National posts + EVERYTHING else (it's the broadest view)
+        // No filter needed on visibility_scope if we want to see everything
       } else if (scope === 'state' && user.state) {
-        // State View: State Posts for this state OR National Posts
-        query = query.or(`and(visibility_scope.eq.state,author_state.eq.${user.state}),visibility_scope.eq.national`);
+        // State View: State/County/City Posts for this state OR National Posts
+        query = query.or(`author_state.eq.${user.state},visibility_scope.eq.national`);
       } else if (scope === 'county') {
         if (isSETX) {
-          // SETX Region View: Jefferson & Orange Counties ONLY (Hide State/National logic for now)
-          query = query.or(`and(visibility_scope.eq.county,author_county.in.("Jefferson","Orange","Jefferson County","Orange County"))`);
+          // SETX Region View: Jefferson & Orange Counties ONLY (Include all city/county posts in these areas)
+          query = query.or(`author_county.in.("Jefferson","Orange","Jefferson County","Orange County")`);
         } else if (user.county) {
-          // Standard County View
-          query = query.or(`and(visibility_scope.eq.county,author_county.eq.${user.county}),and(visibility_scope.eq.state,author_state.eq.${user.state}),visibility_scope.eq.national`);
+          // Standard County View: Show County/City posts for this county + State/National
+          query = query.or(`author_county.eq.${user.county},and(visibility_scope.eq.state,author_state.eq.${user.state}),visibility_scope.eq.national`);
         }
       } else if (scope === 'city' && user.community) {
         // City View: City Posts (this city) OR County (this county) OR State (this state) OR National

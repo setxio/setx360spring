@@ -105,6 +105,7 @@ const TrendingView     = lazy(() => import('./components/TrendingView').then(m =
 const HotDealsView     = lazy(() => import('./components/HotDealsView').then(m => ({ default: m.HotDealsView })));
 const NewArrivalsView  = lazy(() => import('./components/NewArrivalsView').then(m => ({ default: m.NewArrivalsView })));
 const VibesView        = lazy(() => import('./components/VibesView').then(m => ({ default: m.VibesView })));
+const GroupDetailView  = lazy(() => import('./components/GroupDetailView').then(m => ({ default: m.GroupDetailView })));
 const PostDetailView   = lazy(() => import('./components/PostDetailView').then(m => ({ default: m.PostDetailView })));
 const EatsView         = lazy(() => import('./components/EatsView').then(m => ({ default: m.EatsView })));
 const HomesView        = lazy(() => import('./components/HomesView').then(m => ({ default: m.HomesView })));
@@ -162,6 +163,7 @@ const App: React.FC = () => {
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [isTevisOpen, setIsTevisOpen] = useState(false);
 
   // Clear store/post detail views whenever the user navigates away
@@ -170,6 +172,7 @@ const App: React.FC = () => {
     setActivePostId(null);
     setActiveCommentId(null);
     setActiveProfileId(null);
+    setActiveGroupId(null);
   }, [env, activeTab]);
 
   // Notch Swipe Logic
@@ -290,6 +293,7 @@ const App: React.FC = () => {
         if (minDistance < itemWidth * 0.15) {
           setActiveStoreId(null);
           setActivePostId(null);
+          setActiveGroupId(null);
           setEnv(closestEnv);
           setActiveTab(0);
         }
@@ -301,6 +305,7 @@ const App: React.FC = () => {
     isInternalScroll.current = true;
     setActiveStoreId(null);
     setActivePostId(null);
+    setActiveGroupId(null);
     setEnv(newEnv);
     setActiveTab(0);
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
@@ -586,6 +591,23 @@ const App: React.FC = () => {
     }
 
 
+      );
+    }
+    
+    // Group detail view
+    if (activeGroupId && (env === 'social' || env === 'discover')) {
+      return (
+        <GroupDetailView 
+          groupId={activeGroupId}
+          user={user}
+          onBack={() => setActiveGroupId(null)}
+          onNavigateToPost={(pid, cid) => { setActivePostId(pid); setActiveCommentId(cid || null); }}
+          onNavigateToProfile={setActiveProfileId}
+        />
+      );
+    }
+
+
     if (env === 'discover') {
       switch (activeTab) {
         case 0: return <DiscoverView user={user} scope={scope} />;
@@ -608,7 +630,7 @@ const App: React.FC = () => {
         />;
         case 1: return <ClassifiedsView />;
         case 2: return <UserDirectory scope={scope} />;
-        case 3: return <GroupDirectory scope={scope} />;
+        case 3: return <GroupDirectory scope={scope} onNavigateToGroup={setActiveGroupId} />;
         case 4: return <MessagesView user={user} />;
         case 5: return <SavedView />;
         case 6: return <NotificationsView user={user} />;
