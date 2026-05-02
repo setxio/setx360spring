@@ -146,8 +146,8 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
         onClick={e => e.stopPropagation()}
       >
         <div className="search-header-sticky">
-          <div className="search-input-wrapper-outer">
-            <div className="search-input-wrapper-inner glass">
+          <div className="search-input-wrapper-outer" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="search-input-wrapper-inner glass" style={{ flex: 1, margin: 0 }}>
               <Search className="search-icon" size={20} />
               <input
                 ref={inputRef}
@@ -162,11 +162,10 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
                   <X size={18} />
                 </button>
               )}
-              <div className="search-divider" />
-              <button className="close-search-btn" onClick={onClose}>
-                <X size={20} />
-              </button>
             </div>
+            <button className="close-search-btn" onClick={onClose} style={{ flexShrink: 0, width: '45px', height: '45px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <X size={24} />
+            </button>
           </div>
 
           <div className="search-tabs-container">
