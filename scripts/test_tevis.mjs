@@ -13,7 +13,7 @@ async function testTevis() {
         'Authorization': `Bearer ${anonKey}`
       },
       body: JSON.stringify({
-        message: 'Hello, testing connection.',
+        message: 'Who is Cory Crenshaw and what is the weather like in Beaumont right now?',
         history: [],
         userProfile: null
       })

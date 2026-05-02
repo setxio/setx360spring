@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.driver_profiles (
 
 -- 2. Favorite Drivers (Consumer preferences)
 CREATE TABLE IF NOT EXISTS public.favorite_drivers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     driver_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),

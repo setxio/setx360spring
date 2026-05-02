@@ -15,6 +15,138 @@ interface PostDetailViewProps {
   onNavigateToProfile?: (profileId: string) => void;
 }
 
+const buildCommentTree = (flatComments: any[]) => {
+  const commentMap = new Map();
+  const roots: any[] = [];
+
+  flatComments.forEach(c => {
+    commentMap.set(c.id, { ...c, replies: [] });
+  });
+
+  flatComments.forEach(c => {
+    if (c.parent_id && commentMap.has(c.parent_id)) {
+      commentMap.get(c.parent_id).replies.push(commentMap.get(c.id));
+    } else {
+      roots.push(commentMap.get(c.id));
+    }
+  });
+
+  return roots;
+};
+
+const CommentNode = ({ 
+  comment, 
+  user, 
+  onReply, 
+  onVote, 
+  onDelete, 
+  onReport, 
+  onNavigateToProfile,
+  depth = 0
+}: any) => {
+  return (
+    <div className="comment-node-container">
+      <div 
+        id={`comment-${comment.id}`}
+        className={`comment-thread-item ${depth > 0 ? 'is-reply' : ''}`}
+        style={depth > 0 ? { marginLeft: Math.min(depth * 24, 48) + 'px' } : undefined}
+      >
+        <Avatar 
+          url={comment.profiles?.avatar_url}
+          name={comment.profiles?.name || 'User'}
+          size={depth > 0 ? 28 : 36}
+        />
+        <div className="comment-body">
+          <div className="comment-content-main">
+            <div className="comment-header">
+              <span 
+                className="comment-user"
+                onClick={() => comment.profile_id && onNavigateToProfile?.(comment.profile_id)}
+                style={{ cursor: 'pointer' }}
+              >
+                {comment.profiles?.name}
+              </span>
+              {comment.profiles?.community && (
+                <span className="post-location" style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--primary)', fontWeight: '600' }}>
+                  <MapPin size={10} />
+                  {comment.profiles.community}
+                </span>
+              )}
+              <span className="comment-date">
+                {new Date(comment.created_at).toLocaleDateString()}
+              </span>
+            </div>
+            <p className="comment-text">{formatText(comment.content)}</p>
+            
+            <div className="comment-actions">
+              <div className="comment-action-group">
+                <button className="c-action-btn" onClick={() => onVote(comment.id, 1)}>
+                  <ThumbsUp size={14} /> <span>{comment.upvote_count || 0}</span>
+                </button>
+                <button className="c-action-btn" onClick={() => onVote(comment.id, -1)}>
+                  <ThumbsDown size={14} /> <span>{comment.downvote_count || 0}</span>
+                </button>
+                <button className="c-action-btn" onClick={() => onReply(comment)}>
+                  <MessageCircle size={14} /> <span>Reply</span>
+                </button>
+                <button className="c-action-btn">
+                  <Repeat size={14} />
+                </button>
+                <button className="c-action-btn" title="Share">
+                  <Share2 size={14} />
+                </button>
+                {user && user.id !== comment.profile_id && (
+                  <button 
+                    className="c-action-btn" 
+                    title="Report Comment"
+                    onClick={() => onReport(comment.id)}
+                  >
+                    <Flag size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="comment-side-actions">
+            {user && user.id === comment.profile_id ? (
+              <button 
+                className="comment-delete-btn" 
+                onClick={() => onDelete(comment.id)}
+                title="Delete Comment"
+              >
+                <X size={16} />
+              </button>
+            ) : (
+              <div style={{height: 24}}></div>
+            )}
+            <div className="comment-views">
+              <Eye size={12} /> <span>{comment.views || 0}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="comment-replies">
+          {comment.replies.map((reply: any) => (
+            <CommentNode 
+              key={reply.id} 
+              comment={reply} 
+              user={user}
+              onReply={onReply}
+              onVote={onVote}
+              onDelete={onDelete}
+              onReport={onReport}
+              onNavigateToProfile={onNavigateToProfile}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highlightCommentId, user, onBack, onNavigateToProfile }) => {
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
@@ -231,90 +363,17 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
                 <p>No comments yet. Start the conversation!</p>
               </div>
             ) : (
-              comments.map((comment: any) => (
-                <div 
-                  key={comment.id} 
-                  id={`comment-${comment.id}`}
-                  className={`comment-thread-item ${comment.parent_id ? 'is-reply' : ''}`}
-                >
-                  <Avatar 
-                    url={comment.profiles?.avatar_url}
-                    name={comment.profiles?.name || 'User'}
-                    size={comment.parent_id ? 28 : 36}
-                  />
-                  <div className="comment-body">
-                    <div className="comment-content-main">
-                      <div className="comment-header">
-                        <span 
-                          className="comment-user"
-                          onClick={() => {
-                            if (comment.profile_id) {
-                              onNavigateToProfile?.(comment.profile_id);
-                            }
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {comment.profiles?.name}
-                        </span>
-                        {comment.profiles?.community && (
-                          <span className="post-location" style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--primary)', fontWeight: '600' }}>
-                            <MapPin size={10} />
-                            {comment.profiles.community}
-                          </span>
-                        )}
-                        <span className="comment-date">
-                          {new Date(comment.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="comment-text">{formatText(comment.content)}</p>
-                      
-                      <div className="comment-actions">
-                        <div className="comment-action-group">
-                          <button className="c-action-btn" onClick={() => handleCommentVote(comment.id, 1)}>
-                            <ThumbsUp size={14} /> <span>{comment.upvote_count || 0}</span>
-                          </button>
-                          <button className="c-action-btn" onClick={() => handleCommentVote(comment.id, -1)}>
-                            <ThumbsDown size={14} /> <span>{comment.downvote_count || 0}</span>
-                          </button>
-                          <button className="c-action-btn" onClick={() => setReplyTo(comment)}>
-                            <MessageCircle size={14} /> <span>Reply</span>
-                          </button>
-                          <button className="c-action-btn">
-                            <Repeat size={14} />
-                          </button>
-                          <button className="c-action-btn" title="Share">
-                            <Share2 size={14} />
-                          </button>
-                          {user && user.id !== comment.profile_id && (
-                            <button 
-                              className="c-action-btn" 
-                              title="Report Comment"
-                              onClick={() => setFlagCommentId(comment.id)}
-                            >
-                              <Flag size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="comment-side-actions">
-                      {user && user.id === comment.profile_id ? (
-                        <button 
-                          className="comment-delete-btn" 
-                          onClick={() => handleDeleteComment(comment.id)}
-                          title="Delete Comment"
-                        >
-                          <X size={16} />
-                        </button>
-                      ) : (
-                        <div style={{height: 24}}></div>
-                      )}
-                      <div className="comment-views">
-                        <Eye size={12} /> <span>{comment.views || 0}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              buildCommentTree(comments).map((rootComment: any) => (
+                <CommentNode 
+                  key={rootComment.id}
+                  comment={rootComment}
+                  user={user}
+                  onReply={setReplyTo}
+                  onVote={handleCommentVote}
+                  onDelete={handleDeleteComment}
+                  onReport={setFlagCommentId}
+                  onNavigateToProfile={onNavigateToProfile}
+                />
               ))
             )}
           </div>

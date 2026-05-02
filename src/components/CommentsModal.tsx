@@ -11,9 +11,86 @@ interface CommentsModalProps {
   onCommentAdded: () => void;
 }
 
+const buildCommentTree = (flatComments: any[]) => {
+  const commentMap = new Map();
+  const roots: any[] = [];
+
+  flatComments.forEach(c => {
+    commentMap.set(c.id, { ...c, replies: [] });
+  });
+
+  flatComments.forEach(c => {
+    if (c.parent_id && commentMap.has(c.parent_id)) {
+      commentMap.get(c.parent_id).replies.push(commentMap.get(c.id));
+    } else {
+      roots.push(commentMap.get(c.id));
+    }
+  });
+
+  return roots;
+};
+
+const SimpleCommentNode = ({ comment, onReply, depth = 0 }: any) => {
+  return (
+    <div className="comment-node-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div 
+        style={{ 
+          display: 'flex', 
+          gap: '12px',
+          marginLeft: depth > 0 ? `${Math.min(depth * 24, 48)}px` : '0',
+          borderLeft: depth > 0 ? '2px solid rgba(255,255,255,0.1)' : 'none',
+          paddingLeft: depth > 0 ? '12px' : '0'
+        }}
+      >
+        <Avatar 
+          url={comment.profiles?.avatar_url}
+          name={comment.profiles?.name || 'User'}
+          size={depth > 0 ? 28 : 36}
+        />
+        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{comment.profiles?.name || 'User'}</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+              {new Date(comment.created_at).toLocaleDateString()}
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-light)', lineHeight: 1.4, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {comment.content}
+          </p>
+          <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
+            <button 
+              onClick={() => onReply(comment)}
+              style={{
+                background: 'none', border: 'none', color: 'var(--text-muted)',
+                fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+              }}
+            >
+              Reply
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {comment.replies && comment.replies.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {comment.replies.map((reply: any) => (
+            <SimpleCommentNode 
+              key={reply.id} 
+              comment={reply} 
+              onReply={onReply}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onClose, onCommentAdded }) => {
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [replyTo, setReplyTo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,7 +136,8 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
         {
           post_id: postId,
           profile_id: user.id,
-          content: newComment.trim()
+          content: newComment.trim(),
+          parent_id: replyTo?.id || null
         }
       ]);
 
@@ -72,6 +150,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
       if (rpcError) console.error("Could not increment count via RPC", rpcError);
         
       setNewComment('');
+      setReplyTo(null);
       fetchComments();
       onCommentAdded();
     }
@@ -98,35 +177,29 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
               <p>No comments yet. Be the first!</p>
             </div>
           ) : (
-            comments.map(comment => (
-              <div key={comment.id} style={{ display: 'flex', gap: '12px' }}>
-                <Avatar 
-                  url={comment.profiles?.avatar_url}
-                  name={comment.profiles?.name || 'User'}
-                  size={36}
-                />
-                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px', flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{comment.profiles?.name || 'E User'}</span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      {new Date(comment.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-light)', lineHeight: 1.4 }}>
-                    {comment.content}
-                  </p>
-                </div>
-              </div>
+            buildCommentTree(comments).map((rootComment: any) => (
+              <SimpleCommentNode 
+                key={rootComment.id} 
+                comment={rootComment} 
+                onReply={setReplyTo}
+              />
             ))
           )}
         </div>
 
         {user ? (
-          <div className="modal-footer" style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '8px' }}>
-            <input 
-              type="text" 
-              placeholder="Write a comment..." 
-              value={newComment}
+          <div className="modal-footer" style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {replyTo && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--primary)', padding: '0 8px' }}>
+                <span>Replying to <strong>{replyTo.profiles?.name || 'User'}</strong></span>
+                <button onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>Cancel</button>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input 
+                type="text" 
+                placeholder={replyTo ? "Write a reply..." : "Write a comment..."} 
+                value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handlePostComment();
@@ -160,6 +233,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
             >
               {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} style={{ marginLeft: '-2px' }} />}
             </button>
+            </div>
           </div>
         ) : (
           <div className="modal-footer" style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)' }}>

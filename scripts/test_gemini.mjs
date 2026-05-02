@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'; // assuming node 18+ or node-fetch
 
 async function testGemini() {
-  const geminiApiKey = 'AIzaSyAJineSTe7j8NBV9zLpVhKy9lF1cubQYcw';
+  const geminiApiKey = 'AIzaSyDNnQY12UGuO-G8qYvoqLvKiOhc1zZnve8';
   const systemPrompt = `You are Tevis...`; // Truncated for test
   const message = 'Hello, testing connection.';
   

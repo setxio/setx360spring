@@ -39,8 +39,123 @@ serve(async (req) => {
       3. If a user asks for platform help, be specific (e.g., "You can find local deals in the 'Hot Deals' tab of the Discover section").
       4. Keep responses concise but warm.
       
+      LOCAL CONTEXT:
+      - Beaumont City Council: If anyone mentions member Cory Crenshaw, refer to him by his nickname "Snack" when appropriate, as he is well-known by this in the community.
+      
       User Info: ${userProfile ? `You are talking to ${userProfile.name} from ${userProfile.community || 'SETX'}.` : 'The user is a guest.'}
     `;
+
+    const tools = [
+      {
+        function_declarations: [
+          {
+            name: "get_weather",
+            description: "Get the current weather for a city in Southeast Texas.",
+            parameters: {
+              type: "object",
+              properties: {
+                location: {
+                  type: "string",
+                  description: "The city and state, e.g. Beaumont, TX"
+                }
+              },
+              required: ["location"]
+            }
+          },
+          {
+            name: "search_platform",
+            description: "Search for community posts and upcoming events on the SETX 360 platform.",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "The search keyword or topic"
+                }
+              },
+              required: ["query"]
+            }
+          },
+          {
+            name: "get_businesses",
+            description: "Search the SETX 360 business directory for local stores and services.",
+            parameters: {
+              type: "object",
+              properties: {
+                category: {
+                  type: "string",
+                  description: "Optional category to filter by (e.g., 'Food', 'Retail', 'Services')"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ];
+
+    async function getWeather(location: string) {
+      const apiKey = Deno.env.get('OPENWEATHER_API_KEY');
+      if (!apiKey) return { error: "Weather service not configured." };
+      
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=${apiKey}&units=imperial`);
+        const data = await res.json();
+        if (data.cod !== 200) return { error: data.message || "Failed to fetch weather." };
+        
+        return {
+          temperature: data.main.temp,
+          description: data.weather[0].description,
+          humidity: data.main.humidity,
+          wind_speed: data.wind.speed,
+          city: data.name
+        };
+      } catch (err) {
+        return { error: "Failed to connect to weather service." };
+      }
+    }
+
+    async function searchPlatform(query: string) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      let queryEmbedding = null;
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: "models/text-embedding-004",
+            content: { parts: [{ text: query }] }
+          })
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.embedding?.values) {
+            queryEmbedding = `[${result.embedding.values.join(',')}]`;
+          }
+        }
+      } catch (e) {
+        console.error("Embedding generation failed for search query", e);
+      }
+
+      const { data, error } = await supabase.rpc('search_platform_content_vector_fallback', { 
+        search_query: query,
+        query_embedding: queryEmbedding
+      });
+      if (error) return { error: error.message };
+      return { results: data };
+    }
+
+    async function getBusinesses(category?: string) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const { data, error } = await supabase.rpc('get_active_businesses', { search_category: category });
+      if (error) return { error: error.message };
+      return { businesses: data };
+    }
 
     // Clean and alternate history for Gemini
     const contents: any[] = [
@@ -79,11 +194,12 @@ serve(async (req) => {
       });
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         contents,
+        tools,
         generationConfig: {
           temperature: 0.7,
           topK: 40,
@@ -105,7 +221,48 @@ serve(async (req) => {
       });
     }
 
-    const result = await response.json();
+    let result = await response.json();
+    
+    // Handle Function Calling Loop
+    let iterations = 0;
+    while (result.candidates?.[0]?.content?.parts?.some((p: any) => p.functionCall) && iterations < 3) {
+      iterations++;
+      const call = result.candidates[0].content.parts.find((p: any) => p.functionCall);
+      const { name, args } = call.functionCall;
+      
+      let functionResponse;
+      if (name === "get_weather") {
+        functionResponse = await getWeather(args.location);
+      } else if (name === "search_platform") {
+        functionResponse = await searchPlatform(args.query);
+      } else if (name === "get_businesses") {
+        functionResponse = await getBusinesses(args.category);
+      }
+
+      // Send back function response to Gemini
+      const followUpResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            ...contents,
+            { role: 'model', parts: [call] },
+            {
+              role: 'user',
+              parts: [{
+                functionResponse: {
+                  name,
+                  response: functionResponse
+                }
+              }]
+            }
+          ],
+          tools
+        })
+      });
+      
+      result = await followUpResponse.json();
+    }
     
     // Check for blocked candidates
     if (result.promptFeedback?.blockReason) {
@@ -125,10 +282,11 @@ serve(async (req) => {
   } catch (error) {
     console.error("Tevis AI Exception:", error);
     return new Response(JSON.stringify({ 
-      reply: "I'm sorry, I'm having a bit of trouble connecting to my local roots. Can you try asking me again?"
+      reply: `Debug Error: ${error.message || 'Unknown error'}`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200, 
     });
   }
 });
+
