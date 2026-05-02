@@ -60,7 +60,8 @@ import {
   CloudSun,
   Newspaper,
   AlertTriangle,
-  Megaphone
+  Megaphone,
+  Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
@@ -106,6 +107,7 @@ const HotDealsView     = lazy(() => import('./components/HotDealsView').then(m =
 const NewArrivalsView  = lazy(() => import('./components/NewArrivalsView').then(m => ({ default: m.NewArrivalsView })));
 const VibesView        = lazy(() => import('./components/VibesView').then(m => ({ default: m.VibesView })));
 const GroupDetailView  = lazy(() => import('./components/GroupDetailView').then(m => ({ default: m.GroupDetailView })));
+const TevisDiscoverView = lazy(() => import('./components/TevisDiscoverView').then(m => ({ default: m.TevisDiscoverView })));
 const PostDetailView   = lazy(() => import('./components/PostDetailView').then(m => ({ default: m.PostDetailView })));
 const EatsView         = lazy(() => import('./components/EatsView').then(m => ({ default: m.EatsView })));
 const HomesView        = lazy(() => import('./components/HomesView').then(m => ({ default: m.HomesView })));
@@ -340,6 +342,7 @@ const App: React.FC = () => {
     { icon: <Sparkles size={24} />, label: 'New' },
     { icon: <Map size={24} />, label: 'Radar' },
     { icon: <User size={24} />, label: 'My Vibes' },
+    { icon: <Bot size={24} color="var(--primary)" />, label: 'Tevis' },
   ];
 
   const socialNav = [
@@ -614,6 +617,7 @@ const App: React.FC = () => {
         case 3: return <NewArrivalsView scope={scope} user={user} />;
         case 4: return <RadarMapView scope={scope} user={user} />;
         case 5: return <VibesView user={user} />;
+        case 6: return <TevisDiscoverView user={user} />;
         default: return <ComingSoon title={discoverNav[activeTab]?.label} />;
       }
     }
