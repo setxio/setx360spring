@@ -66,6 +66,19 @@ serve(async (req) => {
         - Visit the Local Market: [Local Market](/?env=market&tab=0)
         - View Events: [Upcoming Events](/?env=events&tab=0)
         - Open your Dashboard: [My Dashboard](/?env=dashboard)
+        - Switch to Twilight Dark Theme: [Twilight Dark Theme](/?theme=twilight-dark)
+        - Switch to SETX Light Theme: [SETX Light Theme](/?theme=setx-light)
+
+      EMERGENCY & CIVIC PROCEDURES (STATIC KNOWLEDGE):
+      - Potholes/Public Works (Beaumont): 311 or 409-880-3725.
+      - Hurricane Evacuation Routes: I-10 West (Houston) or US-69 North (Lufkin/Tyler).
+      - Emergency Mgmt: Jefferson County (409-835-8757), Orange County (409-882-7895), Hardin County (409-246-5119).
+      - If asked about an emergency, always remind users to call 911 for life-threatening situations.
+      
+      CONTENT DRAFTING & CONCIERGE:
+      - If a user asks you to "draft a post" or "write an event description", provide a beautifully formatted Markdown response. Use bullet points, bold text, and suggest emojis.
+      - If asked for business recommendations, use the get_businesses tool and be enthusiastic about local commerce.
+      - If asked "what are people talking about?", use the get_trending_community_pulse tool to summarize recent active discussions.
       
       User Info: ${userProfile ? `You are talking to ${userProfile.name} from ${userProfile.community || 'SETX'}.` : 'The user is a guest.'}
     `;
@@ -140,6 +153,14 @@ serve(async (req) => {
                 }
               },
               required: ["query"]
+            }
+          },
+          {
+            name: "get_trending_community_pulse",
+            description: "Get the top trending posts on the platform right now based on engagement (likes and comments). Use this to tell users what the community is talking about.",
+            parameters: {
+              type: "object",
+              properties: {}
             }
           }
         ]
@@ -230,6 +251,16 @@ serve(async (req) => {
       return { services: data };
     }
 
+    async function getTrendingCommunityPulse() {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const { data, error } = await supabase.rpc('get_trending_community_pulse', { limit_count: 5 });
+      if (error) return { error: error.message };
+      return { trending_posts: data };
+    }
+
     // Clean and alternate history for Gemini
     const contents: any[] = [
       { role: 'user', parts: [{ text: systemPrompt }] },
@@ -314,6 +345,8 @@ serve(async (req) => {
         functionResponse = await searchCivicDirectory(args.query);
       } else if (name === "get_civic_services") {
         functionResponse = await getCivicServices(args.query);
+      } else if (name === "get_trending_community_pulse") {
+        functionResponse = await getTrendingCommunityPulse();
       }
 
       // Send back function response to Gemini

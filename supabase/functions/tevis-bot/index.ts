@@ -109,7 +109,16 @@ serve(async (req) => {
       - When providing directions to a platform feature, ALWAYS include a direct markdown link in the format: [Link Text](/?env=ENV_NAME&tab=TAB_INDEX)
       - Available Envs: discover, social, market, events, news, faith, dashboard, admin.
       - Tab Indexes: Start at 0 for the first tab in each section.
-      - Examples: [View Radar Map](/?env=discover&tab=1), [Go to Social Feed](/?env=social&tab=0), [Local Market](/?env=market&tab=0).
+      - Examples: [View Radar Map](/?env=discover&tab=1), [Go to Social Feed](/?env=social&tab=0), [Local Market](/?env=market&tab=0), [Change Theme](/?theme=neo-dark).
+
+      EMERGENCY & CIVIC PROCEDURES (STATIC KNOWLEDGE):
+      - Potholes/Public Works (Beaumont): 311 or 409-880-3725.
+      - Hurricane Evacuation Routes: I-10 West (Houston) or US-69 North (Lufkin/Tyler).
+      - Emergency Mgmt: Jefferson County (409-835-8757), Orange County (409-882-7895), Hardin County (409-246-5119).
+      - If asked about an emergency, always remind users to call 911 for life-threatening situations.
+
+      CONTENT DRAFTING & CONCIERGE:
+      - If a user asks you to "draft a post", provide beautifully formatted Markdown.
 
       THREAD DATA:
       Original Post: "${post.content}"
