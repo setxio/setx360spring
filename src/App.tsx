@@ -72,6 +72,7 @@ import { Avatar } from './components/Avatar';
 import { SignUpFlow } from './components/SignUpFlow';
 import { VerificationModal } from './components/VerificationModal';
 import { TevisChat } from './components/TevisChat';
+import { GlobalChatBubbles } from './components/GlobalChatBubbles';
 
 // Heavy page-level components (lazy loaded on demand)
 const SearchOverlay    = lazy(() => import('./components/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
@@ -1097,6 +1098,7 @@ const App: React.FC = () => {
       )}
 
       <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
+      <GlobalChatBubbles user={user} />
     </div>
   );
 };
