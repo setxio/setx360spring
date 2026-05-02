@@ -96,6 +96,27 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
 
   useEffect(() => {
     fetchComments();
+
+    // Subscribe to new comments for this post
+    const channel = supabase
+      .channel(`modal-comments-${postId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'comments',
+          filter: `post_id=eq.${postId}`
+        },
+        () => {
+          fetchComments(); // Refresh list when a new comment arrives
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [postId]);
 
   const fetchComments = async () => {

@@ -160,6 +160,27 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
   useEffect(() => {
     fetchPostAndComments();
     incrementViews();
+
+    // Subscribe to new comments for this post
+    const channel = supabase
+      .channel(`post-comments-${postId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'comments',
+          filter: `post_id=eq.${postId}`
+        },
+        () => {
+          fetchPostAndComments(); // Refresh list when a new comment arrives
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [postId]);
 
   const incrementViews = async () => {
