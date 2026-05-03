@@ -412,6 +412,8 @@ const App: React.FC = () => {
         setActiveStoreId={setActiveStoreId}
         setActiveProfileId={setActiveProfileId}
         setActiveCommentId={setActiveCommentId}
+        updateAvailable={updateAvailable}
+        onUpdate={handleUpdate}
       />
     );
   }
@@ -431,6 +433,8 @@ const App: React.FC = () => {
         setActiveGroupId={setActiveGroupId}
         activeCommentId={activeCommentId}
         setActiveCommentId={setActiveCommentId}
+        updateAvailable={updateAvailable}
+        onUpdate={handleUpdate}
       />
     );
   }
@@ -449,6 +453,8 @@ const App: React.FC = () => {
       setActiveGroupId={setActiveGroupId}
       activeCommentId={activeCommentId}
       setActiveCommentId={setActiveCommentId}
+      updateAvailable={updateAvailable}
+      onUpdate={handleUpdate}
     />
   );
 };

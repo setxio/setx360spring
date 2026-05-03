@@ -1,4 +1,5 @@
-const CACHE_NAME = 'efutura-v1';
+// Service Worker Version: 1.1 (2026-05-03T11:15:00)
+const CACHE_NAME = 'efutura-v1.1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

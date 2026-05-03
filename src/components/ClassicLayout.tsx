@@ -88,6 +88,8 @@ interface ClassicLayoutProps {
   setActiveGroupId: (id: string | null) => void;
   activeCommentId: string | null;
   setActiveCommentId: (id: string | null) => void;
+  updateAvailable: boolean;
+  onUpdate: () => void;
 }
 
 export const ClassicLayout: React.FC<ClassicLayoutProps> = ({ 
@@ -102,14 +104,15 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   activeGroupId,
   setActiveGroupId,
   activeCommentId,
-  setActiveCommentId
+  setActiveCommentId,
+  updateAvailable,
+  onUpdate
 }) => {
   const { 
     user, env, theme, scope, activeTab, unreadCount, isSearchOpen, isSetxDomain,
     setEnv, setTheme, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser, updateUser
   } = useApp();
 
-  const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isTevisOpen, setIsTevisOpen] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -649,7 +652,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
               <Sparkles size={20} />
               <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>A new version of SETX 360 is ready!</span>
             </div>
-            <button onClick={handleUpdate} style={{ background: 'white', color: '#7000f4', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer' }}>Update Now</button>
+            <button onClick={onUpdate} style={{ background: 'white', color: '#7000f4', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer' }}>Update Now</button>
           </motion.div>
         )}
       </AnimatePresence>

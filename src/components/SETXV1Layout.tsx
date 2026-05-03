@@ -87,6 +87,8 @@ interface SETXV1LayoutProps {
   setActiveGroupId: (id: string | null) => void;
   activeCommentId: string | null;
   setActiveCommentId: (id: string | null) => void;
+  updateAvailable: boolean;
+  onUpdate: () => void;
 }
 
 export const SETXV1Layout: React.FC<SETXV1LayoutProps> = ({ 
@@ -101,7 +103,9 @@ export const SETXV1Layout: React.FC<SETXV1LayoutProps> = ({
   activeGroupId,
   setActiveGroupId,
   activeCommentId,
-  setActiveCommentId
+  setActiveCommentId,
+  updateAvailable,
+  onUpdate
 }) => {
   const { 
     user, env, theme, scope, activeTab, unreadCount, isSearchOpen, isSetxDomain,
@@ -436,6 +440,18 @@ export const SETXV1Layout: React.FC<SETXV1LayoutProps> = ({
           ))}
         </div>
       </nav>
+
+      <AnimatePresence>
+        {updateAvailable && (
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="update-toast glass" style={{ position: 'fixed', bottom: '160px', left: '20px', right: '20px', zIndex: 2000, padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(112, 0, 244, 0.9)', color: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Sparkles size={20} />
+              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>A new version of SETX 360 is ready!</span>
+            </div>
+            <button onClick={onUpdate} style={{ background: 'white', color: '#7000f4', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer' }}>Update Now</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onNavigate={(newEnv, newTab) => { setEnv(newEnv as any); setActiveTab(newTab); }} scope={scope} user={user} />
       <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
