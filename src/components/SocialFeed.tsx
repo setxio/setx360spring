@@ -727,9 +727,16 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
                   <TrendingUp size={14} color="#f59e0b" style={{ flexShrink: 0 }} />
                   <span style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: 700, flexShrink: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trending</span>
                   {trendingTopics.map(t => (
-                    <span key={t.topic} style={{ whiteSpace: 'nowrap', fontSize: '0.72rem', padding: '3px 10px', borderRadius: '12px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 600, flexShrink: 0 }}>
+                    <button
+                      key={t.topic}
+                      onClick={() => setActiveCategory('AI Picks')}
+                      title={`Filter to ${t.topic.replace(/_/g, ' ')} posts`}
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.72rem', padding: '3px 10px', borderRadius: '12px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 600, flexShrink: 0, border: '1px solid rgba(245,158,11,0.3)', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.3)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.15)')}
+                    >
                       {t.topic.replace(/_/g, ' ')} · {t.post_count}
-                    </span>
+                    </button>
                   ))}
                 </div>
               )}

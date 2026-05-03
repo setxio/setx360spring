@@ -15,7 +15,8 @@ import {
   TrendingUp,
   Users,
   RefreshCw,
-  Zap
+  Zap,
+  AtSign
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './NotificationsView.css';
@@ -37,6 +38,7 @@ interface Notification {
 export const NotificationsView: React.FC<{ user: any }> = ({ user }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'mentions' | 'social'>('all');
 
   useEffect(() => {
     if (user) {
@@ -116,6 +118,7 @@ export const NotificationsView: React.FC<{ user: any }> = ({ user }) => {
     switch (type) {
       case 'like': return <Heart size={18} color="#ef4444" fill="#ef4444" />;
       case 'comment': return <MessageSquare size={18} color="#3b82f6" />;
+      case 'mention': return <AtSign size={18} color="#a855f7" />;
       case 'follow': return <UserPlus size={18} color="#10b981" />;
       case 'order_placed': return <ShoppingBag size={18} color="#f59e0b" />;
       case 'order_shipped': return <Package size={18} color="#8b5cf6" />;
@@ -161,8 +164,33 @@ export const NotificationsView: React.FC<{ user: any }> = ({ user }) => {
         </div>
       </div>
 
+      {/* Filter tabs */}
+      <div style={{ display: 'flex', gap: '8px', padding: '0 0 16px', borderBottom: '1px solid var(--border)', marginBottom: '12px' }}>
+        {(['all', 'mentions', 'social'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setActiveFilter(f)}
+            style={{
+              padding: '6px 16px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 600,
+              border: activeFilter === f ? 'none' : '1px solid var(--border)',
+              background: activeFilter === f ? 'var(--primary)' : 'transparent',
+              color: activeFilter === f ? '#fff' : 'var(--text-muted)',
+              cursor: 'pointer', transition: 'all 0.2s ease'
+            }}
+          >
+            {f === 'all' ? 'All' : f === 'mentions' ? '@ Mentions' : '❤️ Social'}
+          </button>
+        ))}
+      </div>
+
       <div className="notifications-list">
-        {notifications.length === 0 ? (
+        {notifications
+          .filter(n => {
+            if (activeFilter === 'mentions') return n.type === 'mention';
+            if (activeFilter === 'social') return ['like', 'comment', 'follow', 'repost'].includes(n.type);
+            return true;
+          })
+          .length === 0 ? (
           <div className="notifications-empty premium-card">
             <div className="empty-icon-ring">
               <Bell size={32} />
@@ -170,8 +198,14 @@ export const NotificationsView: React.FC<{ user: any }> = ({ user }) => {
             <h3>All caught up!</h3>
             <p>No new alerts at the moment. Check back later for activity.</p>
           </div>
-        ) : (
-          notifications.map((notif) => (
+          ) : (
+          notifications
+            .filter(n => {
+              if (activeFilter === 'mentions') return n.type === 'mention';
+              if (activeFilter === 'social') return ['like', 'comment', 'follow', 'repost'].includes(n.type);
+              return true;
+            })
+            .map((notif) => (
             <div 
               key={notif.id} 
               className={`notification-item premium-card ${!notif.is_read ? 'unread' : ''}`}

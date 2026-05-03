@@ -28,9 +28,12 @@ interface SavedItem {
 export const SavedView: React.FC = () => {
   const { user } = useApp();
   const [filter, setFilter] = useState<'all' | 'post' | 'product' | 'job'>('all');
+  const [labelFilter, setLabelFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const LABELS = ['all', 'Work', 'Personal', 'Local', 'Events', 'Faith'];
 
   useEffect(() => {
     if (user) {
@@ -102,7 +105,8 @@ export const SavedView: React.FC = () => {
   const filteredItems = savedItems.filter(item => {
     const matchesFilter = filter === 'all' || item.type === filter;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    const matchesLabel = labelFilter === 'all' || (item as any).label === labelFilter;
+    return matchesFilter && matchesSearch && matchesLabel;
   });
 
   const getTypeIcon = (type: string) => {
@@ -144,6 +148,25 @@ export const SavedView: React.FC = () => {
             </button>
           ))}
         </div>
+
+        {/* Collection Labels */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '4px', marginTop: '8px' }}>
+          {LABELS.map(label => (
+            <button
+              key={label}
+              onClick={() => setLabelFilter(label)}
+              style={{
+                flexShrink: 0, padding: '4px 14px', borderRadius: '16px', fontSize: '0.78rem',
+                fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease',
+                background: labelFilter === label ? 'var(--primary)' : 'rgba(255,255,255,0.06)',
+                color: labelFilter === label ? '#fff' : 'var(--text-muted)',
+                border: labelFilter === label ? 'none' : '1px solid var(--border)'
+              }}
+            >
+              {label === 'all' ? '🗂 All Collections' : label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <div className="saved-content">
@@ -175,7 +198,6 @@ export const SavedView: React.FC = () => {
                       <Trash2 size={16} />
                     </button>
                     <button className="card-btn primary" onClick={() => {
-                      // Logic to navigate to post detail could be added here
                       if (item.postId) {
                         window.location.hash = `#/post/${item.postId}`;
                       }

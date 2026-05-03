@@ -14,7 +14,8 @@ import {
   Globe,
   Building2,
   Loader2,
-  Play
+  Play,
+  Pin
 } from 'lucide-react';
 import { SocialFeed } from './SocialFeed';
 import { PostCard } from './PostCard';
@@ -237,6 +238,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('Posts');
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [pinnedPost, setPinnedPost] = useState<any>(null);
+  const [isFollowingProfile, setIsFollowingProfile] = useState(false);
 
   const targetId = profileId || user.id;
   const isOwnProfile = !profileId || profileId === user.id;
@@ -248,18 +253,50 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', targetId)
-        .single();
-      
-      if (data) setProfile(data);
+      const [profileRes, followersRes, followingRes, followingMeRes, pinnedRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', targetId).single(),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', targetId),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', targetId),
+        user.id !== targetId
+          ? supabase.from('follows').select('id').eq('follower_id', user.id).eq('following_id', targetId).maybeSingle()
+          : Promise.resolve({ data: null }),
+        supabase.from('posts').select(`*, author:profiles!posts_profile_id_fkey(id,name,avatar_url,role,community,is_verified,email)`)
+          .eq('profile_id', targetId).eq('is_pinned', true).maybeSingle(),
+      ]);
+
+      if (profileRes.data) setProfile(profileRes.data);
+      setFollowerCount(followersRes.count || 0);
+      setFollowingCount(followingRes.count || 0);
+      setIsFollowingProfile(!!followingMeRes.data);
+      if (pinnedRes.data) setPinnedPost(pinnedRes.data);
       setLoading(false);
     };
-
     fetchProfile();
   }, [user.id, profileId]);
+
+  const handleFollowToggle = async () => {
+    if (!user || isOwnProfile) return;
+    const nowFollowing = !isFollowingProfile;
+    setIsFollowingProfile(nowFollowing);
+    setFollowerCount(c => nowFollowing ? c + 1 : Math.max(0, c - 1));
+    if (nowFollowing) {
+      await supabase.from('follows').insert({ follower_id: user.id, following_id: targetId });
+    } else {
+      await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', targetId);
+    }
+  };
+
+  const handlePinPost = async (postId: string, currentlyPinned: boolean) => {
+    // Unpin all first, then pin the selected
+    await supabase.from('posts').update({ is_pinned: false }).eq('profile_id', user.id);
+    if (!currentlyPinned) {
+      await supabase.from('posts').update({ is_pinned: true }).eq('id', postId);
+      const { data } = await supabase.from('posts').select(`*, author:profiles!posts_profile_id_fkey(id,name,avatar_url,role,community,is_verified,email)`).eq('id', postId).single();
+      setPinnedPost(data);
+    } else {
+      setPinnedPost(null);
+    }
+  };
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, bucket: 'avatars' | 'banners') => {
     const file = event.target.files?.[0];
@@ -358,7 +395,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {isOwnProfile ? (
             <button className="edit-profile-btn" onClick={() => onNavigate(10)}>Edit Profile</button>
           ) : (
-            <button className="edit-profile-btn primary">Follow</button>
+            <button
+              className={`edit-profile-btn ${isFollowingProfile ? '' : 'primary'}`}
+              onClick={handleFollowToggle}
+            >
+              {isFollowingProfile ? 'Following ✓' : 'Follow'}
+            </button>
           )}
         </div>
       </div>
@@ -436,6 +478,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         )}
 
         <p className="profile-bio">{profile?.bio || (isVendor ? "Welcome to our store! We're proud to serve the community." : "Proud member of the SETX 360 community.")}</p>
+
+        {/* Follower / Following Counts */}
+        <div style={{ display: 'flex', gap: '24px', marginTop: '12px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)' }}>{followerCount.toLocaleString()}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Followers</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)' }}>{followingCount.toLocaleString()}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Following</div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -454,14 +508,44 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       {/* Tab Content */}
       <div className="profile-content-scroll">
         {activeTab === 'Posts' && (
-          <SocialFeed 
-            showFilters={false} 
-            showFAB={false} 
-            user={user} 
-            filterUserId={targetId}
-            onNavigateToPost={onNavigateToPost}
-            onNavigateToProfile={onNavigateToProfile}
-          />
+          <>
+            {/* Pinned Post */}
+            {pinnedPost && (
+              <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px 4px', fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700 }}>
+                  <Pin size={12} /> Pinned Post
+                </div>
+                <PostCard
+                  post={pinnedPost}
+                  user={user}
+                  onPollVote={() => {}}
+                  onDelete={() => {}}
+                  onRepost={() => {}}
+                  onShare={() => {}}
+                  onNavigateToPost={onNavigateToPost}
+                  onNavigateToProfile={onNavigateToProfile}
+                />
+                {isOwnProfile && (
+                  <button
+                    onClick={() => handlePinPost(pinnedPost.id, true)}
+                    title="Unpin post"
+                    style={{ position: 'absolute', top: 8, right: 16, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '8px', padding: '4px 10px', fontSize: '0.72rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Unpin
+                  </button>
+                )}
+                <div style={{ height: '1px', background: 'var(--border)', margin: '4px 16px 8px' }} />
+              </div>
+            )}
+            <SocialFeed 
+              showFilters={false} 
+              showFAB={false} 
+              user={user} 
+              filterUserId={targetId}
+              onNavigateToPost={onNavigateToPost}
+              onNavigateToProfile={onNavigateToProfile}
+            />
+          </>
         )}
 
         {activeTab === 'Likes' && (

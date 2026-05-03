@@ -907,24 +907,33 @@ const App: React.FC = () => {
           {/* Right: User Badge + Theme Toggle */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
             {user ? (
-              <div 
-                className="user-profile-badge" 
-                onClick={() => !user.role.startsWith('v_') && setIsVerifying(true)}
-                style={{ 
-                  display: 'flex', 
-                  gap: '8px',
-                  alignItems: 'center', 
-                  cursor: user.role.startsWith('v_') ? 'default' : 'pointer',
-                  padding: '4px',
-                  borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.05)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {getBadgeIcon(user.role)}
+              <>
+                <button
+                  onClick={toggleTheme}
+                  title="Toggle theme"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '6px 8px', cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center' }}
+                >
+                  {theme.includes('light') ? <Moon size={18} /> : <Sun size={18} />}
+                </button>
+                <div 
+                  className="user-profile-badge" 
+                  onClick={() => !user.role.startsWith('v_') && setIsVerifying(true)}
+                  style={{ 
+                    display: 'flex', 
+                    gap: '8px',
+                    alignItems: 'center', 
+                    cursor: user.role.startsWith('v_') ? 'default' : 'pointer',
+                    padding: '4px',
+                    borderRadius: '12px',
+                    background: 'rgba(255,255,255,0.05)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {getBadgeIcon(user.role)}
+                  </div>
+                  <Avatar url={user.avatar_url} name={user.name} size={32} />
                 </div>
-                <Avatar url={user.avatar_url} name={user.name} size={32} />
-              </div>
+              </>
             ) : (
               <button 
                 onClick={toggleTheme}

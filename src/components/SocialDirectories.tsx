@@ -82,6 +82,11 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Suggested: non-followed users from same community (max 6)
+  const suggestedUsers = !searchTerm
+    ? users.filter(u => u.id !== currentUser?.id && !followingMap[u.id]).slice(0, 6)
+    : [];
+
   return (
     <div className="directory-view">
       <div className="search-header glass">
@@ -96,6 +101,33 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
           />
         </div>
       </div>
+
+      {/* Suggested Users Strip */}
+      {suggestedUsers.length > 0 && (
+        <div style={{ padding: '12px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              👥 People in Your Area
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '8px' }}>
+            {suggestedUsers.map(u => (
+              <div key={u.id} style={{ flexShrink: 0, width: 100, textAlign: 'center', background: 'var(--bg-soft)', borderRadius: '16px', padding: '12px 8px', border: '1px solid var(--border)' }}>
+                <img src={getAvatarUrl(u)} alt={u.name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', marginBottom: '6px' }} />
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{u.community || 'Local'}</div>
+                <button
+                  onClick={() => handleFollow(u.id)}
+                  style={{ fontSize: '0.72rem', fontWeight: 700, padding: '4px 12px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer' }}
+                >
+                  + Follow
+                </button>
+              </div>
+            ))}
+          </div>
+          <div style={{ height: '1px', background: 'var(--border)', margin: '8px 0' }} />
+        </div>
+      )}
 
       <div className="directory-list">
         {loading ? (

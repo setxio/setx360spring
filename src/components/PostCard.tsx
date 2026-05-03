@@ -50,6 +50,26 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [userReaction, setUserReaction] = useState<string | null>(() => 
+    localStorage.getItem(`reaction_${post.id}`) || null
+  );
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
+
+  const REACTIONS = ['❤️', '😂', '😮', '😢'];
+
+  const handleReaction = (emoji: string) => {
+    if (!user) return;
+    const next = userReaction === emoji ? null : emoji;
+    setUserReaction(next);
+    if (next) localStorage.setItem(`reaction_${post.id}`, next);
+    else localStorage.removeItem(`reaction_${post.id}`);
+    setReactionCounts(prev => {
+      const updated = { ...prev };
+      if (userReaction) updated[userReaction] = Math.max(0, (updated[userReaction] || 0) - 1);
+      if (next) updated[next] = (updated[next] || 0) + 1;
+      return updated;
+    });
+  };
 
   const extractYoutubeId = (text: string) => {
     if (!text) return null;
@@ -312,8 +332,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           </button>
         </div>
         
-        <div 
-          className="view-count"
+        <div className="view-count"
           style={user?.id === contentPost.profile_id ? { cursor: 'pointer', color: 'var(--primary)' } : {}}
           onClick={(e) => {
             e.stopPropagation();
@@ -327,6 +346,33 @@ export const PostCard: React.FC<PostCardProps> = ({
           <span>{contentPost.views || 0}</span>
           {user?.id === contentPost.profile_id && <BarChart2 size={14} style={{ marginLeft: 4 }} />}
         </div>
+      </div>
+
+      {/* Emoji Reactions Row */}
+      <div style={{ display: 'flex', gap: '6px', padding: '4px 0 8px', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+        {REACTIONS.map(emoji => {
+          const count = reactionCounts[emoji] || 0;
+          const isActive = userReaction === emoji;
+          return (
+            <button
+              key={emoji}
+              onClick={() => handleReaction(emoji)}
+              title={user ? `React with ${emoji}` : 'Sign in to react'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '4px',
+                padding: '3px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600,
+                border: isActive ? '1px solid var(--primary)' : '1px solid var(--border)',
+                background: isActive ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.04)',
+                color: isActive ? 'var(--primary)' : 'var(--text-muted)',
+                cursor: user ? 'pointer' : 'default',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span style={{ fontSize: '1rem' }}>{emoji}</span>
+              {count > 0 && <span>{count}</span>}
+            </button>
+          );
+        })}
       </div>
 
       {/* Comment Preview Carousel */}
