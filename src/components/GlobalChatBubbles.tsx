@@ -357,7 +357,7 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user, navV
       {/* New Chat FAB */}
       <div ref={newChatRef} style={{ position: 'relative', pointerEvents: 'auto', alignSelf: 'flex-end' }}>
         {newChatOpen && (
-          <div className="new-chat-panel" style={{ position: 'absolute', bottom: '52px', right: 0 }}>
+          <div className="new-chat-panel" style={{ position: 'absolute', bottom: '52px', left: 0, right: 'auto' }}>
             <input
               autoFocus
               type="text"

@@ -1,7 +1,7 @@
 .global-bubbles-container {
   position: fixed;
-  bottom: 170px; /* Sits above both footers (80px nav + 60px switcher + 30px gap) */
-  right: 20px;
+  bottom: 170px;
+  right: 84px; /* Clears the 56px post FAB at right:20px + 8px gap */
   display: flex;
   flex-direction: column-reverse;
   gap: 12px;
@@ -10,7 +10,6 @@
   transition: bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* When nav hides, bubbles shift down to fill the space */
 .global-bubbles-container.nav-hidden {
   bottom: 24px;
 }
@@ -261,12 +260,14 @@
 @media (max-width: 768px) {
   .global-bubbles-container {
     bottom: 160px;
+    right: 84px;
   }
   .global-bubbles-container.nav-hidden {
     bottom: 24px;
   }
   .mini-chat-window {
-    width: calc(100vw - 40px);
+    width: calc(100vw - 104px); /* Narrower so it doesn't bleed past the FAB */
+    max-height: 55vh;           /* Don't take over the whole screen */
   }
 }
 

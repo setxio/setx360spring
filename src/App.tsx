@@ -153,13 +153,14 @@ const App: React.FC = () => {
     // Show nav immediately on mount, start idle countdown
     showNav();
     const onActivity = () => showNav();
-    window.addEventListener('scroll', onActivity, { passive: true });
-    window.addEventListener('touchstart', onActivity, { passive: true });
-    window.addEventListener('mousemove', onActivity, { passive: true });
+    // Use capture:true so scroll from any nested scrollable div is caught (critical on mobile)
+    document.addEventListener('scroll', onActivity, { passive: true, capture: true });
+    document.addEventListener('touchstart', onActivity, { passive: true, capture: true });
+    document.addEventListener('touchmove', onActivity, { passive: true, capture: true });
     return () => {
-      window.removeEventListener('scroll', onActivity);
-      window.removeEventListener('touchstart', onActivity);
-      window.removeEventListener('mousemove', onActivity);
+      document.removeEventListener('scroll', onActivity, { capture: true } as any);
+      document.removeEventListener('touchstart', onActivity, { capture: true } as any);
+      document.removeEventListener('touchmove', onActivity, { capture: true } as any);
       if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
     };
   }, [showNav]);
