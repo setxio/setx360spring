@@ -317,8 +317,13 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
         // Auto-refresh fallback after 10 seconds if realtime fails or Gemini is slow
         setTimeout(() => setIsTevisThinking(false), 10000);
       }
-      // fetchPostAndComments() is NOT needed here because the Realtime subscription 
-      // will trigger refreshCommentsOnly() as soon as the database insert is complete.
+      
+      // Update local post count for instant feedback in the PostCard
+      setPost((prev: any) => prev ? ({
+        ...prev,
+        comments_count: (prev.comments_count || 0) + 1
+      }) : prev);
+
       setIsSubmitting(false);
     }
   };
@@ -348,6 +353,10 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
     
     // Optimistic UI update for real-time feel
     setComments(prev => prev.filter(c => c.id !== commentId));
+    setPost((prev: any) => prev ? ({
+      ...prev,
+      comments_count: Math.max(0, (prev.comments_count || 0) - 1)
+    }) : prev);
 
     const { error } = await supabase
       .from('comments')

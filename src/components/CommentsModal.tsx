@@ -170,10 +170,6 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
       console.error('Error posting comment:', error);
       alert("Failed to post comment. Please try again.");
     } else {
-      // Also update post comment count
-      const { error: rpcError } = await supabase.rpc('increment_post_comments', { post_id_val: postId });
-      if (rpcError) console.error("Could not increment count via RPC", rpcError);
-        
       setNewComment('');
       setReplyTo(null);
       // fetchComments() is NOT needed here because Realtime handles the refresh silently
