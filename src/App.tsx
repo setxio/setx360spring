@@ -973,7 +973,7 @@ const App: React.FC = () => {
         
 
         {user && (
-          <div className="top-switch-container" style={{ padding: '4px 0 8px' }}>
+          <div className={`top-switch-container ${!navVisible ? 'header-hidden' : ''}`} style={{ padding: '4px 0 8px' }}>
             <div className="two-notches">
               <div 
                 className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} 
@@ -993,7 +993,7 @@ const App: React.FC = () => {
 
         {/* Search Bar Header */}
         {user && (
-          <header className="main-header" style={{ padding: '0 16px 8px' }}>
+          <header className={`main-header ${!navVisible ? 'header-hidden' : ''}`} style={{ padding: '0 16px 8px' }}>
             <div className="header-content" style={{ display: 'block' }}>
               <button 
                 className="header-action-btn search-trigger" 
