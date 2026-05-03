@@ -139,31 +139,38 @@ const App: React.FC = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
-  // Smart nav auto-hide
-  const [navVisible, setNavVisible] = useState(true);
+  // Smart nav auto-hide — uses direct DOM manipulation to avoid React re-render pulsing
   const navIdleTimer = React.useRef<any>(null);
-
-  const showNav = React.useCallback(() => {
-    setNavVisible(true);
-    if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
-    navIdleTimer.current = setTimeout(() => setNavVisible(false), 2000);
-  }, []);
+  const navIsHidden = React.useRef(false);
 
   useEffect(() => {
-    // Show nav immediately on mount, start idle countdown
+    const hideTargets = () => document.querySelectorAll('.auto-hide-target');
+    
+    const showNav = () => {
+      if (navIsHidden.current) {
+        hideTargets().forEach(el => el.classList.remove('nav-hidden', 'header-hidden'));
+        navIsHidden.current = false;
+      }
+      if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
+      navIdleTimer.current = setTimeout(() => {
+        hideTargets().forEach(el => el.classList.add(
+          el.classList.contains('env-switcher-footer') || el.classList.contains('bottom-nav') ? 'nav-hidden' : 'header-hidden'
+        ));
+        navIsHidden.current = true;
+      }, 2000);
+    };
+
     showNav();
-    const onActivity = () => showNav();
-    // Use capture:true so scroll from any nested scrollable div is caught (critical on mobile)
-    document.addEventListener('scroll', onActivity, { passive: true, capture: true });
-    document.addEventListener('touchstart', onActivity, { passive: true, capture: true });
-    document.addEventListener('touchmove', onActivity, { passive: true, capture: true });
+    document.addEventListener('scroll', showNav, { passive: true, capture: true });
+    document.addEventListener('touchstart', showNav, { passive: true, capture: true });
+    document.addEventListener('touchmove', showNav, { passive: true, capture: true });
     return () => {
-      document.removeEventListener('scroll', onActivity, { capture: true } as any);
-      document.removeEventListener('touchstart', onActivity, { capture: true } as any);
-      document.removeEventListener('touchmove', onActivity, { capture: true } as any);
+      document.removeEventListener('scroll', showNav, { capture: true } as any);
+      document.removeEventListener('touchstart', showNav, { capture: true } as any);
+      document.removeEventListener('touchmove', showNav, { capture: true } as any);
       if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
     };
-  }, [showNav]);
+  }, []);
   
   // Notch discovery pulse — shows for first 3 sessions, stops after first interaction
   const NOTCH_KEY = 'setx360_notch_sessions';
@@ -974,7 +981,7 @@ const App: React.FC = () => {
         
 
         {user && (
-          <div className={`top-switch-container ${!navVisible ? 'header-hidden' : ''}`} style={{ padding: '4px 0 8px' }}>
+          <div className="top-switch-container auto-hide-target" style={{ padding: '4px 0 8px' }}>
             <div className="two-notches">
               <div 
                 className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} 
@@ -994,7 +1001,7 @@ const App: React.FC = () => {
 
         {/* Search Bar Header */}
         {user && (
-          <header className={`main-header ${!navVisible ? 'header-hidden' : ''}`} style={{ padding: '0 16px 8px' }}>
+          <header className="main-header auto-hide-target" style={{ padding: '0 16px 8px' }}>
             <div className="header-content" style={{ display: 'block' }}>
               <button 
                 className="header-action-btn search-trigger" 
@@ -1122,7 +1129,7 @@ const App: React.FC = () => {
 
       {/* Environment Switcher Footer */}
       {user && (
-        <div className={`env-switcher-footer ${!navVisible ? 'nav-hidden' : ''}`}>
+        <div className="env-switcher-footer auto-hide-target">
           <div className="switcher-wrapper glass">
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}>
               <ChevronLeft size={20} />
@@ -1191,7 +1198,7 @@ const App: React.FC = () => {
 
       {/* FOOTER: Bottom Navigation */}
       {user && (
-        <nav className={`bottom-nav glass ${!navVisible ? 'nav-hidden' : ''}`}>
+        <nav className="bottom-nav glass auto-hide-target">
           <div className="nav-items-scroll">
             {currentNav.map((item, index) => (
               <button
@@ -1212,7 +1219,7 @@ const App: React.FC = () => {
       )}
 
       <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
-      <GlobalChatBubbles user={user} navVisible={navVisible} />
+      <GlobalChatBubbles user={user} />
 
       {showOnboarding && (
         <OnboardingOverlay onComplete={() => setShowOnboarding(false)} />

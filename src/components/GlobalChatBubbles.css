@@ -1,17 +1,13 @@
 .global-bubbles-container {
   position: fixed;
   bottom: 170px;
-  right: 84px; /* Clears the 56px post FAB at right:20px + 8px gap */
+  right: 20px;
   display: flex;
   flex-direction: column-reverse;
   gap: 12px;
   z-index: 1000;
   pointer-events: none;
-  transition: bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.global-bubbles-container.nav-hidden {
-  bottom: 24px;
+  cursor: grab;
 }
 
 .chat-bubble-widget {
@@ -260,14 +256,11 @@
 @media (max-width: 768px) {
   .global-bubbles-container {
     bottom: 160px;
-    right: 84px;
-  }
-  .global-bubbles-container.nav-hidden {
-    bottom: 24px;
+    right: 20px;
   }
   .mini-chat-window {
-    width: calc(100vw - 104px); /* Narrower so it doesn't bleed past the FAB */
-    max-height: 55vh;           /* Don't take over the whole screen */
+    width: calc(100vw - 40px);
+    max-height: 55vh;
   }
 }
 

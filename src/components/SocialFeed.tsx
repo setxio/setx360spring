@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
-import { Plus, Loader2, Megaphone, MapPin, TrendingUp, Rss } from 'lucide-react';
+import { Plus, Loader2, MapPin, TrendingUp, Rss } from 'lucide-react';
 import { FeedFilters } from './FeedFilters';
 import { CreatePostModal } from './CreatePostModal';
 import { AdCreationModal } from './AdCreationModal';
@@ -47,8 +47,6 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
   const [hasActiveAlert, setHasActiveAlert] = useState(false);
 
-  // Check if user is allowed to post ads
-  const canPromote = user && ['admin', 'business', 'v_business', 'venue', 'v_venue', 'non_profit', 'v_non_profit'].includes(user.role);
 
   useEffect(() => {
     fetchContent();
@@ -767,16 +765,6 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       {showFAB && (
         <>
           <div className="fab-group">
-            {canPromote && (
-              <button 
-                className="social-fab promote-fab" 
-                onClick={() => setIsPromoting(true)}
-                title="Promote with Ads"
-                style={{ bottom: '90px', background: 'var(--secondary)' }}
-              >
-                <Megaphone size={24} />
-              </button>
-            )}
             <button className="social-fab" onClick={() => setIsPosting(true)}>
               <Plus size={28} />
             </button>

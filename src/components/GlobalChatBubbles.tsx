@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 import { useApp } from '../context/AppContext';
-import { X, Send, Loader2, Minimize2, MessageSquarePlus } from 'lucide-react';
+import { X, Send, Loader2, Minimize2 } from 'lucide-react';
 import './GlobalChatBubbles.css';
 
 interface Message {
@@ -23,24 +23,68 @@ interface ChatSession {
 
 interface GlobalChatBubblesProps {
   user: any;
-  navVisible?: boolean;
 }
 
-export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user, navVisible = true }) => {
+export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) => {
   const [sessions, setSessions] = useState<Record<string, ChatSession>>({});
   const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [isTyping, setIsTyping] = useState(false);
-  const [newChatOpen, setNewChatOpen] = useState(false);
-  const [newChatSearch, setNewChatSearch] = useState('');
-  const [newChatResults, setNewChatResults] = useState<any[]>([]);
   const { onlineUsers } = useApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<any>(null);
   const isTypingRef = useRef(false);
-  const newChatRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // --- Drag support ---
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+
+  const onDragStart = (e: React.TouchEvent | React.MouseEvent) => {
+    if (expandedChatId) return; // don't drag while a chat is open
+    const el = containerRef.current;
+    if (!el) return;
+    isDragging.current = true;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const rect = el.getBoundingClientRect();
+    dragOffset.current = { x: clientX - rect.left, y: clientY - rect.top };
+    el.style.transition = 'none';
+  };
+
+  useEffect(() => {
+    const onMove = (e: TouchEvent | MouseEvent) => {
+      if (!isDragging.current || !containerRef.current) return;
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+      const el = containerRef.current;
+      const newLeft = clientX - dragOffset.current.x;
+      const newTop = clientY - dragOffset.current.y;
+      // Clamp inside viewport
+      const maxX = window.innerWidth - el.offsetWidth;
+      const maxY = window.innerHeight - el.offsetHeight;
+      el.style.left = `${Math.max(0, Math.min(newLeft, maxX))}px`;
+      el.style.top = `${Math.max(0, Math.min(newTop, maxY))}px`;
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+    };
+    const onEnd = () => {
+      isDragging.current = false;
+      if (containerRef.current) containerRef.current.style.transition = '';
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+    return () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -293,99 +337,15 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user, navV
     }
   };
 
-  // Search users for new chat
-  useEffect(() => {
-    if (!newChatSearch.trim()) { setNewChatResults([]); return; }
-    const timer = setTimeout(async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, name, avatar_url')
-        .ilike('name', `%${newChatSearch}%`)
-        .neq('id', user.id)
-        .limit(6);
-      setNewChatResults(data || []);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [newChatSearch]);
-
-  // Close new chat panel on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (newChatRef.current && !newChatRef.current.contains(e.target as Node)) {
-        setNewChatOpen(false);
-        setNewChatSearch('');
-        setNewChatResults([]);
-      }
-    };
-    if (newChatOpen) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [newChatOpen]);
-
-  const startNewChat = async (partnerId: string, partnerName: string, partnerAvatar?: string) => {
-    setNewChatOpen(false);
-    setNewChatSearch('');
-    setNewChatResults([]);
-    if (sessions[partnerId]) {
-      setExpandedChatId(partnerId);
-      return;
-    }
-    // Load existing messages with this person
-    const { data: msgs } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
-      .order('created_at', { ascending: true })
-      .limit(30);
-
-    setSessions(prev => ({
-      ...prev,
-      [partnerId]: {
-        profileId: partnerId,
-        name: partnerName,
-        avatar_url: partnerAvatar,
-        messages: msgs || [],
-        unread: 0,
-      }
-    }));
-    setExpandedChatId(partnerId);
-  };
-
-  if (!user) return null;
+  if (!user || Object.keys(sessions).length === 0) return null;
 
   return (
-    <div className={`global-bubbles-container ${!navVisible ? 'nav-hidden' : ''}`}>
-      {/* New Chat FAB */}
-      <div ref={newChatRef} style={{ position: 'relative', pointerEvents: 'auto', alignSelf: 'flex-end' }}>
-        {newChatOpen && (
-          <div className="new-chat-panel" style={{ position: 'absolute', bottom: '52px', left: 0, right: 'auto' }}>
-            <input
-              autoFocus
-              type="text"
-              placeholder="Search people..."
-              value={newChatSearch}
-              onChange={e => setNewChatSearch(e.target.value)}
-            />
-            {newChatResults.map(u => (
-              <div key={u.id} className="new-chat-result" onClick={() => startNewChat(u.id, u.name, u.avatar_url)}>
-                <img src={u.avatar_url || `https://ui-avatars.com/api/?name=${u.name}`} alt={u.name} />
-                <span>{u.name}</span>
-                {onlineUsers.has(u.id) && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />}
-              </div>
-            ))}
-            {newChatSearch && newChatResults.length === 0 && (
-              <div style={{ padding: '12px 16px', fontSize: '0.82rem', color: 'var(--text-muted)' }}>No users found</div>
-            )}
-          </div>
-        )}
-        <button
-          className="new-chat-fab"
-          onClick={() => setNewChatOpen(o => !o)}
-          title="Start a new conversation"
-        >
-          {newChatOpen ? <X size={20} /> : <MessageSquarePlus size={20} />}
-        </button>
-      </div>
-
+    <div
+      ref={containerRef}
+      className="global-bubbles-container"
+      onMouseDown={onDragStart}
+      onTouchStart={onDragStart}
+    >
       {Object.values(sessions).map(session => {
         const isExpanded = expandedChatId === session.profileId;
 
