@@ -139,36 +139,65 @@ const App: React.FC = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
-  // Smart nav auto-hide — uses direct DOM manipulation to avoid React re-render pulsing
-  const navIdleTimer = React.useRef<any>(null);
-  const navIsHidden = React.useRef(false);
-
   useEffect(() => {
-    const hideTargets = () => document.querySelectorAll('.auto-hide-target');
-    
-    const showNav = () => {
-      if (navIsHidden.current) {
-        hideTargets().forEach(el => el.classList.remove('nav-hidden', 'header-hidden'));
-        navIsHidden.current = false;
-      }
-      if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
-      navIdleTimer.current = setTimeout(() => {
-        hideTargets().forEach(el => el.classList.add(
-          el.classList.contains('env-switcher-footer') || el.classList.contains('bottom-nav') ? 'nav-hidden' : 'header-hidden'
-        ));
-        navIsHidden.current = true;
-      }, 2000);
+    let lastY = window.scrollY;
+    let timer: any = null;
+    let isHidden = false;
+    const targets = () => document.querySelectorAll('.auto-hide-target');
+
+    const updateClasses = (hide: boolean) => {
+      if (isHidden === hide) return;
+      isHidden = hide;
+      targets().forEach(el => {
+        const isHeader = el.classList.contains('main-header') || el.classList.contains('top-switch-container');
+        if (hide) {
+          el.classList.add(isHeader ? 'header-hidden' : 'nav-hidden');
+        } else {
+          el.classList.remove('header-hidden', 'nav-hidden');
+        }
+      });
     };
 
-    showNav();
-    document.addEventListener('scroll', showNav, { passive: true, capture: true });
-    document.addEventListener('touchstart', showNav, { passive: true, capture: true });
-    document.addEventListener('touchmove', showNav, { passive: true, capture: true });
+    const handleActivity = (e?: Event) => {
+      const currentY = window.scrollY;
+      const isScroll = e?.type === 'scroll';
+      const isDown = isScroll && currentY > lastY && currentY > 60;
+      const isUp = isScroll && currentY < lastY;
+      const isTop = currentY < 20;
+
+      if (timer) clearTimeout(timer);
+
+      if (isTop) {
+        updateClasses(false);
+      } else if (isDown) {
+        // Hide immediately when scrolling down for maximum real estate
+        updateClasses(true);
+      } else if (isUp || !isScroll) {
+        // Show on scroll up, touch, or mouse move
+        updateClasses(false);
+        // But hide after 2 seconds of idleness
+        timer = setTimeout(() => {
+          if (window.scrollY > 60) updateClasses(true);
+        }, 2000);
+      }
+
+      if (isScroll) lastY = currentY;
+    };
+
+    // Initial state: show everything
+    updateClasses(false);
+
+    document.addEventListener('scroll', handleActivity, { passive: true, capture: true });
+    document.addEventListener('touchstart', handleActivity, { passive: true, capture: true });
+    document.addEventListener('mousemove', handleActivity, { passive: true });
+    document.addEventListener('touchmove', handleActivity, { passive: true, capture: true });
+
     return () => {
-      document.removeEventListener('scroll', showNav, { capture: true } as any);
-      document.removeEventListener('touchstart', showNav, { capture: true } as any);
-      document.removeEventListener('touchmove', showNav, { capture: true } as any);
-      if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
+      document.removeEventListener('scroll', handleActivity, { capture: true } as any);
+      document.removeEventListener('touchstart', handleActivity, { capture: true } as any);
+      document.removeEventListener('mousemove', handleActivity);
+      document.removeEventListener('touchmove', handleActivity, { capture: true } as any);
+      if (timer) clearTimeout(timer);
     };
   }, []);
   
