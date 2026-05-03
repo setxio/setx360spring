@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy } from 'react';
 import { 
   Loader2
 } from 'lucide-react';
@@ -60,12 +60,11 @@ const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 
 import { useApp } from './context/AppContext';
-import { shouldShowOnboarding } from './components/OnboardingOverlay';
 
 const App: React.FC = () => {
   const { 
     user, env, theme, scope, activeTab, isLoading,
-    setEnv, setTheme, setScope, setActiveTab, setIsSearchOpen, toggleTheme, updateUser
+    setEnv, setTheme, setActiveTab, setIsSearchOpen, toggleTheme, updateUser
   } = useApp();
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
