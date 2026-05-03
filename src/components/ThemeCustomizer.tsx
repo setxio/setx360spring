@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette, Check, LayoutGrid, Monitor, Smartphone, Sparkles } from 'lucide-react';
+import { Palette, Check, LayoutGrid, Monitor, Smartphone } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import type { Theme } from '../context/AppContext';
 import './ThemeCustomizer.css';
@@ -54,14 +54,6 @@ export const ThemeCustomizer: React.FC = () => {
           <Smartphone size={16} />
           <span>Minimalist</span>
           {layout === 'minimal' && <Check size={12} className="check-icon" />}
-        </button>
-        <button 
-          className={`preset-btn ${layout === 'setx-v1' ? 'active' : ''}`}
-          onClick={() => setLayout('setx-v1')}
-        >
-          <Sparkles size={16} />
-          <span>SETX v1</span>
-          {layout === 'setx-v1' && <Check size={12} className="check-icon" />}
         </button>
       </div>
     </div>

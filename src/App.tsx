@@ -78,7 +78,6 @@ import { GlobalChatBubbles } from './components/GlobalChatBubbles';
 import { OnboardingOverlay, shouldShowOnboarding } from './components/OnboardingOverlay';
 import { ClassicLayout } from './components/ClassicLayout';
 import { MinimalLayout } from './components/MinimalLayout';
-import { SETXV1Layout } from './components/SETXV1Layout';
 
 // Heavy page-level components (lazy loaded on demand)
 const SearchOverlay    = lazy(() => import('./components/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
@@ -142,7 +141,7 @@ const App: React.FC = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
-  // Auto-hide scroll logic is handled inside each layout component (ClassicLayout, SETXV1Layout)
+  // Auto-hide scroll logic is handled inside each layout component (ClassicLayout, MinimalLayout)
   // to avoid duplicate handlers fighting over the same DOM classes.
   
   // Notch discovery pulse — shows for first 3 sessions, stops after first interaction
@@ -411,27 +410,6 @@ const App: React.FC = () => {
         setActivePostId={setActivePostId}
         setActiveStoreId={setActiveStoreId}
         setActiveProfileId={setActiveProfileId}
-        setActiveCommentId={setActiveCommentId}
-        updateAvailable={updateAvailable}
-        onUpdate={handleUpdate}
-      />
-    );
-  }
-
-  if (layout === 'setx-v1') {
-    return (
-      <SETXV1Layout 
-        renderView={renderView}
-        SearchOverlay={SearchOverlay}
-        activePostId={activePostId}
-        setActivePostId={setActivePostId}
-        activeStoreId={activeStoreId}
-        setActiveStoreId={setActiveStoreId}
-        activeProfileId={activeProfileId}
-        setActiveProfileId={setActiveProfileId}
-        activeGroupId={activeGroupId}
-        setActiveGroupId={setActiveGroupId}
-        activeCommentId={activeCommentId}
         setActiveCommentId={setActiveCommentId}
         updateAvailable={updateAvailable}
         onUpdate={handleUpdate}
