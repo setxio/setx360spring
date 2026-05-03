@@ -1,81 +1,10 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { 
-  Users, 
-  Rss, 
-  MessageSquare, 
-  Bell, 
-  Bookmark, 
-  User, 
-  ShoppingBag, 
-  Search, 
-  Store, 
-  ShoppingCart, 
-  Heart, 
-  UserCircle,
-  LayoutGrid,
-  Moon,
-  Sun,
-  Compass,
-  TrendingUp,
-  Zap,
-  Sparkles,
-  ShieldCheck,
-  BarChart3,
-  Settings,
-  Loader2,
-  CheckCircle,
-  Clock,
-  Home,
-  Monitor,
-  Package,
-  DollarSign,
-  Map,
-  MapPin,
-  Search as SearchIcon,
-  Utensils,
-  Car,
-  Calendar,
-  Wrench,
-  Briefcase,
-  Ticket,
-  QrCode,
-  Wallet as WalletIcon,
-  ArrowRightLeft,
-  CreditCard,
-  HeartPulse,
-  History as HistoryIcon,
-  Building,
-  CarFront,
-  Landmark,
-  Plane,
-  FileText,
-  MessageCircle,
-  Play,
-  Film,
-  Music,
-  Palette,
-  Church,
-  Trophy,
-  Activity,
-  CloudSun,
-  Newspaper,
-  AlertTriangle,
-  Megaphone,
-  Bot,
-  ChevronLeft,
-  ChevronRight
+  Loader2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
 // Always-needed lightweight components (static imports)
-import { ThemeTopBar } from './components/ThemeTopBar';
-import { Avatar } from './components/Avatar';
-import { SignUpFlow } from './components/SignUpFlow';
-import { VerificationModal } from './components/VerificationModal';
-import { TevisChat } from './components/TevisChat';
-import { GlobalChatBubbles } from './components/GlobalChatBubbles';
-import { OnboardingOverlay, shouldShowOnboarding } from './components/OnboardingOverlay';
 import { ClassicLayout } from './components/ClassicLayout';
 import { MinimalLayout } from './components/MinimalLayout';
 
@@ -130,16 +59,16 @@ const SportsView       = lazy(() => import('./components/SportsView').then(m => 
 const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(m => ({ default: m.WeatherNewsView })));
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 
-import { useApp, type Env } from './context/AppContext';
+import { useApp } from './context/AppContext';
+import { shouldShowOnboarding } from './components/OnboardingOverlay';
 
 const App: React.FC = () => {
   const { 
-    user, env, theme, scope, activeTab, unreadCount, isLoading, isSearchOpen, isSetxDomain,
-    setEnv, setTheme, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser, updateUser
+    user, env, theme, scope, activeTab, isLoading,
+    setEnv, setTheme, setScope, setActiveTab, setIsSearchOpen, toggleTheme, updateUser
   } = useApp();
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   
   // Auto-hide scroll logic is handled inside each layout component (ClassicLayout, MinimalLayout)
   // to avoid duplicate handlers fighting over the same DOM classes.
@@ -148,15 +77,6 @@ const App: React.FC = () => {
   const NOTCH_KEY = 'setx360_notch_sessions';
   const notchSessions = parseInt(localStorage.getItem(NOTCH_KEY) || '0', 10);
   const notchHasInteracted = localStorage.getItem('setx360_notch_interacted') === 'true';
-  const [showNotchPulse, setShowNotchPulse] = useState(!notchHasInteracted && notchSessions < 3);
-
-  const handleNotchInteraction = (newScope: 'county' | 'city') => {
-    setScope(newScope);
-    if (showNotchPulse) {
-      setShowNotchPulse(false);
-      localStorage.setItem('setx360_notch_interacted', 'true');
-    }
-  };
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -176,51 +96,14 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Show onboarding for first-time authenticated users
-    if (user && shouldShowOnboarding()) {
-      setShowOnboarding(true);
-    }
     // Increment session count for notch discovery pulse (max 3)
     if (user && !notchHasInteracted && notchSessions < 3) {
       localStorage.setItem(NOTCH_KEY, String(notchSessions + 1));
     }
-  }, [user]);
+  }, [user, notchHasInteracted, notchSessions]);
 
   const handleUpdate = () => {
     window.location.reload();
-  };
-
-  const envSwitcherRef = React.useRef<HTMLDivElement>(null);
-  const isInternalScroll = React.useRef(false);
-  const isInitialized = React.useRef(false);
-  const scrollTimeout = React.useRef<any>(null);
-
-  // Desktop Drag to scroll logic for switcher
-  const isDragging = React.useRef(false);
-  const startX = React.useRef(0);
-  const scrollLeft = React.useRef(0);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!envSwitcherRef.current) return;
-    isDragging.current = true;
-    startX.current = e.pageX - envSwitcherRef.current.offsetLeft;
-    scrollLeft.current = envSwitcherRef.current.scrollLeft;
-  };
-
-  const handleMouseLeave = () => {
-    isDragging.current = false;
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || !envSwitcherRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - envSwitcherRef.current.offsetLeft;
-    const walk = (x - startX.current) * 2;
-    envSwitcherRef.current.scrollLeft = scrollLeft.current - walk;
   };
 
 
