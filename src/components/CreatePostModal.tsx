@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Image, Video, BarChart2, Loader2, ChevronDown, Plus } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
+import { LinkPreviewCard, extractPreviewUrl } from './LinkPreviewCard';
 import './CreatePostModal.css';
 import './CreatePostModalMeta.css';
 
@@ -26,6 +27,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [location] = useState(user?.community || '');
   const [pollOptions, setPollOptions] = useState(['', '']);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   // New State for Redesign
   const [selectedTab, setSelectedTab] = useState<'post' | 'poll'>('post');
@@ -65,6 +67,11 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
+    // Debounce URL detection — wait 600ms after typing stops
+    const timer = setTimeout(() => {
+      setPreviewUrl(extractPreviewUrl(postContent));
+    }, 600);
+    return () => clearTimeout(timer);
   }, [postContent]);
 
   const feedOptions = [
@@ -271,6 +278,11 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 autoFocus
                 disabled={isSubmitting}
               />
+
+              {/* Link Preview */}
+              {previewUrl && selectedTab === 'post' && mediaPreviews.length === 0 && (
+                <LinkPreviewCard url={previewUrl} compact />
+              )}
 
               {/* Poll Interface integrated into body */}
               {selectedTab === 'poll' && (

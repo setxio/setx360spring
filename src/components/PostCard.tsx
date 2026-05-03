@@ -12,6 +12,7 @@ import { OptimizedImage } from './OptimizedImage';
 import { formatText } from '../utils/textFormatting';
 import { formatRelativeTime } from '../utils/dateUtils';
 import { PostStatsModal } from './PostStatsModal';
+import { LinkPreviewCard, extractPreviewUrl } from './LinkPreviewCard';
 import './PostCard.css';
 
 interface PostCardProps {
@@ -259,6 +260,12 @@ export const PostCard: React.FC<PostCardProps> = ({
           <div className="poll-footer">{contentPost.poll_data.total_votes || 0} votes</div>
         </div>
       )}
+
+      {/* Rich Link Preview — shown for text posts with a URL but no attached media */}
+      {!youtubeId && !(contentPost.media_urls?.length > 0) && (() => {
+        const linkUrl = extractPreviewUrl(contentPost.content || '');
+        return linkUrl ? <LinkPreviewCard url={linkUrl} /> : null;
+      })()}
 
       {/* Community Notes Section */}
       {communityNotes.length > 0 || (user && !isAuthor) ? (
