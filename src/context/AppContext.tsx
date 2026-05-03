@@ -12,6 +12,7 @@ export type Theme =
   | 'twilight-ii-light' | 'twilight-ii-dark'
   | 'efutura-light' | 'efutura-dark'
   | 'porch' | 'spring' | 'summer' | 'autumn' | 'winter' | 'dynamic' | 'custom';
+export type Layout = 'classic' | 'minimal' | 'setx-v1';
 
 import { getSeasonalTheme, applyCustomThemeVariables, clearCustomThemeVariables } from '../lib/theme';
 
@@ -37,6 +38,8 @@ interface AppContextType {
   updateUser: (data: any) => void;
   refreshUser: () => Promise<void>;
   isSetxDomain: boolean;
+  layout: Layout;
+  setLayout: (layout: Layout) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -58,6 +61,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('ecity_theme') as Theme) || 'setx-dark');
+  const [layout, setLayoutState] = useState<Layout>(() => (localStorage.getItem('ecity_layout') as Layout) || 'classic');
+  
   
   const [activeTab, setActiveTabState] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -104,6 +109,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       clearCustomThemeVariables();
     }
+  };
+
+  const setLayout = (val: Layout) => {
+    setLayoutState(val);
+    localStorage.setItem('ecity_layout', val);
   };
 
   const setActiveTab = (val: number) => {
@@ -320,7 +330,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await handleAuth(session.user);
       }
     },
-    isSetxDomain
+    isSetxDomain,
+    layout,
+    setLayout
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

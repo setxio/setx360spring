@@ -76,6 +76,9 @@ import { VerificationModal } from './components/VerificationModal';
 import { TevisChat } from './components/TevisChat';
 import { GlobalChatBubbles } from './components/GlobalChatBubbles';
 import { OnboardingOverlay, shouldShowOnboarding } from './components/OnboardingOverlay';
+import { ClassicLayout } from './components/ClassicLayout';
+import { MinimalLayout } from './components/MinimalLayout';
+import { SETXV1Layout } from './components/SETXV1Layout';
 
 // Heavy page-level components (lazy loaded on demand)
 const SearchOverlay    = lazy(() => import('./components/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
@@ -139,67 +142,8 @@ const App: React.FC = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
-  useEffect(() => {
-    let lastY = window.scrollY;
-    let timer: any = null;
-    let isHidden = false;
-    const targets = () => document.querySelectorAll('.auto-hide-target');
-
-    const updateClasses = (hide: boolean) => {
-      if (isHidden === hide) return;
-      isHidden = hide;
-      targets().forEach(el => {
-        const isHeader = el.classList.contains('main-header') || el.classList.contains('top-switch-container');
-        if (hide) {
-          el.classList.add(isHeader ? 'header-hidden' : 'nav-hidden');
-        } else {
-          el.classList.remove('header-hidden', 'nav-hidden');
-        }
-      });
-    };
-
-    const handleActivity = (e?: Event) => {
-      const currentY = window.scrollY;
-      const isScroll = e?.type === 'scroll';
-      const isDown = isScroll && currentY > lastY && currentY > 60;
-      const isUp = isScroll && currentY < lastY;
-      const isTop = currentY < 20;
-
-      if (timer) clearTimeout(timer);
-
-      if (isTop) {
-        updateClasses(false);
-      } else if (isDown) {
-        // Hide immediately when scrolling down for maximum real estate
-        updateClasses(true);
-      } else if (isUp || !isScroll) {
-        // Show on scroll up, touch, or mouse move
-        updateClasses(false);
-        // But hide after 2 seconds of idleness
-        timer = setTimeout(() => {
-          if (window.scrollY > 60) updateClasses(true);
-        }, 2000);
-      }
-
-      if (isScroll) lastY = currentY;
-    };
-
-    // Initial state: show everything
-    updateClasses(false);
-
-    document.addEventListener('scroll', handleActivity, { passive: true, capture: true });
-    document.addEventListener('touchstart', handleActivity, { passive: true, capture: true });
-    document.addEventListener('mousemove', handleActivity, { passive: true });
-    document.addEventListener('touchmove', handleActivity, { passive: true, capture: true });
-
-    return () => {
-      document.removeEventListener('scroll', handleActivity, { capture: true } as any);
-      document.removeEventListener('touchstart', handleActivity, { capture: true } as any);
-      document.removeEventListener('mousemove', handleActivity);
-      document.removeEventListener('touchmove', handleActivity, { capture: true } as any);
-      if (timer) clearTimeout(timer);
-    };
-  }, []);
+  // Auto-hide scroll logic is handled inside each layout component (ClassicLayout, SETXV1Layout)
+  // to avoid duplicate handlers fighting over the same DOM classes.
   
   // Notch discovery pulse — shows for first 3 sessions, stops after first interaction
   const NOTCH_KEY = 'setx360_notch_sessions';
@@ -294,154 +238,6 @@ const App: React.FC = () => {
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [isTevisOpen, setIsTevisOpen] = useState(false);
 
-  // Clear store/post detail views whenever the user navigates away
-  useEffect(() => {
-    setActiveStoreId(null);
-    setActivePostId(null);
-    setActiveCommentId(null);
-    setActiveProfileId(null);
-    setActiveGroupId(null);
-  }, [env, activeTab]);
-
-  // Notch Swipe Logic
-  const scopes: Array<'county' | 'city'> = ['county', 'city'];
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [touchYStart, setTouchYStart] = useState<number | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-    setTouchYStart(e.targetTouches[0].clientY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart || !touchEnd || !touchYStart) return;
-    
-    // Check vertical touch end to prevent interference with vertical scroll
-    const touchYEnd = e.changedTouches[0].clientY;
-    const xDiff = touchStart - touchEnd;
-    const yDiff = touchYStart - touchYEnd;
-    
-    const minSwipeDistance = 70;
-    const isHorizontal = Math.abs(xDiff) > Math.abs(yDiff);
-    const isSETX = theme.startsWith('setx-');
-
-    if (isHorizontal && Math.abs(xDiff) > minSwipeDistance && !isSETX) {
-    const currentIndex = (scopes as any[]).indexOf(scope);
-    if (xDiff > 0) {
-      // Swipe Left -> More Local
-      if (currentIndex < scopes.length - 1) setScope(scopes[currentIndex + 1] as any);
-    } else {
-      // Swipe Right -> More National
-      if (currentIndex > 0) setScope(scopes[currentIndex - 1] as any);
-    }
-    }
-    
-    setTouchStart(null);
-    setTouchEnd(null);
-    setTouchYStart(null);
-  };
-
-  // Center Active Environment Pill
-  useEffect(() => {
-    if (envSwitcherRef.current) {
-      const container = envSwitcherRef.current;
-      
-      const performCentering = () => {
-        const activeBtn = container.querySelector('.sw-btn.active') as HTMLElement;
-        if (activeBtn) {
-          isInternalScroll.current = true;
-          const targetScroll = activeBtn.offsetLeft - (container.offsetWidth / 3);
-          container.scrollLeft = targetScroll;
-          
-          // Re-verify after a short delay to fight browser scroll restoration
-          setTimeout(() => {
-            container.scrollLeft = targetScroll;
-            isInitialized.current = true;
-            isInternalScroll.current = false;
-          }, 100);
-        }
-      };
-
-      // Initial run
-      performCentering();
-      
-      // Secondary run to catch layout shifts
-      const timeout = setTimeout(performCentering, 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [env]);
-
-
-
-  const handleSwitcherScroll = () => {
-    if (!isInitialized.current) return;
-    if (envSwitcherRef.current) {
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      
-      // If we are doing a manual scroll (click), don't trigger detection
-      if (isInternalScroll.current) {
-        scrollTimeout.current = setTimeout(() => {
-          isInternalScroll.current = false;
-        }, 300); // Increased timeout for stability
-        return;
-      }
-
-      const container = envSwitcherRef.current;
-      const containerCenter = container.scrollLeft + container.offsetWidth / 2;
-      // Get only sw-btn that are NOT spacers
-      const children = Array.from(container.children) as HTMLElement[];
-      const validChildren = children.filter(c => !c.classList.contains('spacer'));
-      
-      let closestEnv: Env | null = null;
-      let minDistance = Infinity;
-
-      const isAdmin = user?.role === 'admin';
-      const envs: Env[] = ['discover', 'social', 'market', 'events', 'news', 'faith'];
-
-      const hasDashboardRole = user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role);
-      if (hasDashboardRole && !isAdmin) envs.push('dashboard');
-
-      validChildren.forEach((child, i) => {
-        const childCenter = child.offsetLeft + child.offsetWidth / 2;
-        const distance = Math.abs(containerCenter - childCenter);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestEnv = envs[i];
-        }
-      });
-
-      if (closestEnv && closestEnv !== env) {
-        // Tightened threshold for cleaner activation
-        const itemWidth = container.offsetWidth / 3;
-        if (minDistance < itemWidth * 0.15) {
-          setActiveStoreId(null);
-          setActivePostId(null);
-          setActiveGroupId(null);
-          setEnv(closestEnv);
-          setActiveTab(0);
-        }
-      }
-    }
-  };
-
-  const handleEnvClick = (newEnv: Env) => {
-    isInternalScroll.current = true;
-    setActiveStoreId(null);
-    setActivePostId(null);
-    setActiveGroupId(null);
-    setEnv(newEnv);
-    setActiveTab(0);
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => {
-      isInternalScroll.current = false;
-    }, 1000);
-  };
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // '/' to search, but not if typing in an input
@@ -454,229 +250,7 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setIsSearchOpen]);
 
-  const getBadgeIcon = (role: string) => {
-    if (role?.startsWith('v_')) return <CheckCircle size={14} color="var(--primary)" />;
-    if (role === 'admin') return <ShieldCheck size={14} color="var(--admin-gold)" />;
-    return <Clock size={14} style={{ opacity: 0.5 }} />;
-  };
-
-  // Navigation Items
-  const discoverNav = [
-    { icon: <Compass size={24} />, label: 'Discover' },
-    { icon: <TrendingUp size={24} />, label: 'Trending' },
-    { icon: <Zap size={24} />, label: 'Hot Deals' },
-    { icon: <Sparkles size={24} />, label: 'New' },
-    { icon: <Map size={24} />, label: 'Radar' },
-    { icon: <User size={24} />, label: 'My Vibes' },
-    { icon: <Bot size={24} color="var(--primary)" />, label: 'Tevis' },
-  ];
-
-  const socialNav = [
-    { icon: <Rss size={24} />, label: 'Feed' },
-    { icon: <ShoppingBag size={24} />, label: 'Classifieds' },
-    { icon: <Users size={24} />, label: 'Directory' },
-    { icon: <LayoutGrid size={24} />, label: 'Groups' },
-    { icon: <MessageSquare size={24} />, label: 'Messages' },
-    { icon: <Bookmark size={24} />, label: 'Saved' },
-    { icon: <Bell size={24} />, label: 'Alerts' },
-    { icon: <User size={24} />, label: 'Profile' },
-    { icon: <Settings size={24} />, label: 'System' },
-  ];
-
-  const marketNav = [
-    { icon: <Store size={24} />, label: 'Home' },
-    { icon: <Search size={24} />, label: 'Search' },
-    { icon: <LayoutGrid size={24} />, label: 'Stores' },
-    { icon: <ShoppingCart size={24} />, label: 'Cart' },
-    { icon: <Heart size={24} />, label: 'Wishlist' },
-    { icon: <UserCircle size={24} />, label: 'Account' },
-  ];
-
-  const eatsNav = [
-    { icon: <Utensils size={24} />, label: 'Home' },
-    { icon: <Search size={24} />, label: 'Explore' },
-    { icon: <ShoppingBag size={24} />, label: 'Orders' },
-    { icon: <Clock size={24} />, label: 'History' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const ridesNav = [
-    { icon: <Car size={24} />, label: 'Rides' },
-    { icon: <MapPin size={24} />, label: 'Pickup' },
-    { icon: <Calendar size={24} />, label: 'Reserve' },
-    { icon: <Clock size={24} />, label: 'Activity' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const servicesNav = [
-    { icon: <Wrench size={24} />, label: 'Home' },
-    { icon: <Briefcase size={24} />, label: 'Pros' },
-    { icon: <Calendar size={24} />, label: 'Schedule' },
-    { icon: <Clock size={24} />, label: 'Bookings' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const eventsNav = [
-    { icon: <Ticket size={24} />, label: 'Home' },
-    { icon: <Search size={24} />, label: 'Explore' },
-    { icon: <QrCode size={24} />, label: 'Passes' },
-    { icon: <Calendar size={24} />, label: 'Calendar' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const walletNav = [
-    { icon: <WalletIcon size={24} />, label: 'Home' },
-    { icon: <ArrowRightLeft size={24} />, label: 'Pay' },
-    { icon: <Sparkles size={24} />, label: 'Rewards' },
-    { icon: <CreditCard size={24} />, label: 'Cards' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const careNav = [
-    { icon: <HeartPulse size={24} />, label: 'Home' },
-    { icon: <Bell size={24} />, label: 'Alerts' },
-    { icon: <Map size={24} />, label: 'Hotspot' },
-    { icon: <HistoryIcon size={24} />, label: 'Log' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const homesNav = [
-    { icon: <Building size={24} />, label: 'Home' },
-    { icon: <SearchIcon size={24} />, label: 'Search' },
-    { icon: <Heart size={24} />, label: 'Saved' },
-    { icon: <DollarSign size={24} />, label: 'Finance' },
-    { icon: <User size={24} />, label: 'Agent' },
-  ];
-
-  const autoNav = [
-    { icon: <CarFront size={24} />, label: 'Home' },
-    { icon: <LayoutGrid size={24} />, label: 'Stock' },
-    { icon: <Landmark size={24} />, label: 'Finance' },
-    { icon: <Wrench size={24} />, label: 'Service' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const travelNav = [
-    { icon: <Plane size={24} />, label: 'Home' },
-    { icon: <Compass size={24} />, label: 'Explore' },
-    { icon: <ShoppingBag size={24} />, label: 'Bookings' },
-    { icon: <Map size={24} />, label: 'Guide' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const jobsNav = [
-    { icon: <Briefcase size={24} />, label: 'Jobs' },
-    { icon: <SearchIcon size={24} />, label: 'Search' },
-    { icon: <FileText size={24} />, label: 'Applied' },
-    { icon: <MessageCircle size={24} />, label: 'Messages' },
-    { icon: <User size={24} />, label: 'Profile' },
-  ];
-
-  const mediaNav = [
-    { icon: <Film size={24} />, label: 'Shorts' },
-    { icon: <Play size={24} />, label: 'Videos' },
-    { icon: <Music size={24} />, label: 'Music' },
-  ];
-
-  const artNav = [
-    { icon: <LayoutGrid size={24} />, label: 'Gallery' },
-    { icon: <SearchIcon size={24} />, label: 'Explore' },
-    { icon: <Palette size={24} />, label: 'Artists' },
-    { icon: <Calendar size={24} />, label: 'Exhibitions' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const faithNav = [
-    { icon: <Home size={24} />, label: 'Sanctuary' },
-    { icon: <Users size={24} />, label: 'Fellowship' },
-    { icon: <Sparkles size={24} />, label: 'Daily Word' },
-    { icon: <Calendar size={24} />, label: 'Services' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const sportsNav = [
-    { icon: <Trophy size={24} />, label: 'Scores' },
-    { icon: <Activity size={24} />, label: 'Leagues' },
-    { icon: <Calendar size={24} />, label: 'Schedule' },
-    { icon: <Users size={24} />, label: 'Teams' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const newsNav = [
-    { icon: <CloudSun size={24} />, label: 'Weather' },
-    { icon: <Newspaper size={24} />, label: 'News' },
-    { icon: <Zap size={24} />, label: 'Alerts' },
-    { icon: <Map size={24} />, label: 'Radar' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const civicsNav = [
-    { icon: <Landmark size={24} />, label: 'Home' },
-    { icon: <AlertTriangle size={24} />, label: 'Report 311' },
-    { icon: <HistoryIcon size={24} />, label: 'My Reports' },
-    { icon: <WalletIcon size={24} />, label: 'Utilities' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-
-  const vendorNav = [
-    { icon: <Package size={24} />, label: 'Products' },
-    { icon: <ShoppingBag size={24} />, label: 'Orders' },
-    { icon: <DollarSign size={24} />, label: 'Finance' },
-    { icon: <Settings size={24} />, label: 'Settings' },
-    { icon: <Monitor size={24} />, label: 'Overview' },
-    { icon: <Megaphone size={24} />, label: 'Ads' },
-    { icon: <Store size={24} />, label: 'Store Front' },
-    { icon: <Users size={24} />, label: 'Team' },
-  ];
-
-  const civicNav = [
-    { icon: <Users size={24} />, label: 'Directory' },
-    { icon: <AlertTriangle size={24} />, label: 'Alerts' },
-    { icon: <Megaphone size={24} />, label: 'Sponsorships' },
-    { icon: <Settings size={24} />, label: 'Settings' },
-    { icon: <Monitor size={24} />, label: 'Overview' },
-    { icon: <HistoryIcon size={24} />, label: 'Tickets' },
-    { icon: <WalletIcon size={24} />, label: 'Utilities' },
-    { icon: <Users size={24} />, label: 'Team' },
-  ];
-
-  const adminNav = [
-    { icon: <Users size={24} />, label: 'Verify' },
-    { icon: <BarChart3 size={24} />, label: 'Stats' },
-    { icon: <Settings size={24} />, label: 'Config' },
-    { icon: <ShieldCheck size={24} />, label: 'Dash' },
-  ];
-
-  const getNavItems = () => {
-    if (env === 'discover') return discoverNav;
-    if (env === 'social') return socialNav;
-    if (env === 'market') return marketNav;
-    if (env === 'eats') return eatsNav;
-    if (env === 'rides') return ridesNav;
-    if (env === 'services') return servicesNav;
-    if (env === 'events') return eventsNav;
-    if (env === 'wallet') return walletNav;
-    if (env === 'care') return careNav;
-    if (env === 'homes') return homesNav;
-    if (env === 'auto') return autoNav;
-    if (env === 'travel') return travelNav;
-    if (env === 'jobs') return jobsNav;
-    if (env === 'media') return mediaNav;
-    if (env === 'art') return artNav;
-    if (env === 'faith') return faithNav;
-    if (env === 'sports') return sportsNav;
-    if (env === 'news') return newsNav;
-    if (env === 'civics') return civicsNav;
-    if (env === 'dashboard') {
-      const role = user?.role || '';
-      const hasClearance = (type: string) => user?.clearances?.some((c: any) => c.entity_type === type);
-      if (['official', 'chamber'].includes(role) || hasClearance('civic')) return civicNav;
-      return vendorNav;
-    }
-    return adminNav;
-  };
-
-  const currentNav = getNavItems();
+  const { layout } = useApp();
 
   const renderView = () => {
     // Store detail view — only in market or dashboard envs
@@ -718,8 +292,6 @@ const App: React.FC = () => {
         />
       );
     }
-
-
     
     // Group detail view
     if (activeGroupId && (env === 'social' || env === 'discover')) {
@@ -734,7 +306,6 @@ const App: React.FC = () => {
       );
     }
 
-
     if (env === 'discover') {
       switch (activeTab) {
         case 0: return <DiscoverView user={user} scope={scope} />;
@@ -744,7 +315,7 @@ const App: React.FC = () => {
         case 4: return <RadarMapView scope={scope} user={user} />;
         case 5: return <VibesView user={user} />;
         case 6: return <TevisDiscoverView user={user} />;
-        default: return <ComingSoon title={discoverNav[activeTab]?.label} />;
+        default: return <ComingSoon title="View" />;
       }
     }
     
@@ -770,7 +341,7 @@ const App: React.FC = () => {
         />;
         case 8: return <SettingsPage user={user} theme={theme} toggleTheme={toggleTheme} setTheme={setTheme} />;
         case 9: return <EditProfilePage user={user} onUpdate={(data) => updateUser(data)} />;
-        default: return <ComingSoon title={socialNav[activeTab]?.label || 'Social'} />;
+        default: return <ComingSoon title="Social" />;
       }
     }
     
@@ -782,97 +353,41 @@ const App: React.FC = () => {
         case 3: return <CartView />;
         case 4: return <WishlistView />;
         case 5: return <MarketAccount user={user} />;
-        default: return <ComingSoon title={marketNav[activeTab]?.label || 'Market'} />;
+        default: return <ComingSoon title="Market" />;
       }
     }
 
-    if (env === 'eats') {
-      return <EatsView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'rides') {
-      return <RidesView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'services') {
-      return <ServicesView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'events') {
-      return <EventsView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'wallet') {
-      return <WalletView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'care') {
-      return <CareView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'homes') {
-      return <HomesView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'auto') {
-      return <AutoView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'travel') {
-      return <TravelView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'jobs') {
-      return <JobsView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'media') {
-      return <MediaView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'art') {
-      return <ArtGalleryView user={user} scope={scope} />;
-    }
-
-    if (env === 'faith') {
-      return <FaithView user={user} scope={scope} />;
-    }
-
-    if (env === 'sports') {
-      return <SportsView activeTab={activeTab} user={user} scope={scope} />;
-    }
-
-    if (env === 'news') {
-      return <WeatherNewsView activeTab={activeTab} user={user} scope={scope} />;
-    }
+    if (env === 'eats') return <EatsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'rides') return <RidesView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'services') return <ServicesView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'events') return <EventsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'wallet') return <WalletView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'care') return <CareView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'homes') return <HomesView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'auto') return <AutoView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'travel') return <TravelView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'jobs') return <JobsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'media') return <MediaView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'art') return <ArtGalleryView user={user} scope={scope} />;
+    if (env === 'faith') return <FaithView user={user} scope={scope} />;
+    if (env === 'sports') return <SportsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'news') return <WeatherNewsView activeTab={activeTab} user={user} scope={scope} />;
 
     if (env === 'civics') {
-      if (user?.role !== 'admin') {
-        setEnv('discover');
-        return null;
-      }
+      if (user?.role !== 'admin') { setEnv('discover'); return null; }
       return <CivicsView activeTab={activeTab} user={user} scope={scope} />;
     }
     
     if (env === 'dashboard') {
       const role = user?.role || '';
       const hasClearance = (type: string) => user?.clearances?.some((c: any) => c.entity_type === type);
-
-      if (['official', 'chamber', 'city_worker', 'city_manager'].includes(role) || hasClearance('civic')) {
-        return <CivicDashboard user={user} activeTab={activeTab} />;
-      }
-      if (['church', 'non_profit'].includes(role) || hasClearance('ministry')) {
-        return <MinistryDashboard user={user} activeTab={activeTab} />;
-      }
-      if (['artist', 'media', 'venue'].includes(role) || hasClearance('creator')) {
-        return <CreatorDashboard user={user} activeTab={activeTab} />;
-      }
+      if (['official', 'chamber', 'city_worker', 'city_manager'].includes(role) || hasClearance('civic')) return <CivicDashboard user={user} activeTab={activeTab} />;
+      if (['church', 'non_profit'].includes(role) || hasClearance('ministry')) return <MinistryDashboard user={user} activeTab={activeTab} />;
+      if (['artist', 'media', 'venue'].includes(role) || hasClearance('creator')) return <CreatorDashboard user={user} activeTab={activeTab} />;
       return <VendorDashboard user={user} activeTab={activeTab} onNavigateToStore={setActiveStoreId} />;
     }
     
-    if (env === 'admin') {
-      return <AdminDashboard activeTab={activeTab} />;
-    }
+    if (env === 'admin') return <AdminDashboard activeTab={activeTab} />;
     
     return <ComingSoon title="Unknown View" />;
   };
@@ -885,375 +400,56 @@ const App: React.FC = () => {
     );
   }
 
+  // Import Layouts inside the component or at top level.
+  // We already defined them. Let's make sure they are imported.
+  
+  if (layout === 'minimal') {
+    return (
+      <MinimalLayout 
+        renderView={renderView}
+        SearchOverlay={SearchOverlay}
+        setActivePostId={setActivePostId}
+        setActiveStoreId={setActiveStoreId}
+        setActiveProfileId={setActiveProfileId}
+        setActiveCommentId={setActiveCommentId}
+      />
+    );
+  }
+
+  if (layout === 'setx-v1') {
+    return (
+      <SETXV1Layout 
+        renderView={renderView}
+        SearchOverlay={SearchOverlay}
+        activePostId={activePostId}
+        setActivePostId={setActivePostId}
+        activeStoreId={activeStoreId}
+        setActiveStoreId={setActiveStoreId}
+        activeProfileId={activeProfileId}
+        setActiveProfileId={setActiveProfileId}
+        activeGroupId={activeGroupId}
+        setActiveGroupId={setActiveGroupId}
+        activeCommentId={activeCommentId}
+        setActiveCommentId={setActiveCommentId}
+      />
+    );
+  }
 
   return (
-    <div 
-      className="app-container"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="sticky-header-group glass">
-        <ThemeTopBar />
-
-        {/* Brand Row: Logo Text | Theme Logo | User Actions */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '8px 16px 0',
-          minHeight: '52px'
-        }}>
-          {/* Left: Logo Text */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-            <h1 className="logo-text" onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ 
-              cursor: 'pointer', 
-              margin: 0, 
-              display: 'flex',
-              alignItems: 'baseline',
-              gap: '2px',
-              color: theme.includes('light') ? '#000' : '#fff'
-            }}>
-              {scope === 'city' ? (user?.community || 'City') : 'SETX'}
-              <span style={{ 
-                fontSize: '1.2rem', 
-                fontWeight: 700, 
-                color: env === 'discover' ? '#c084fc' : 
-                       env === 'news' ? '#f87171' :
-                       env === 'social' ? '#3b82f6' : 
-                       env === 'faith' ? '#8b5cf6' :
-                       env === 'events' ? '#f43f5e' :
-                       env === 'market' ? '#22c55e' : 'var(--primary)',
-                transition: 'color 0.3s ease',
-                lineHeight: 1
-              }}>
-                {' 360'}
-              </span>
-            </h1>
-          </div>
-
-          {/* Center: Theme Logo with Restored Dynamic Ring */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div 
-              onClick={() => setIsTevisOpen(!isTevisOpen)}
-              style={{ 
-              position: 'relative', 
-              width: 56, 
-              height: 56, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              borderRadius: '50%',
-              cursor: 'pointer',
-              // The Dynamic Soft Glow (The Ring)
-              boxShadow: isTevisOpen ? `0 0 35px 5px var(--primary)` : (theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none'),
-              transform: isTevisOpen ? 'scale(1.1)' : 'scale(1)',
-              transition: 'all 0.4s ease'
-            }}>
-              <img
-                src={
-                  isSetxDomain ? (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png") : "/logo-neo.png"
-                }
-                alt="Logo"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '50%',
-                  objectFit: 'contain',
-                  zIndex: 1
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Right: User Badge + Theme Toggle */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
-            {user ? (
-              <>
-                <button
-                  onClick={toggleTheme}
-                  title="Toggle theme"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '6px 8px', cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center' }}
-                >
-                  {theme.includes('light') ? <Moon size={18} /> : <Sun size={18} />}
-                </button>
-                <div 
-                  className="user-profile-badge" 
-                  onClick={() => !user.role.startsWith('v_') && setIsVerifying(true)}
-                  style={{ 
-                    display: 'flex', 
-                    gap: '8px',
-                    alignItems: 'center', 
-                    cursor: user.role.startsWith('v_') ? 'default' : 'pointer',
-                    padding: '4px',
-                    borderRadius: '12px',
-                    background: 'rgba(255,255,255,0.05)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {getBadgeIcon(user.role)}
-                  </div>
-                  <Avatar url={user.avatar_url} name={user.name} size={32} />
-                </div>
-              </>
-            ) : (
-              <button 
-                onClick={toggleTheme}
-                className="theme-toggle"
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)', padding: '8px' }}
-              >
-                {theme.includes('light') ? <Moon size={20} /> : <Sun size={20} />}
-              </button>
-            )}
-          </div>
-        </div>
-        
-
-        {user && (
-          <div className="top-switch-container auto-hide-target" style={{ padding: '4px 0 8px' }}>
-            <div className="two-notches">
-              <div 
-                className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} 
-                onClick={() => handleNotchInteraction('county')}
-                style={{ cursor: 'pointer' }}
-                title={`${user?.county || 'Regional'} (County)`}
-              />
-              <div 
-                className={`notch notch-3 ${scope === 'city' ? 'active' : ''} ${showNotchPulse && scope === 'county' ? 'pulse' : ''}`} 
-                onClick={() => handleNotchInteraction('city')}
-                style={{ cursor: 'pointer' }}
-                title={`${user?.community || 'Local'} (City)`}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Search Bar Header */}
-        {user && (
-          <header className="main-header auto-hide-target" style={{ padding: '0 16px 8px' }}>
-            <div className="header-content" style={{ display: 'block' }}>
-              <button 
-                className="header-action-btn search-trigger" 
-                onClick={() => setIsSearchOpen(true)}
-                style={{ 
-                  width: '100%',
-                  background: theme.endsWith('-dark') ? 'rgba(255,255,255,0.08)' : '#fff', 
-                  border: theme === 'setx-light' ? '2px solid var(--primary)' : theme.endsWith('-light') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', 
-                  color: 'var(--text-muted)', 
-                  padding: '12px 20px', 
-                  borderRadius: '30px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '14px',
-                  justifyContent: 'flex-start',
-                  boxShadow: theme.endsWith('-light') ? '0 4px 15px rgba(0,0,0,0.08)' : '0 4px 20px rgba(0,0,0,0.2)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <SearchIcon size={20} className="search-icon-anim" style={{ color: 'var(--primary)' }} />
-                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.8 }}>Search {scope}...</span>
-              </button>
-            </div>
-          </header>
-        )}
-    </div>
-
-      <Suspense fallback={null}>
-        <SearchOverlay 
-          isOpen={isSearchOpen} 
-          onClose={() => setIsSearchOpen(false)}
-          onNavigate={(newEnv, newTab, params) => {
-            setEnv(newEnv as any);
-            setActiveTab(newTab);
-            if (params?.userId) setActiveProfileId(params.userId);
-            if (params?.storeId) setActiveStoreId(params.storeId);
-            if (params?.postId) { setActivePostId(params.postId); setActiveCommentId(null); }
-          }}
-          scope={scope}
-          user={user}
-        />
-      </Suspense>
-
-      {/* Update Notification Toast */}
-      <AnimatePresence>
-        {updateAvailable && (
-          <motion.div 
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="update-toast glass"
-            style={{
-              position: 'fixed',
-              bottom: '160px',
-              left: '20px',
-              right: '20px',
-              zIndex: 2000,
-              padding: '16px',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              background: 'rgba(112, 0, 244, 0.9)',
-              color: 'white',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-              border: '1px solid rgba(255,255,255,0.2)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Sparkles size={20} />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-              A new version of SETX 360 is ready!
-              </span>
-            </div>
-            <button 
-              onClick={handleUpdate}
-              style={{
-                background: 'white',
-                color: '#7000f4',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                fontWeight: 800,
-                fontSize: '0.8rem',
-                cursor: 'pointer'
-              }}
-            >
-              Update Now
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {isVerifying && (
-        <VerificationModal 
-          user={user} 
-          onClose={() => {
-            setIsVerifying(false);
-            refreshUser();
-          }} 
-        />
-      )}
-
-      {/* Main Content Area */}
-      <main className="content-area" style={{ paddingTop: !user ? '40px' : '0' }}>
-        {!user ? (
-          <SignUpFlow />
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={env + activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="view-container"
-            >
-              <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}><Loader2 className="animate-spin" size={32} color="var(--primary)" /></div>}>
-                {renderView()}
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
-        )}
-      </main>
-
-      {/* Environment Switcher Footer */}
-      {user && (
-        <div className="env-switcher-footer auto-hide-target">
-          <div className="switcher-wrapper glass">
-            <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}>
-              <ChevronLeft size={20} />
-            </button>
-            
-            <div 
-              className="switcher-scroll" 
-              ref={envSwitcherRef} 
-              onMouseDown={handleMouseDown}
-              onMouseLeave={handleMouseLeave}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-              onScroll={() => {
-                handleSwitcherScroll();
-                // Verify scroll completion to update state if needed
-                if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-                scrollTimeout.current = setTimeout(() => {
-                  isInternalScroll.current = false;
-                }, 100);
-              }}
-            >
-              {/* Invisible Spacer */}
-              <div className="sw-btn spacer" aria-hidden="true" />
-              
-              {['discover', 'social', 'market', 'events', 'news', 'faith'].map(id => {
-                const item = id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
-                             id === 'social'   ? { id: 'social',   icon: <Rss size={18} />, label: 'Social' } :
-                             id === 'market'   ? { id: 'market',   icon: <Store size={18} />, label: 'Market' } :
-                             id === 'events'   ? { id: 'events',   icon: <Calendar size={18} />, label: 'Events' } :
-                             id === 'news'     ? { id: 'news',     icon: <Newspaper size={18} />, label: 'News' } :
-                             { id: 'faith',    icon: <Church size={18} />, label: 'Faith' };
-                return (
-                  <button 
-                    key={item.id}
-                    className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} 
-                    onClick={() => handleEnvClick(item.id as Env)}
-                  >
-                    {item.icon} {item.label}
-                  </button>
-                );
-              })}
-
-              {( (user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role)) || (user?.clearances && user.clearances.length > 0) ) && user.role !== 'admin' && (
-                <button className={`sw-btn dashboard ${env === 'dashboard' ? 'active' : ''}`} onClick={() => handleEnvClick('dashboard')}>
-                  <Store size={18} /> Dashboard
-                </button>
-              )}
-
-              {user?.role === 'admin' && (
-                <button className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`} onClick={() => handleEnvClick('admin')}>
-                  <ShieldCheck size={18} /> Admin Control
-                </button>
-              )}
-
-
-              {/* Spacer for centering last item */}
-              <div className="sw-btn spacer" aria-hidden="true" />
-            </div>
-
-            <button className="desktop-scroll-btn right" onClick={() => scrollSwitcher('right')}>
-              <ChevronRight size={20} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* FOOTER: Bottom Navigation */}
-      {user && (
-        <nav className="bottom-nav glass auto-hide-target">
-          <div className="nav-items-scroll">
-            {currentNav.map((item, index) => (
-              <button
-                key={item.label}
-                className={`nav-btn ${activeTab === index ? 'active' : ''}`}
-                onClick={() => setActiveTab(index)}
-              >
-                <div className="icon-wrapper">
-                  {item.icon}
-                  {item.label === 'Alerts' && unreadCount > 0 && <span className="badge">{unreadCount}</span>}
-                  {item.label === 'Cart' && <span className="badge">1</span>}
-                </div>
-                <span className="label">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
-
-      <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
-      <GlobalChatBubbles user={user} />
-
-      {showOnboarding && (
-        <OnboardingOverlay onComplete={() => setShowOnboarding(false)} />
-      )}
-    </div>
+    <ClassicLayout 
+      renderView={renderView}
+      SearchOverlay={SearchOverlay}
+      activePostId={activePostId}
+      setActivePostId={setActivePostId}
+      activeStoreId={activeStoreId}
+      setActiveStoreId={setActiveStoreId}
+      activeProfileId={activeProfileId}
+      setActiveProfileId={setActiveProfileId}
+      activeGroupId={activeGroupId}
+      setActiveGroupId={setActiveGroupId}
+      activeCommentId={activeCommentId}
+      setActiveCommentId={setActiveCommentId}
+    />
   );
 };
 

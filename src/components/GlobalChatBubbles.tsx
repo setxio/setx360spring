@@ -37,6 +37,7 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   const typingChannelRef = useRef<any>(null);
   const isTypingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const savedPosition = useRef<{ left: string; top: string; right: string; bottom: string } | null>(null);
 
   // --- Drag support ---
   const isDragging = useRef(false);
@@ -86,6 +87,25 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
     };
   }, []);
 
+  // ── Dismissed bubbles persistence ──
+  const DISMISSED_KEY = 'setx360_dismissed_bubbles';
+  const getDismissedSet = (): Set<string> => {
+    try {
+      const raw = localStorage.getItem(DISMISSED_KEY);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+  };
+  const addDismissed = (profileId: string) => {
+    const set = getDismissedSet();
+    set.add(profileId);
+    localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
+  };
+  const removeDismissed = (profileId: string) => {
+    const set = getDismissedSet();
+    set.delete(profileId);
+    localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -123,17 +143,22 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
       if (partners.length === 0) return;
 
+      // Filter out dismissed bubbles
+      const dismissed = getDismissedSet();
+      const activeParters = partners.filter(id => !dismissed.has(id));
+      if (activeParters.length === 0) return;
+
       // Fetch profiles for those partners
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, name, avatar_url')
-        .in('id', partners);
+        .in('id', activeParters);
 
       const profileMap: Record<string, any> = {};
       profiles?.forEach(p => { profileMap[p.id] = p; });
 
       const newSessions: Record<string, ChatSession> = {};
-      for (const partnerId of partners) {
+      for (const partnerId of activeParters) {
         const profile = profileMap[partnerId];
         if (!profile) continue;
         // Get messages for this conversation
@@ -225,6 +250,9 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   const handleIncomingMessage = async (message: Message) => {
     const senderId = message.sender_id;
 
+    // If this sender was previously dismissed, un-dismiss them since it's a new live message
+    removeDismissed(senderId);
+
     setSessions(prev => {
       const isExpanded = expandedChatId === senderId;
       const existingSession = prev[senderId];
@@ -307,9 +335,34 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   };
 
   const toggleExpand = (profileId: string) => {
+    const el = containerRef.current;
     if (expandedChatId === profileId) {
+      // Collapsing — restore saved position if we moved it
       setExpandedChatId(null);
+      if (el && savedPosition.current) {
+        el.style.left = savedPosition.current.left;
+        el.style.top = savedPosition.current.top;
+        el.style.right = savedPosition.current.right;
+        el.style.bottom = savedPosition.current.bottom;
+        savedPosition.current = null;
+      }
     } else {
+      // Expanding — on mobile, snap to left if on right half to prevent overflow
+      if (el && window.innerWidth < 768) {
+        const rect = el.getBoundingClientRect();
+        const isChatWiderThanRemaining = rect.left + 320 > window.innerWidth;
+        if (isChatWiderThanRemaining) {
+          savedPosition.current = {
+            left: el.style.left,
+            top: el.style.top,
+            right: el.style.right,
+            bottom: el.style.bottom,
+          };
+          el.style.left = '8px';
+          el.style.right = 'auto';
+          // keep top/bottom as-is
+        }
+      }
       setExpandedChatId(profileId);
       // Mark as read
       setSessions(prev => ({
@@ -321,7 +374,20 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
   const closeBubble = (e: React.MouseEvent, profileId: string) => {
     e.stopPropagation();
-    if (expandedChatId === profileId) setExpandedChatId(null);
+    if (expandedChatId === profileId) {
+      setExpandedChatId(null);
+      // Restore position if we'd moved it
+      if (containerRef.current && savedPosition.current) {
+        const el = containerRef.current;
+        el.style.left = savedPosition.current.left;
+        el.style.top = savedPosition.current.top;
+        el.style.right = savedPosition.current.right;
+        el.style.bottom = savedPosition.current.bottom;
+        savedPosition.current = null;
+      }
+    }
+    // Persist dismissal so it doesn't reappear on refresh
+    addDismissed(profileId);
     setSessions(prev => {
       const newSessions = { ...prev };
       delete newSessions[profileId];
