@@ -99,6 +99,20 @@
   position: relative;
 }
 
+/* Right-edge fade — signals more content to scroll */
+.switcher-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, var(--bg-soft));
+  pointer-events: none;
+  border-radius: 0 30px 30px 0;
+  z-index: 2;
+}
+
 .switcher-scroll {
   display: flex;
   width: 100%;
@@ -278,6 +292,18 @@
 .notch-1 { color: #06b6d4; }
 .notch-2 { color: #2563eb; }
 .notch-3 { color: #10b981; }
+
+/* Inactive notch discovery pulse */
+@keyframes notchPulse {
+  0%   { opacity: 0.3; transform: scale(1); }
+  30%  { opacity: 0.85; transform: scale(1.25); box-shadow: 0 0 10px currentColor; }
+  60%  { opacity: 0.3; transform: scale(1); }
+  100% { opacity: 0.3; transform: scale(1); }
+}
+
+.notch.pulse::after {
+  animation: notchPulse 1.6s ease-in-out 3; /* 3 pulses then stops */
+}
 
 
 /* Footer 2: Bottom Navigation */

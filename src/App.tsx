@@ -138,6 +138,20 @@ const App: React.FC = () => {
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // Notch discovery pulse — shows for first 3 sessions, stops after first interaction
+  const NOTCH_KEY = 'setx360_notch_sessions';
+  const notchSessions = parseInt(localStorage.getItem(NOTCH_KEY) || '0', 10);
+  const notchHasInteracted = localStorage.getItem('setx360_notch_interacted') === 'true';
+  const [showNotchPulse, setShowNotchPulse] = useState(!notchHasInteracted && notchSessions < 3);
+
+  const handleNotchInteraction = (newScope: 'county' | 'city') => {
+    setScope(newScope);
+    if (showNotchPulse) {
+      setShowNotchPulse(false);
+      localStorage.setItem('setx360_notch_interacted', 'true');
+    }
+  };
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -160,6 +174,10 @@ const App: React.FC = () => {
     // Show onboarding for first-time authenticated users
     if (user && shouldShowOnboarding()) {
       setShowOnboarding(true);
+    }
+    // Increment session count for notch discovery pulse (max 3)
+    if (user && !notchHasInteracted && notchSessions < 3) {
+      localStorage.setItem(NOTCH_KEY, String(notchSessions + 1));
     }
   }, [user]);
 
@@ -924,14 +942,14 @@ const App: React.FC = () => {
           <div className="top-switch-container" style={{ padding: '4px 0 8px' }}>
             <div className="two-notches">
               <div 
-                className={`notch notch-2 ${scope === 'county' ? 'active' : ''}`} 
-                onClick={() => setScope('county')}
+                className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} 
+                onClick={() => handleNotchInteraction('county')}
                 style={{ cursor: 'pointer' }}
                 title={`${user?.county || 'Regional'} (County)`}
               />
               <div 
-                className={`notch notch-3 ${scope === 'city' ? 'active' : ''}`} 
-                onClick={() => setScope('city')}
+                className={`notch notch-3 ${scope === 'city' ? 'active' : ''} ${showNotchPulse && scope === 'county' ? 'pulse' : ''}`} 
+                onClick={() => handleNotchInteraction('city')}
                 style={{ cursor: 'pointer' }}
                 title={`${user?.community || 'Local'} (City)`}
               />
