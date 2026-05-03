@@ -95,22 +95,22 @@ interface ClassicLayoutProps {
 export const ClassicLayout: React.FC<ClassicLayoutProps> = ({ 
   renderView, 
   SearchOverlay,
-  activePostId,
+  activePostId: _activePostId,
   setActivePostId,
-  activeStoreId,
+  activeStoreId: _activeStoreId,
   setActiveStoreId,
-  activeProfileId,
+  activeProfileId: _activeProfileId,
   setActiveProfileId,
-  activeGroupId,
+  activeGroupId: _activeGroupId,
   setActiveGroupId,
-  activeCommentId,
+  activeCommentId: _activeCommentId,
   setActiveCommentId,
   updateAvailable,
   onUpdate
 }) => {
   const { 
     user, env, theme, scope, activeTab, unreadCount, isSearchOpen, isSetxDomain,
-    setEnv, setTheme, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser, updateUser
+    setEnv, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser
   } = useApp();
 
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -221,9 +221,6 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     }
   };
 
-  const handleUpdate = () => {
-    window.location.reload();
-  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!envSwitcherRef.current) return;
@@ -633,7 +630,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         <SearchOverlay 
           isOpen={isSearchOpen} 
           onClose={() => setIsSearchOpen(false)}
-          onNavigate={(newEnv, newTab, params) => {
+          onNavigate={(newEnv: string, newTab: number, params?: Record<string, string>) => {
             setEnv(newEnv as any);
             setActiveTab(newTab);
             if (params?.userId) setActiveProfileId(params.userId);

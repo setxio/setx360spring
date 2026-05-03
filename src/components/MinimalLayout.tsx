@@ -4,12 +4,10 @@ import {
   X,
   Search as SearchIcon,
   Bell,
-  User,
   LogOut,
   Moon,
   Sun,
   Loader2,
-  ChevronDown,
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +39,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
   onUpdate
 }) => {
   const { 
-    user, env, theme, activeTab, unreadCount, isSearchOpen,
+    user, env, theme, unreadCount, isSearchOpen,
     setEnv, setActiveTab, setIsSearchOpen, toggleTheme, logout
   } = useApp();
 
@@ -216,7 +214,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         <SearchOverlay 
           isOpen={isSearchOpen} 
           onClose={() => setIsSearchOpen(false)}
-          onNavigate={(newEnv, newTab, params) => {
+          onNavigate={(newEnv: string, newTab: number, params?: Record<string, string>) => {
             setEnv(newEnv as any);
             setActiveTab(newTab);
             if (params?.userId) setActiveProfileId(params.userId);

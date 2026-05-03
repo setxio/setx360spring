@@ -223,19 +223,12 @@ const App: React.FC = () => {
     envSwitcherRef.current.scrollLeft = scrollLeft.current - walk;
   };
 
-  const scrollSwitcher = (dir: 'left' | 'right') => {
-    if (!envSwitcherRef.current) return;
-    const amount = window.innerWidth > 600 ? 300 : 200;
-    envSwitcherRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
-  };
 
-  const [isVerifying, setIsVerifying] = useState(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
-  const [isTevisOpen, setIsTevisOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
