@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 import { useApp } from '../context/AppContext';
-import { X, Send, Loader2, Minimize2 } from 'lucide-react';
+import { X, Send, Loader2, Minimize2, MessageSquarePlus } from 'lucide-react';
 import './GlobalChatBubbles.css';
 
 interface Message {
@@ -23,23 +23,98 @@ interface ChatSession {
 
 interface GlobalChatBubblesProps {
   user: any;
+  navVisible?: boolean;
 }
 
-export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) => {
+export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user, navVisible = true }) => {
   const [sessions, setSessions] = useState<Record<string, ChatSession>>({});
   const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [isTyping, setIsTyping] = useState(false);
+  const [newChatOpen, setNewChatOpen] = useState(false);
+  const [newChatSearch, setNewChatSearch] = useState('');
+  const [newChatResults, setNewChatResults] = useState<any[]>([]);
   const { onlineUsers } = useApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<any>(null);
   const isTypingRef = useRef(false);
+  const newChatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!user) return;
 
+    // ── Load existing conversations on mount so bubbles appear immediately ──
+    const loadRecentConversations = async () => {
+      // Fetch the most recent message with each unique conversation partner
+      const { data: sentMessages } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('sender_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      const { data: receivedMessages } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('receiver_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      const allMsgs = [...(sentMessages || []), ...(receivedMessages || [])]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      // Find unique partner IDs — latest conversation partner first
+      const seen = new Set<string>();
+      const partners: string[] = [];
+      for (const msg of allMsgs) {
+        const partnerId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+        if (!seen.has(partnerId)) {
+          seen.add(partnerId);
+          partners.push(partnerId);
+        }
+        if (partners.length >= 3) break; // Show max 3 bubbles
+      }
+
+      if (partners.length === 0) return;
+
+      // Fetch profiles for those partners
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .in('id', partners);
+
+      const profileMap: Record<string, any> = {};
+      profiles?.forEach(p => { profileMap[p.id] = p; });
+
+      const newSessions: Record<string, ChatSession> = {};
+      for (const partnerId of partners) {
+        const profile = profileMap[partnerId];
+        if (!profile) continue;
+        // Get messages for this conversation
+        const convoMsgs = allMsgs
+          .filter(m =>
+            (m.sender_id === user.id && m.receiver_id === partnerId) ||
+            (m.sender_id === partnerId && m.receiver_id === user.id)
+          )
+          .slice(0, 30)
+          .reverse(); // oldest first for display
+
+        newSessions[partnerId] = {
+          profileId: partnerId,
+          name: profile.name,
+          avatar_url: profile.avatar_url,
+          messages: convoMsgs,
+          unread: 0,
+        };
+      }
+      setSessions(newSessions);
+    };
+
+    loadRecentConversations();
+
+    // ── Real-time: incoming new messages ──
     const channel = supabase.channel('global-chat-bubbles')
       .on('postgres_changes', { 
         event: 'INSERT', 
@@ -218,10 +293,99 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
     }
   };
 
-  if (!user || Object.keys(sessions).length === 0) return null;
+  // Search users for new chat
+  useEffect(() => {
+    if (!newChatSearch.trim()) { setNewChatResults([]); return; }
+    const timer = setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .ilike('name', `%${newChatSearch}%`)
+        .neq('id', user.id)
+        .limit(6);
+      setNewChatResults(data || []);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [newChatSearch]);
+
+  // Close new chat panel on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (newChatRef.current && !newChatRef.current.contains(e.target as Node)) {
+        setNewChatOpen(false);
+        setNewChatSearch('');
+        setNewChatResults([]);
+      }
+    };
+    if (newChatOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [newChatOpen]);
+
+  const startNewChat = async (partnerId: string, partnerName: string, partnerAvatar?: string) => {
+    setNewChatOpen(false);
+    setNewChatSearch('');
+    setNewChatResults([]);
+    if (sessions[partnerId]) {
+      setExpandedChatId(partnerId);
+      return;
+    }
+    // Load existing messages with this person
+    const { data: msgs } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
+      .order('created_at', { ascending: true })
+      .limit(30);
+
+    setSessions(prev => ({
+      ...prev,
+      [partnerId]: {
+        profileId: partnerId,
+        name: partnerName,
+        avatar_url: partnerAvatar,
+        messages: msgs || [],
+        unread: 0,
+      }
+    }));
+    setExpandedChatId(partnerId);
+  };
+
+  if (!user) return null;
 
   return (
-    <div className="global-bubbles-container">
+    <div className={`global-bubbles-container ${!navVisible ? 'nav-hidden' : ''}`}>
+      {/* New Chat FAB */}
+      <div ref={newChatRef} style={{ position: 'relative', pointerEvents: 'auto', alignSelf: 'flex-end' }}>
+        {newChatOpen && (
+          <div className="new-chat-panel" style={{ position: 'absolute', bottom: '52px', right: 0 }}>
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search people..."
+              value={newChatSearch}
+              onChange={e => setNewChatSearch(e.target.value)}
+            />
+            {newChatResults.map(u => (
+              <div key={u.id} className="new-chat-result" onClick={() => startNewChat(u.id, u.name, u.avatar_url)}>
+                <img src={u.avatar_url || `https://ui-avatars.com/api/?name=${u.name}`} alt={u.name} />
+                <span>{u.name}</span>
+                {onlineUsers.has(u.id) && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />}
+              </div>
+            ))}
+            {newChatSearch && newChatResults.length === 0 && (
+              <div style={{ padding: '12px 16px', fontSize: '0.82rem', color: 'var(--text-muted)' }}>No users found</div>
+            )}
+          </div>
+        )}
+        <button
+          className="new-chat-fab"
+          onClick={() => setNewChatOpen(o => !o)}
+          title="Start a new conversation"
+        >
+          {newChatOpen ? <X size={20} /> : <MessageSquarePlus size={20} />}
+        </button>
+      </div>
+
       {Object.values(sessions).map(session => {
         const isExpanded = expandedChatId === session.profileId;
 

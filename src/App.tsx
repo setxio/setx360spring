@@ -1211,7 +1211,7 @@ const App: React.FC = () => {
       )}
 
       <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
-      <GlobalChatBubbles user={user} />
+      <GlobalChatBubbles user={user} navVisible={navVisible} />
 
       {showOnboarding && (
         <OnboardingOverlay onComplete={() => setShowOnboarding(false)} />
