@@ -139,6 +139,31 @@ const App: React.FC = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
+  // Smart nav auto-hide
+  const [navVisible, setNavVisible] = useState(true);
+  const navIdleTimer = React.useRef<any>(null);
+
+  const showNav = React.useCallback(() => {
+    setNavVisible(true);
+    if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
+    navIdleTimer.current = setTimeout(() => setNavVisible(false), 2000);
+  }, []);
+
+  useEffect(() => {
+    // Show nav immediately on mount, start idle countdown
+    showNav();
+    const onActivity = () => showNav();
+    window.addEventListener('scroll', onActivity, { passive: true });
+    window.addEventListener('touchstart', onActivity, { passive: true });
+    window.addEventListener('mousemove', onActivity, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onActivity);
+      window.removeEventListener('touchstart', onActivity);
+      window.removeEventListener('mousemove', onActivity);
+      if (navIdleTimer.current) clearTimeout(navIdleTimer.current);
+    };
+  }, [showNav]);
+  
   // Notch discovery pulse — shows for first 3 sessions, stops after first interaction
   const NOTCH_KEY = 'setx360_notch_sessions';
   const notchSessions = parseInt(localStorage.getItem(NOTCH_KEY) || '0', 10);
@@ -1096,7 +1121,7 @@ const App: React.FC = () => {
 
       {/* Environment Switcher Footer */}
       {user && (
-        <div className="env-switcher-footer">
+        <div className={`env-switcher-footer ${!navVisible ? 'nav-hidden' : ''}`}>
           <div className="switcher-wrapper glass">
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}>
               <ChevronLeft size={20} />
@@ -1165,7 +1190,7 @@ const App: React.FC = () => {
 
       {/* FOOTER: Bottom Navigation */}
       {user && (
-        <nav className="bottom-nav glass">
+        <nav className={`bottom-nav glass ${!navVisible ? 'nav-hidden' : ''}`}>
           <div className="nav-items-scroll">
             {currentNav.map((item, index) => (
               <button
