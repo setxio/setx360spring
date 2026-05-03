@@ -54,22 +54,13 @@ import {
   Music,
   Palette,
   Church,
-  Trophy,
-  Activity,
-  CloudSun,
-  Newspaper,
-  Shield,
-  AlertTriangle,
-  Megaphone,
   ChevronLeft,
-  ChevronRight,
-  Bot
+  ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, type Env, type Scope } from '../context/AppContext';
 import { ThemeTopBar } from './ThemeTopBar';
 import { Avatar } from './Avatar';
-import { SignUpFlow } from './SignUpFlow';
 import { VerificationModal } from './VerificationModal';
 import { TevisChat } from './TevisChat';
 import { GlobalChatBubbles } from './GlobalChatBubbles';
@@ -108,8 +99,8 @@ export const SETXV1Layout: React.FC<SETXV1LayoutProps> = ({
   onUpdate
 }) => {
   const { 
-    user, env, theme, scope, activeTab, unreadCount, isSearchOpen, isSetxDomain,
-    setEnv, setTheme, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser, updateUser
+    user, env, theme, scope, activeTab, unreadCount, isSearchOpen,
+    setEnv, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser
   } = useApp();
 
   const [isVerifying, setIsVerifying] = useState(false);
@@ -274,7 +265,6 @@ export const SETXV1Layout: React.FC<SETXV1LayoutProps> = ({
       let closestEnv: Env | null = null;
       let minDistance = Infinity;
 
-      const isAdmin = user?.role === 'admin';
       const envList: Env[] = ['discover', 'social', 'market', 'eats', 'rides', 'services', 'events', 'wallet', 'care', 'homes', 'auto', 'travel', 'jobs', 'media', 'art', 'faith', 'sports', 'news'];
       if (user?.role === 'admin') envList.push('civics', 'admin', 'dashboard');
       else if (user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role)) envList.push('dashboard');
@@ -453,7 +443,7 @@ export const SETXV1Layout: React.FC<SETXV1LayoutProps> = ({
         )}
       </AnimatePresence>
 
-      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onNavigate={(newEnv, newTab) => { setEnv(newEnv as any); setActiveTab(newTab); }} scope={scope} user={user} />
+      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onNavigate={(newEnv: Env, newTab: number) => { setEnv(newEnv as any); setActiveTab(newTab); }} scope={scope} user={user} />
       <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
       <GlobalChatBubbles user={user} />
       {isVerifying && <VerificationModal user={user} onClose={() => { setIsVerifying(false); refreshUser(); }} />}
