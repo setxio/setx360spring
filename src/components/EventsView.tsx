@@ -97,8 +97,25 @@ export const EventsView: React.FC<{ activeTab?: number; user?: any; scope?: stri
       else if (scope === 'state') query = query.eq('organizer.state', user.state);
     }
 
-    const { data, error } = await query;
-    let fetchedEvents = data || [];
+    const [eventsRes, postsRes] = await Promise.all([
+      query,
+      supabase.from('posts')
+        .select('*, author:profiles!posts_profile_id_fkey(*)')
+        .eq('type', 'event')
+        .neq('moderation_status', 'hidden')
+        .limit(10)
+    ]);
+
+    let fetchedEvents = eventsRes.data || [];
+    const socialEvents = (postsRes.data || []).map(p => ({
+      ...p,
+      title: p.content?.slice(0, 40) + '...',
+      start_time: p.event_start_time || p.created_at,
+      image_url: p.media_urls?.[0] || 'https://images.unsplash.com/photo-1514525253361-bee8718a34a1?auto=format&fit=crop&w=800&q=80',
+      is_social: true
+    }));
+
+    fetchedEvents = [...fetchedEvents, ...socialEvents];
     let currentEscalation: string | null = null;
 
     if (needsGeoFilter && fetchedEvents.length < 3 && scope !== 'national') {
@@ -124,17 +141,17 @@ export const EventsView: React.FC<{ activeTab?: number; user?: any; scope?: stri
       }
     }
 
-    if (!error) {
+    if (!eventsRes.error) {
       const mapped = fetchedEvents.map((e: any) => ({
         id: e.id,
         title: e.title,
         date: new Date(e.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         time: new Date(e.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        location: e.location || 'Local Venue',
+        location: e.location || (e.is_social ? 'Community Post' : 'Local Venue'),
         image: e.image_url || 'https://images.unsplash.com/photo-1514525253361-bee8718a34a1?auto=format&fit=crop&w=800&q=80',
-        price: 'From $15',
-        attendees: 50,
-        category: 'Community'
+        price: e.is_social ? 'N/A' : 'From $15',
+        attendees: e.is_social ? (e.upvote_count || 0) : 50,
+        category: e.is_social ? 'Community' : 'Featured'
       }));
       setEvents(mapped.length > 0 ? mapped : EVENTS);
       setEscalatedScope(currentEscalation);
