@@ -230,6 +230,28 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
               <div className="stat-card premium-card"><span className="stat-label">Products</span><span className="stat-value">{products.length}</span></div>
             </div>
 
+            <div className="vendor-stats-grid" style={{ marginTop: 24 }}>
+              <div className="stat-card premium-card" style={{ border: '1px solid rgba(16,185,129,0.2)' }}>
+                <span className="stat-label">Trust Score</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+                  <div style={{ height: 10, flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 5, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${currentStore.trust_score || 85}%`, background: 'var(--primary)' }} />
+                  </div>
+                  <span className="stat-value" style={{ fontSize: '1.2rem' }}>{currentStore.trust_score || 85}%</span>
+                </div>
+              </div>
+              <div className="stat-card premium-card">
+                <span className="stat-label">Response Time</span>
+                <span className="stat-value" style={{ fontSize: '1.2rem', marginTop: 8 }}>{currentStore.response_time_hours || 24}h</span>
+                <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>Average response time</div>
+              </div>
+              <div className="stat-card premium-card">
+                <span className="stat-label">Fulfillment Rate</span>
+                <span className="stat-value" style={{ fontSize: '1.2rem', marginTop: 8 }}>{currentStore.fulfillment_rate || 100}%</span>
+                <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>Order completion rate</div>
+              </div>
+            </div>
+
             <div className="stripe-connect-banner glass" style={{ marginTop: 24, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #6366f1' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ background: 'rgba(99,102,241,0.2)', padding: 12, borderRadius: 12 }}><CreditCard color="#6366f1" size={32} /></div>
