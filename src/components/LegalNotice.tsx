@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Shield, FileText, Copyright, ChevronLeft, ExternalLink } from 'lucide-react';
-import { useApp } from '../context/AppContext';
 import './LegalNotice.css';
 
 interface LegalNoticeProps {
@@ -8,7 +7,6 @@ interface LegalNoticeProps {
 }
 
 export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
-  const { isSetxDomain } = useApp();
   const [activeTab, setActiveTab] = useState<'tos' | 'privacy' | 'copyright'>('tos');
 
   const brandName = 'SETX 360';

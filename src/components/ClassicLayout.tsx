@@ -109,7 +109,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   onUpdate
 }) => {
   const { 
-    user, env, theme, scope, activeTab, unreadCount, isSearchOpen, isSetxDomain,
+    user, env, theme, scope, activeTab, unreadCount, isSearchOpen,
     setEnv, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser
   } = useApp();
 

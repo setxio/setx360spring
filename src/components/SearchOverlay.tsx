@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, User, MessageSquare, Store, ShoppingBag, ArrowRight, Loader2, Map } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { useApp } from '../context/AppContext';
 import { Avatar } from './Avatar';
 import './SearchOverlay.css';
 
@@ -15,7 +14,6 @@ interface SearchOverlayProps {
 }
 
 export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, onNavigate, scope = 'national', user }) => {
-  const { isSetxDomain } = useApp();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
