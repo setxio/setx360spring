@@ -16,7 +16,7 @@ export const AdCreationModal: React.FC<AdCreationModalProps> = ({ onClose }) => 
   const [credits, setCredits] = useState<number>(0);
   const [lastFreeAd, setLastFreeAd] = useState<string | null>(null);
   const [adType, setAdType] = useState<'free' | 'premium'>('free');
-  const [duration, setDuration] = useState<15 | 30>(30);
+  const [duration, setDuration] = useState<15 | 30>(15);
 
   useEffect(() => {
     fetchCredits();
@@ -164,7 +164,7 @@ export const AdCreationModal: React.FC<AdCreationModalProps> = ({ onClose }) => 
               <button 
                 className={`secondary-btn ${adType === 'free' ? 'active' : ''}`}
                 style={{ flex: 1, padding: '12px', border: adType === 'free' ? '2px solid var(--primary)' : '1px solid var(--border)' }}
-                onClick={() => { setAdType('free'); setDuration(30); }}
+                onClick={() => { setAdType('free'); setDuration(15); }}
               >
                 <strong>Free Ad</strong>
                 <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>{credits > 0 ? `${credits} Credits Left` : (isMonthlyFreeEligible() ? 'Monthly Free Available' : 'Next Month Available')}</div>
