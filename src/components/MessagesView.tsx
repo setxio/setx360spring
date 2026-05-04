@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 import { EmptyState } from './EmptyState';
 import { useApp } from '../context/AppContext';
-import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
+import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus, Check, CheckCheck } from 'lucide-react';
 import './MessagesView.css';
 
 interface MessagesViewProps {
@@ -17,6 +17,7 @@ interface MessageData {
   content: string;
   media_url?: string;
   created_at: string;
+  read_at?: string | null;
 }
 
 interface Conversation {
@@ -70,7 +71,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
 
   // Typing presence — use a stable channel ref so it doesn't re-subscribe on every keystroke
   useEffect(() => {
-    if (!activeChatId || !user) return;
+    if (!activeChatId || !user || user.enable_typing_indicators === false) return;
 
     const channelId = [user.id, activeChatId].sort().join('-');
     const channel = supabase.channel(`typing-${channelId}`, {
@@ -114,6 +115,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
 
     const txChannel = supabase.channel(`messages-tx-${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `sender_id=eq.${user.id}` }, (payload) => handleIncomingMessage(payload.new as MessageData))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `sender_id=eq.${user.id}` }, (payload) => handleIncomingMessage(payload.new as MessageData))
       .subscribe();
 
     return () => {
@@ -123,8 +125,40 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   }, [user.id]);
 
   const handleIncomingMessage = (newMsg: MessageData) => {
-    setAllMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+    setAllMessages(prev => {
+      const idx = prev.findIndex(m => m.id === newMsg.id);
+      if (idx > -1) {
+        const next = [...prev];
+        next[idx] = newMsg;
+        return next;
+      }
+      return [...prev, newMsg];
+    });
+    
+    // Auto-mark as read if we are in this chat
+    if (newMsg.receiver_id === user.id && newMsg.sender_id === activeChatId) {
+      markAsRead(newMsg.sender_id);
+    }
   };
+
+  const markAsRead = async (senderId: string) => {
+    if (!user || user.enable_read_receipts === false) return;
+    
+    const { error } = await supabase
+      .from('messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('receiver_id', user.id)
+      .eq('sender_id', senderId)
+      .is('read_at', null);
+      
+    if (error) console.error("Error marking as read:", error);
+  };
+
+  useEffect(() => {
+    if (activeChatId) {
+      markAsRead(activeChatId);
+    }
+  }, [activeChatId]);
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -139,7 +173,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
 
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
-    if (!isTyping) {
+    if (!isTyping && user.enable_typing_indicators !== false) {
       setIsTyping(true);
       setTimeout(() => setIsTyping(false), 3000);
     }
@@ -433,11 +467,22 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
                         )}
                         <span className="msg-text">{msg.content}</span>
                       </div>
-                      {showStamp && (
-                        <span className="chat-timestamp">
-                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      )}
+                      <div className="message-status-row">
+                        {showStamp && (
+                          <span className="chat-timestamp">
+                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                        {isSent && (
+                          <span className={`read-status-icon ${msg.read_at ? 'read' : ''}`}>
+                            {msg.read_at ? (
+                              <CheckCheck size={14} color="var(--primary)" />
+                            ) : (
+                              <Check size={14} />
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

@@ -341,3 +341,10 @@
   font-weight: 600;
   color: var(--text);
 }
+
+.mini-msg-status {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2px;
+  padding-right: 4px;
+}

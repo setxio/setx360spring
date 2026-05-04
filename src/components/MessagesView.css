@@ -413,6 +413,30 @@
   animation: pulse-opacity 1.5s infinite;
 }
 
+.message-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.read-status-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.read-status-icon.read {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.received .message-status-row {
+  justify-content: flex-start;
+}
+
 @keyframes pulse-opacity {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }

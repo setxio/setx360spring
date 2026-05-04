@@ -37,6 +37,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
   const [preferences, setPreferences] = useState({
     is_public: true,
     allow_dms: true,
+    enable_online_status: true,
+    enable_typing_indicators: true,
+    enable_read_receipts: true,
   });
   const [showLegal, setShowLegal] = useState(false);
 
@@ -44,7 +47,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     const fetchPreferences = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('is_public, allow_dms')
+        .select('is_public, allow_dms, enable_online_status, enable_typing_indicators, enable_read_receipts')
         .eq('id', user.id)
         .single();
       
@@ -52,13 +55,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
         setPreferences({
           is_public: data.is_public === false ? false : true,
           allow_dms: data.allow_dms === false ? false : true,
+          enable_online_status: data.enable_online_status === false ? false : true,
+          enable_typing_indicators: data.enable_typing_indicators === false ? false : true,
+          enable_read_receipts: data.enable_read_receipts === false ? false : true,
         });
       }
     };
     fetchPreferences();
   }, [user.id]);
 
-  const handleToggle = async (key: 'is_public' | 'allow_dms') => {
+  const handleToggle = async (key: 'is_public' | 'allow_dms' | 'enable_online_status' | 'enable_typing_indicators' | 'enable_read_receipts') => {
     setIsUpdating(true);
     const newValue = !preferences[key];
     setPreferences(prev => ({ ...prev, [key]: newValue }));
@@ -146,6 +152,27 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
               <div 
                 className={`toggle-switch ${preferences.allow_dms ? 'active' : ''}`}
                 onClick={() => !isUpdating && handleToggle('allow_dms')}
+              ></div>
+            </div>
+            <div className="pref-item">
+              <span>Show Online Status</span>
+              <div 
+                className={`toggle-switch ${preferences.enable_online_status ? 'active' : ''}`}
+                onClick={() => !isUpdating && handleToggle('enable_online_status')}
+              ></div>
+            </div>
+            <div className="pref-item">
+              <span>Typing Indicators</span>
+              <div 
+                className={`toggle-switch ${preferences.enable_typing_indicators ? 'active' : ''}`}
+                onClick={() => !isUpdating && handleToggle('enable_typing_indicators')}
+              ></div>
+            </div>
+            <div className="pref-item">
+              <span>Read Receipts</span>
+              <div 
+                className={`toggle-switch ${preferences.enable_read_receipts ? 'active' : ''}`}
+                onClick={() => !isUpdating && handleToggle('enable_read_receipts')}
               ></div>
             </div>
           </div>

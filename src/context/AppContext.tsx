@@ -269,7 +269,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Online Presence Sync
   useEffect(() => {
-    if (user) {
+    if (user && user.enable_online_status !== false) {
       const presenceChannel = supabase.channel('global-online-presence', {
         config: { presence: { key: user.id } }
       });

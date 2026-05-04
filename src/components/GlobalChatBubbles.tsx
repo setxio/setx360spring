@@ -11,6 +11,7 @@ interface Message {
   receiver_id: string;
   content: string;
   created_at: string;
+  read_at?: string | null;
 }
 
 interface ChatSession {
@@ -208,7 +209,7 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
   // Typing presence — stable channel ref, doesn't re-subscribe on every keystroke
   useEffect(() => {
-    if (!expandedChatId || !user) return;
+    if (!expandedChatId || !user || user.enable_typing_indicators === false) return;
 
     const channelId = [user.id, expandedChatId].sort().join('-');
     const channel = supabase.channel(`typing-${channelId}`, {
@@ -369,7 +370,19 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
         ...prev,
         [profileId]: { ...prev[profileId], unread: 0 }
       }));
+      markAsRead(profileId);
     }
+  };
+
+  const markAsRead = async (senderId: string) => {
+    if (!user || user.enable_read_receipts === false) return;
+    
+    await supabase
+      .from('messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('receiver_id', user.id)
+      .eq('sender_id', senderId)
+      .is('read_at', null);
   };
 
   const closeBubble = (e: React.MouseEvent, profileId: string) => {
@@ -397,7 +410,7 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
   const handleInputChange = (profileId: string, value: string) => {
     setInputValues(prev => ({ ...prev, [profileId]: value }));
-    if (!isTyping) {
+    if (!isTyping && user.enable_typing_indicators !== false) {
       setIsTyping(true);
       setTimeout(() => setIsTyping(false), 3000);
     }
@@ -468,6 +481,15 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
                         <div className="mini-bubble">
                           {msg.content}
                         </div>
+                        {isSent && (
+                          <div className="mini-msg-status">
+                            {msg.read_at ? (
+                              <span style={{ color: 'var(--primary)', fontSize: '10px' }}>Read</span>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Sent</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
