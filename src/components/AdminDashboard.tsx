@@ -72,8 +72,9 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [, setVendors] = useState<any[]>([]);
-  const [, setFlaggedPosts] = useState<any[]>([]);
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [flaggedPosts, setFlaggedPosts] = useState<any[]>([]);
+  const [legacyRequests, setLegacyRequests] = useState<any[]>([]);
   const [platformSettings, setPlatformSettings] = useState<any>({
     vendor_fee_percentage: 0.10,
     driver_fee_percentage: 0.10,
@@ -106,30 +107,33 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
   const fetchAllData = async () => {
     setIsLoading(true);
     try {
-      const [
-        { data: userCount },
-        { data: verifData },
-        { data: storeData },
-        { data: flaggedData },
-        { data: activityData },
-        { data: adData },
-        { data: settingsData }
-      ] = await Promise.all([
+      const results = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact' }),
         supabase.from('verifications').select('*, profiles(*)').eq('status', 'pending'),
         supabase.from('stores').select('*, profiles:owner_id(*)').order('created_at', { ascending: false }),
         supabase.from('posts').select('*, author:profiles!posts_profile_id_fkey(name, avatar_url)').in('moderation_status', ['flagged', 'hidden']),
         supabase.from('platform_activity').select('*, profiles(*)').order('created_at', { ascending: false }).limit(20),
         supabase.from('ads').select('id', { count: 'exact' }).eq('status', 'active'),
-        supabase.from('platform_settings').select('*').eq('id', 1).single()
-      ]);
+        supabase.from('platform_settings').select('*').eq('id', 1).single(),
+        supabase.from('legacy_access_requests').select('*, requester:profiles!requester_id(*), target:profiles!user_id(*)').eq('status', 'pending')
+      ]) as any[];
 
-      const totalSales = storeData?.reduce((acc, curr) => acc + (parseFloat(curr.total_sales) || 0), 0) || 0;
+      const userCount = results[0].data;
+      const verifData = results[1].data;
+      const storeData = results[2].data;
+      const flaggedData = results[3].data;
+      const activityData = results[4].data;
+      const adData = results[5].data;
+      const settingsData = results[6].data;
+      const legacyData = results[7].data;
+
+      const totalSales = storeData?.reduce((acc: number, curr: any) => acc + (parseFloat(curr.total_sales) || 0), 0) || 0;
 
       setVerifications(verifData || []);
       setVendors(storeData || []);
       setFlaggedPosts(flaggedData || []);
       setActivityLogs(activityData || []);
+      setLegacyRequests(legacyData || []);
       if (settingsData) setPlatformSettings(settingsData);
       
       fetchUsers();
@@ -236,6 +240,47 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
     setIsSavingSettings(false);
     if (error) alert('Error saving settings');
     else alert('Settings saved successfully!');
+  };
+
+  const handleModeration = async (postId: string, status: string) => {
+    const { error } = await supabase.from('posts').update({ moderation_status: status }).eq('id', postId);
+    if (!error) fetchAllData();
+  };
+
+  const issueStrike = async (userId: string, reason: string) => {
+    if (!window.confirm(`Issue a strike to user ${userId} for ${reason}?`)) return;
+    
+    const { error } = await supabase.from('user_strikes').insert({
+      user_id: userId,
+      reason: reason,
+      issued_by: (await supabase.auth.getUser()).data.user?.id
+    });
+    
+    if (!error) {
+      alert('Strike issued. Automated penalty logic triggered.');
+      fetchAllData();
+    } else {
+      alert('Error issuing strike: ' + error.message);
+    }
+  };
+
+  const handleLegacyRequest = async (requestId: string, approve: boolean) => {
+    const status = approve ? 'approved' : 'rejected';
+    const pin = approve ? Math.random().toString(36).substring(2, 8).toUpperCase() : null;
+    
+    const { error } = await supabase
+      .from('legacy_access_requests')
+      .update({ 
+        status, 
+        access_pin: pin,
+        resolved_at: new Date().toISOString()
+      })
+      .eq('id', requestId);
+    
+    if (!error) {
+      alert(approve ? `Request approved. PIN: ${pin}` : 'Request rejected.');
+      fetchAllData();
+    }
   };
 
   const renderOverview = () => (
@@ -387,7 +432,96 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
           </div>
         ) : (
           <div className="tab-content">
+            {activeTab === 'moderation' && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h3>Content Moderation</h3>
+                  <button className="icon-btn" onClick={fetchAllData}><RefreshCw size={18} /></button>
+                </div>
+                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: 24 }}>
+                  Review content flagged by the community for NSFW, harassment, or misinformation.
+                </p>
+
+                <div className="flagged-list">
+                  {flaggedPosts.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                      <CheckCircle size={48} style={{ color: '#10b981', marginBottom: 16 }} />
+                      <p>Clean Feed. No flagged content pending review.</p>
+                    </div>
+                  ) : (
+                    <table className="premium-table">
+                      <thead>
+                        <tr>
+                          <th>Author</th>
+                          <th>Content</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {flaggedPosts.map(post => (
+                          <tr key={post.id}>
+                            <td>
+                              <div style={{ fontWeight: 700 }}>{post.author?.name}</div>
+                              <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{post.author?.email}</div>
+                            </td>
+                            <td>
+                              <div style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {post.content}
+                              </div>
+                            </td>
+                            <td><span className={`role-badge ${post.moderation_status}`}>{post.moderation_status}</span></td>
+                            <td>
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <button className="icon-btn" onClick={() => handleModeration(post.id, 'hidden')} title="Hide Content"><LucideLock size={14} /></button>
+                                <button className="icon-btn" onClick={() => issueStrike(post.profile_id, 'NSFW Violation')} style={{ color: '#ef4444' }} title="Issue Strike"><ShieldAlert size={14} /></button>
+                                <button className="icon-btn" onClick={() => handleModeration(post.id, 'active')} style={{ color: '#10b981' }} title="Keep Content"><CheckCircle size={14} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            )}
             {activeTab === 'overview' && renderOverview()}
+            {activeTab === 'vendors' && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h3>Merchant Registry</h3>
+                  <button className="icon-btn" onClick={fetchAllData}><RefreshCw size={18} /></button>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="premium-table">
+                    <thead>
+                      <tr>
+                        <th>Business</th>
+                        <th>Owner</th>
+                        <th>Total Sales</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendors.map(vendor => (
+                        <tr key={vendor.id}>
+                          <td>
+                            <div style={{ fontWeight: 700 }}>{vendor.name}</div>
+                            <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{vendor.business_type || 'Retail'}</div>
+                          </td>
+                          <td>{vendor.profiles?.name || 'Unknown'}</td>
+                          <td>${(vendor.total_sales || 0).toLocaleString()}</td>
+                          <td><span className={`role-badge ${vendor.status}`}>{vendor.status}</span></td>
+                          <td>{new Date(vendor.created_at).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
             {activeTab === 'directory' && (
               <div className="admin-card">
                 <div className="card-header">
@@ -616,6 +750,71 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+            {activeTab === 'alerts' && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h3>Crisis Center: Legacy Access Requests</h3>
+                  <button className="icon-btn" onClick={fetchAllData}><RefreshCw size={18} /></button>
+                </div>
+                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: 24 }}>
+                  Review requests from designated Guardians to access accounts of deceased or incapacitated citizens.
+                  <strong> Approval generates a temporary PIN for the requester.</strong>
+                </p>
+
+                <div className="legacy-requests-list">
+                  {legacyRequests.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: 16 }}>
+                      <ShieldCheck size={48} style={{ color: '#10b981', marginBottom: 16 }} />
+                      <p>No pending access requests. System stable.</p>
+                    </div>
+                  ) : (
+                    <table className="premium-table">
+                      <thead>
+                        <tr>
+                          <th>Target Account</th>
+                          <th>Requester (Guardian)</th>
+                          <th>Requested At</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {legacyRequests.map(req => (
+                          <tr key={req.id}>
+                            <td>
+                              <div style={{ fontWeight: 700 }}>{req.target?.name}</div>
+                              <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{req.target?.email}</div>
+                            </td>
+                            <td>
+                              <div style={{ fontWeight: 700 }}>{req.requester?.name}</div>
+                              <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{req.requester?.email}</div>
+                            </td>
+                            <td>{new Date(req.created_at).toLocaleDateString()}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: 12 }}>
+                                <button 
+                                  className="icon-btn" 
+                                  style={{ background: 'var(--admin-gold)', color: '#000', width: 'auto', padding: '0 12px' }}
+                                  onClick={() => handleLegacyRequest(req.id, true)}
+                                >
+                                  Approve & Generate PIN
+                                </button>
+                                <button 
+                                  className="icon-btn" 
+                                  style={{ color: '#ef4444' }}
+                                  onClick={() => handleLegacyRequest(req.id, false)}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             )}

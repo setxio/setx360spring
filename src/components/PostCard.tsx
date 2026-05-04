@@ -84,6 +84,9 @@ export const PostCard: React.FC<PostCardProps> = ({
   const youtubeId = extractYoutubeId(contentPost.content || '');
   const isEvent = contentPost.type === 'event';
   const isAuthor = user?.id === post.profile_id || user?.role === 'admin';
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  const shouldBlur = contentPost.is_nsfw && user?.blur_nsfw !== false && !isRevealed;
 
   useEffect(() => {
     fetchNotes();
@@ -175,8 +178,15 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </div>
 
-      <div className="post-content">
+      <div className={`post-content ${shouldBlur ? 'blurred-text' : ''}`}>
         <p>{formatText(isQuotePost ? post.content : contentPost.content)}</p>
+        {shouldBlur && (
+          <div className="nsfw-overlay" onClick={(e) => { e.stopPropagation(); setIsRevealed(true); }}>
+            <AlertTriangle size={24} />
+            <span>Sensitive Content</span>
+            <button className="reveal-btn">Show</button>
+          </div>
+        )}
       </div>
 
       {isQuotePost && contentPost && (
@@ -204,7 +214,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       )}
 
       {((contentPost.media_urls && contentPost.media_urls.length > 0) || youtubeId) && (
-        <div className="post-media-container" onClick={e => e.stopPropagation()}>
+        <div className={`post-media-container ${shouldBlur ? 'blurred-media' : ''}`} onClick={e => e.stopPropagation()}>
           <div 
             className="post-media-slider no-scrollbar"
             onScroll={(e) => {

@@ -40,14 +40,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     enable_online_status: true,
     enable_typing_indicators: true,
     enable_read_receipts: true,
+    blur_nsfw: true,
   });
+  const [trustedPerson, setTrustedPerson] = useState<any>(null);
+  const [guardianships, setGuardianships] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [guardianSearch, setGuardianSearch] = useState('');
+  const [isSearchingGuardian, setIsSearchingGuardian] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showLegal, setShowLegal] = useState(false);
 
   useEffect(() => {
     const fetchPreferences = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('is_public, allow_dms, enable_online_status, enable_typing_indicators, enable_read_receipts')
+        .select('is_public, allow_dms, enable_online_status, enable_typing_indicators, enable_read_receipts, blur_nsfw')
         .eq('id', user.id)
         .single();
       
@@ -58,13 +65,58 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
           enable_online_status: data.enable_online_status === false ? false : true,
           enable_typing_indicators: data.enable_typing_indicators === false ? false : true,
           enable_read_receipts: data.enable_read_receipts === false ? false : true,
+          blur_nsfw: data.blur_nsfw === false ? false : true,
         });
       }
     };
+
+    const fetchLegacyConfig = async () => {
+      const { data, error } = await supabase
+        .from('legacy_access_config')
+        .select('trusted_person_id, profiles!trusted_person_id(name, email)')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data && !error) {
+        setTrustedPerson({
+          id: data.trusted_person_id,
+          name: (data as any).profiles.name,
+          email: (data as any).profiles.email
+        });
+      }
+    };
+
+    const fetchGuardianships = async () => {
+      const { data } = await supabase
+        .from('legacy_access_config')
+        .select('user_id, profiles!user_id(name, email)')
+        .eq('trusted_person_id', user.id);
+      
+      if (data) {
+        setGuardianships(data.map((d: any) => ({
+          id: d.user_id,
+          name: d.profiles.name,
+          email: d.profiles.email
+        })));
+      }
+    };
+
+    const fetchPendingRequests = async () => {
+      const { data } = await supabase
+        .from('legacy_access_requests')
+        .select('*')
+        .eq('requester_id', user.id);
+      
+      if (data) setPendingRequests(data);
+    };
+
     fetchPreferences();
+    fetchLegacyConfig();
+    fetchGuardianships();
+    fetchPendingRequests();
   }, [user.id]);
 
-  const handleToggle = async (key: 'is_public' | 'allow_dms' | 'enable_online_status' | 'enable_typing_indicators' | 'enable_read_receipts') => {
+  const handleToggle = async (key: 'is_public' | 'allow_dms' | 'enable_online_status' | 'enable_typing_indicators' | 'enable_read_receipts' | 'blur_nsfw') => {
     setIsUpdating(true);
     const newValue = !preferences[key];
     setPreferences(prev => ({ ...prev, [key]: newValue }));
@@ -77,6 +129,61 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     if (error) {
       console.error(`Error updating ${key}:`, error);
       setPreferences(prev => ({ ...prev, [key]: !newValue }));
+    }
+    setIsUpdating(false);
+  };
+
+  const searchGuardian = async () => {
+    if (guardianSearch.length < 3) return;
+    setIsSearchingGuardian(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, name, email')
+      .ilike('email', `%${guardianSearch}%`)
+      .neq('id', user.id)
+      .limit(5);
+    
+    setSearchResults(data || []);
+    setIsSearchingGuardian(false);
+  };
+
+  const assignGuardian = async (target: any) => {
+    setIsUpdating(true);
+    const { error } = await supabase
+      .from('legacy_access_config')
+      .upsert({ user_id: user.id, trusted_person_id: target.id });
+    
+    if (!error) {
+      setTrustedPerson(target);
+      setSearchResults([]);
+      setGuardianSearch('');
+    }
+    setIsUpdating(false);
+  };
+
+  const removeGuardian = async () => {
+    setIsUpdating(true);
+    const { error } = await supabase
+      .from('legacy_access_config')
+      .delete()
+      .eq('user_id', user.id);
+    
+    if (!error) setTrustedPerson(null);
+    setIsUpdating(false);
+  };
+
+  const requestAccess = async (targetId: string) => {
+    setIsUpdating(true);
+    const { error } = await supabase
+      .from('legacy_access_requests')
+      .insert({ user_id: targetId, requester_id: user.id });
+    
+    if (!error) {
+      alert('Access request submitted to platform admins.');
+      const { data } = await supabase.from('legacy_access_requests').select('*').eq('requester_id', user.id);
+      if (data) setPendingRequests(data);
+    } else {
+      alert('Error submitting request: ' + error.message);
     }
     setIsUpdating(false);
   };
@@ -175,8 +282,94 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
                 onClick={() => !isUpdating && handleToggle('enable_read_receipts')}
               ></div>
             </div>
+            <div className="pref-item">
+              <span>Blur NSFW Content</span>
+              <div 
+                className={`toggle-switch ${preferences.blur_nsfw ? 'active' : ''}`}
+                onClick={() => !isUpdating && handleToggle('blur_nsfw')}
+              ></div>
+            </div>
           </div>
         </section>
+
+        {/* Account Guardian / Legacy Access */}
+        <section className="settings-card">
+          <h2 className="section-title"><Shield size={20} color="var(--admin-gold)" /> Account Guardian</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: -8, marginBottom: 16 }}>
+            Nominate a trusted person to manage your account in case of death or emergency. 
+            They can request access which must be approved by the platform admins.
+          </p>
+
+          {trustedPerson ? (
+            <div className="guardian-active glass">
+              <div className="guardian-info">
+                <strong>{trustedPerson.name}</strong>
+                <span>{trustedPerson.email}</span>
+              </div>
+              <button className="remove-guardian-btn" onClick={removeGuardian}>Remove</button>
+            </div>
+          ) : (
+            <div className="guardian-assign">
+              <div className="guardian-search-box">
+                <input 
+                  type="text" 
+                  placeholder="Search by email..." 
+                  value={guardianSearch}
+                  onChange={(e) => setGuardianSearch(e.target.value)}
+                />
+                <button onClick={searchGuardian} disabled={isSearchingGuardian}>
+                  {isSearchingGuardian ? <Loader2 className="animate-spin" size={16} /> : 'Search'}
+                </button>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="guardian-results glass">
+                  {searchResults.map(res => (
+                    <div key={res.id} className="result-item" onClick={() => assignGuardian(res)}>
+                      <span>{res.name} ({res.email})</span>
+                      <button className="assign-btn">Assign</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Guardianship Management */}
+        {guardianships.length > 0 && (
+          <section className="settings-card">
+            <h2 className="section-title"><Shield size={20} color="#10b981" /> Guardianship</h2>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: -8, marginBottom: 16 }}>
+              You have been nominated as a guardian for the following accounts. 
+              In case of emergency, you can request administrative access.
+            </p>
+            <div className="guardianship-list">
+              {guardianships.map(g => {
+                const request = pendingRequests.find(r => r.user_id === g.id);
+                return (
+                  <div key={g.id} className="guardian-active glass" style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
+                    <div className="guardian-info">
+                      <strong>{g.name}</strong>
+                      <span>{g.email}</span>
+                      {request && (
+                        <div className={`request-status-badge ${request.status}`}>
+                          Status: {request.status.toUpperCase()} 
+                          {request.access_pin && ` | PIN: ${request.access_pin}`}
+                        </div>
+                      )}
+                    </div>
+                    {!request ? (
+                      <button className="request-access-btn" onClick={() => requestAccess(g.id)}>Request Access</button>
+                    ) : (
+                      <div className="status-label">{request.status === 'pending' ? 'Reviewing...' : request.status}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Notifications Section */}
         <section className="settings-card">
