@@ -49,7 +49,7 @@ const accountTypes: AccountType[] = [
 ];
 
 export const SignUpFlow: React.FC = () => {
-  const { isSetxDomain, theme } = useApp();
+  const { theme } = useApp();
   const [step, setStep] = useState(1);
   const [isLoginMode, setIsLoginMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -290,7 +290,7 @@ export const SignUpFlow: React.FC = () => {
               <>
                 <div className="signup-header">
                   <img 
-                    src={isSetxDomain ? (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png") : "/logo-neo.png"} 
+                    src={theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png"} 
                     alt="Logo" 
                     style={{ width: 100, height: 100, marginBottom: 24, objectFit: 'contain' }} 
                   />
@@ -847,8 +847,8 @@ export const SignUpFlow: React.FC = () => {
           >
             <div className="reveal-content">
               <img 
-                src={isSetxDomain ? "/logo-setx-blue.png" : "/logo-neo.png"} 
-                alt={isSetxDomain ? "SETX 360" : "Efutura"} 
+                src="/logo-setx-blue.png" 
+                alt="SETX 360" 
                 style={{ width: 100, height: 100, marginBottom: 24, objectFit: 'contain', display: 'block', margin: '0 auto 24px' }} 
               />
               <div className={`large-badge ${isVisitor ? 'visitor' : 'resident'}`}>
