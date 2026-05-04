@@ -252,11 +252,53 @@
   border-bottom-right-radius: 30px;
 }
 
-@media (min-width: 768px) {
+/* Tablet: show scroll arrow buttons */
+@media (min-width: 768px) and (max-width: 1023px) {
   .desktop-scroll-btn {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+/* Desktop: expand all switcher buttons inline, no scroll needed */
+@media (min-width: 1024px) {
+  .switcher-wrapper {
+    max-width: 1200px;
+    width: auto;
+    border-radius: 20px;
+    padding: 0 10px;
+  }
+
+  .switcher-scroll {
+    justify-content: center;
+    cursor: default;
+    gap: 4px;
+    overflow-x: visible;
+  }
+
+  .sw-btn {
+    width: auto;
+    min-width: 90px;
+    max-width: none;
+    flex: 0 1 auto;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+  }
+
+  .sw-btn.spacer {
+    display: none;
+  }
+
+  /* Hide the fade edge — not needed when fully expanded */
+  .switcher-wrapper::after {
+    display: none;
+  }
+
+  /* Hide scroll arrows — not needed on desktop */
+  .desktop-scroll-btn {
+    display: none !important;
   }
 }
 

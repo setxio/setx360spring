@@ -9,6 +9,7 @@ import { PostCard } from './PostCard';
 import { AdCard } from './AdCard';
 import { EmptyState } from './EmptyState';
 import { supabase } from '../lib/supabase';
+import { weightByCounty, SETX_COUNTY_LIST } from '../utils/geo';
 import './SocialFeed.css';
 
 interface SocialFeedProps {
@@ -292,19 +293,19 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       if (scope === 'national') {
         // National View: Show EVERYTHING (broadest view)
       } else if (scope === 'state' && user.state) {
-        // State View: State/County/City Posts for this state OR National Posts
-        query = query.or(`author_state.eq."${user.state}",visibility_scope.eq.national`);
+        // State View: show this state's posts + national
+        query = query.or(`author_state.eq.${user.state},visibility_scope.eq.national`);
       } else if (scope === 'county') {
         if (isSETX) {
-          // SETX Region View: Jefferson, Orange, Hardin & Jasper Counties
-          query = query.or('author_county.in.("Jefferson","Orange","Hardin","Jasper","Jefferson County","Orange County","Hardin County","Jasper County")');
+          // SETX Region: all 4 counties — use .in() for reliable PostgREST filtering
+          query = query.in('author_county', SETX_COUNTY_LIST).limit(50);
         } else if (user.county) {
-          // Standard County View: Show County/City posts for this county + State/National
-          query = query.or(`author_county.eq."${user.county}",and(visibility_scope.eq.state,author_state.eq."${user.state}"),visibility_scope.eq.national`);
+          // Non-SETX: user's own county + national visibility
+          query = query.or(`author_county.eq.${user.county},visibility_scope.eq.national`);
         }
       } else if (scope === 'city' && user.community) {
-        // City View: Hierarchical trickle-down
-        query = query.or(`and(visibility_scope.eq.city,author_community.eq."${user.community}"),and(visibility_scope.eq.county,author_county.eq."${user.county}"),and(visibility_scope.eq.state,author_state.eq."${user.state}"),visibility_scope.eq.national`);
+        // City View: user's community first, falls back to county/state/national via escalation
+        query = query.eq('author_community', user.community).limit(50);
       }
     }
 
@@ -351,7 +352,12 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         alert("Failed to load feed. Please check your connection and try again.");
       }
     } else {
-      let filteredPosts = (postData as any[]) || [];
+      // Apply county weighting: user's home county floats to top
+      let filteredPosts = weightByCounty(
+        (postData as any[]) || [],
+        user?.county,
+        'author.county'
+      );
       
       // Post Type Filtering (Text, Images, Videos)
       if (activeType !== 'all') {

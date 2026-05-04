@@ -1,0 +1,235 @@
+/* DiscoverView.css */
+
+.discover-view {
+  padding: 0 0 40px 0;
+}
+
+/* ── Section Headers ─────────────────────────── */
+.discover-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.discover-section-header h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.discover-see-all {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  opacity: 0.8;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.discover-see-all:hover {
+  opacity: 1;
+}
+
+/* ── Carousel Wrapper ────────────────────────── */
+.discover-carousel-section {
+  margin-bottom: 36px;
+}
+
+.discover-carousel {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 2px 12px 2px;
+}
+
+.discover-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Carousel Post Cards ─────────────────────── */
+.discover-carousel-card {
+  flex: 0 0 280px;
+  min-width: 280px;
+  max-width: 280px;
+  scroll-snap-align: start;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.discover-carousel-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.discover-carousel-card-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.discover-carousel-card-body {
+  padding: 12px 14px;
+}
+
+.discover-carousel-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.discover-carousel-card-meta img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.discover-carousel-card-meta span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.discover-carousel-card-content {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.discover-carousel-card-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.discover-carousel-card-stats span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Text-only carousel cards (no image) */
+.discover-carousel-card.text-only .discover-carousel-card-body {
+  padding: 16px 14px;
+}
+
+/* ── Market Hot Items Carousel ───────────────── */
+.discover-market-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 2px 12px 2px;
+}
+
+.discover-market-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.discover-market-card {
+  flex: 0 0 200px;
+  min-width: 200px;
+  scroll-snap-align: start;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.discover-market-card:hover {
+  transform: translateY(-2px);
+}
+
+.discover-market-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.discover-market-card-info {
+  padding: 10px 12px;
+}
+
+.discover-market-card-info h5 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.discover-market-card-price {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* ── Empty State ─────────────────────────────── */
+.discover-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Loading Skeleton ─────────────────────────── */
+.discover-skeleton {
+  display: flex;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.discover-skeleton-card {
+  flex: 0 0 280px;
+  height: 240px;
+  border-radius: 18px;
+  background: var(--bg-soft);
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (min-width: 768px) {
+  .discover-carousel-card {
+    flex: 0 0 320px;
+    min-width: 320px;
+  }
+}

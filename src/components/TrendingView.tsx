@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Flame, MessageSquare, Heart, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { weightByCounty, SETX_COUNTY_LIST } from '../utils/geo';
+import { useApp } from '../context/AppContext';
 import './TrendingView.css';
 
 interface TrendingPost {
@@ -22,6 +24,7 @@ interface TrendingViewProps {
 }
 
 export const TrendingView: React.FC<TrendingViewProps> = ({ user, scope = 'national' }) => {
+  const { theme } = useApp();
   const [posts, setPosts] = useState<TrendingPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,17 +35,24 @@ export const TrendingView: React.FC<TrendingViewProps> = ({ user, scope = 'natio
   const fetchTrending = async () => {
     setIsLoading(true);
     try {
-      let query = supabase.from('trending_content').select('*').limit(20);
+      const isSETX = theme.startsWith('setx-');
+      let query = supabase.from('trending_content').select('*').limit(50);
 
-      if (user && scope !== 'national') {
-        if (scope === 'city') query = query.or(`location.eq."${user.community}",community.eq."${user.community}"`);
+      if (isSETX && (scope === 'county' || scope === 'city')) {
+        // SETX 4-county region — use .in() for reliable filtering
+        query = query.in('county', SETX_COUNTY_LIST);
+      } else if (user && scope !== 'national') {
+        if (scope === 'city') query = query.or(`location.eq.${user.community},community.eq.${user.community}`);
         else if (scope === 'county') query = query.eq('county', user.county);
         else if (scope === 'state') query = query.eq('state', user.state);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      if (data) setPosts(data);
+      if (data) {
+        const weighted = weightByCounty(data, user?.county, 'county');
+        setPosts(weighted.slice(0, 20));
+      }
     } catch (err) {
       console.error('Error fetching trending:', err);
     } finally {
