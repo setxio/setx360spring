@@ -575,6 +575,30 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       onTouchEnd={handleTouchEnd}
     >
       <div className="sticky-header-group glass">
+        {updateAvailable && (
+          <div 
+            onClick={onUpdate}
+            style={{
+              background: 'linear-gradient(to right, var(--primary), #a855f7)',
+              color: 'white',
+              padding: '10px',
+              textAlign: 'center',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              borderBottom: '1px solid rgba(255,255,255,0.1)',
+              animation: 'slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            <Sparkles size={16} /> 
+            <span>Platform Update Ready! Click to refresh for the new features.</span>
+            <ArrowRightLeft size={14} style={{ opacity: 0.8 }} />
+          </div>
+        )}
         <ThemeTopBar />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 0', minHeight: '52px' }}>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
