@@ -80,6 +80,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   };
 
   const contentPost = post.type === 'repost' && post.original_post ? post.original_post : post;
+  const isQuotePost = post.type === 'repost' && post.content;
   const youtubeId = extractYoutubeId(contentPost.content || '');
   const isEvent = contentPost.type === 'event';
   const isAuthor = user?.id === post.profile_id || user?.role === 'admin';
@@ -106,9 +107,9 @@ export const PostCard: React.FC<PostCardProps> = ({
         border: isEvent ? '2px solid var(--secondary)' : 'none'
       }}
     >
-      {post.type === 'repost' && (
+      {post.type === 'repost' && !post.content && (
         <div className="repost-indicator">
-          <Repeat size={14} /> {post.profiles?.name || 'Someone'} reposted
+          <Repeat size={14} /> {post.author?.name || 'Someone'} reposted
         </div>
       )}
 
@@ -130,19 +131,19 @@ export const PostCard: React.FC<PostCardProps> = ({
       <div className="post-header">
         <div className="header-left">
           <Avatar 
-            url={contentPost.author?.avatar_url}
-            name={contentPost.author?.name || 'User'}
+            url={isQuotePost ? post.author?.avatar_url : contentPost.author?.avatar_url}
+            name={isQuotePost ? post.author?.name : (contentPost.author?.name || 'User')}
             size={40}
           />
           <div className="author-info">
             <h4 
               className="author-name" 
-              onClick={(e) => { e.stopPropagation(); onNavigateToProfile?.(contentPost.profile_id); }}
+              onClick={(e) => { e.stopPropagation(); onNavigateToProfile?.(isQuotePost ? post.profile_id : contentPost.profile_id); }}
               style={{ cursor: 'pointer' }}
             >
-              {contentPost.author?.name || 'E User'}
-              {contentPost.author?.is_verified && <ShieldCheck size={14} className="verified-tick" style={{ marginLeft: 4, display: 'inline' }} />}
-              {contentPost.author?.email?.includes('setxplatform+') && <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: 4, display: 'inline' }} />}
+              {isQuotePost ? post.author?.name : (contentPost.author?.name || 'E User')}
+              {(isQuotePost ? post.author?.is_verified : contentPost.author?.is_verified) && <ShieldCheck size={14} className="verified-tick" style={{ marginLeft: 4, display: 'inline' }} />}
+              {(isQuotePost ? post.author?.email : contentPost.author?.email)?.includes('setxplatform+') && <Bot size={14} className="bot-badge" style={{ color: 'var(--primary)', marginLeft: 4, display: 'inline' }} />}
             </h4>
             <div className="post-meta">
               <span className="post-date">
@@ -175,8 +176,26 @@ export const PostCard: React.FC<PostCardProps> = ({
       </div>
 
       <div className="post-content">
-        <p>{formatText(contentPost.content)}</p>
+        <p>{formatText(isQuotePost ? post.content : contentPost.content)}</p>
       </div>
+
+      {isQuotePost && contentPost && (
+        <div className="quoted-post-container" onClick={(e) => { e.stopPropagation(); onNavigateToPost?.(contentPost.id); }}>
+          <div className="quoted-post-header">
+            <Avatar url={contentPost.author?.avatar_url} name={contentPost.author?.name} size={20} />
+            <span className="quoted-post-author">{contentPost.author?.name}</span>
+            <span className="post-meta" style={{ fontSize: '0.75rem' }}>· {formatRelativeTime(contentPost.created_at)}</span>
+          </div>
+          <div className="quoted-post-content">
+            {formatText(contentPost.content)}
+          </div>
+          {contentPost.media_urls && contentPost.media_urls.length > 0 && (
+            <div className="quoted-media-preview">
+              <OptimizedImage src={contentPost.media_urls[0]} alt="Quoted Media" style={{ borderRadius: '8px', maxHeight: '200px' }} />
+            </div>
+          )}
+        </div>
+      )}
       
       {isEvent && (
         <div onClick={e => e.stopPropagation()}>

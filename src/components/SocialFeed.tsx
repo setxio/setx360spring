@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { Plus, Loader2, MapPin, TrendingUp, Rss } from 'lucide-react';
 import { FeedFilters } from './FeedFilters';
+import { RepostModal } from './RepostModal';
 import { CreatePostModal } from './CreatePostModal';
 import { AdCreationModal } from './AdCreationModal';
 import { PostCard } from './PostCard';
@@ -39,8 +40,9 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   const [isPosting, setIsPosting] = useState(false);
   const [isPromoting, setIsPromoting] = useState(false);
   const [posts, setPosts] = useState<any[]>([]);
-  const [ads, setAds] = useState<any[]>([]);
-  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
+   const [ads, setAds] = useState<any[]>([]);
+   const [repostTarget, setRepostTarget] = useState<any>(null);
+   const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [userPollVotes, setUserPollVotes] = useState<Record<string, number>>({});
@@ -486,37 +488,29 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   // handleLike is removed in favor of VoteButtons component logic
 
 
-  const handleRepost = async (originalPostId: string) => {
+  const handleRepost = (originalPost: any) => {
     if (!user) {
       alert("Please log in to repost.");
       return;
     }
-    
-    const { error } = await supabase.from('posts').insert({
-      profile_id: user.id,
-      type: 'repost',
-      original_post_id: originalPostId,
-      content: ''
-    });
+    setRepostTarget(originalPost);
+  };
 
-    if (error) {
-      console.error("Repost failed", error);
-      alert("Failed to repost.");
-    } else {
-      // Show a subtle toast instead of window.confirm for premium UX
-      const toastEl = document.createElement('div');
-      toastEl.textContent = '✓ Reposted to your timeline';
-      Object.assign(toastEl.style, {
-        position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)',
-        background: 'var(--primary)', color: '#fff', padding: '10px 20px',
-        borderRadius: '24px', fontSize: '0.9rem', fontWeight: '600',
-        zIndex: '9999', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-        animation: 'fadeInUp 0.3s ease'
-      });
-      document.body.appendChild(toastEl);
-      setTimeout(() => toastEl.remove(), 2500);
-      fetchContent();
-    }
+  const handleRepostSuccess = () => {
+    setRepostTarget(null);
+    // Show a subtle toast
+    const toastEl = document.createElement('div');
+    toastEl.textContent = '✓ Shared to your timeline';
+    Object.assign(toastEl.style, {
+      position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)',
+      background: 'var(--primary)', color: '#fff', padding: '10px 20px',
+      borderRadius: '24px', fontSize: '0.9rem', fontWeight: '600',
+      zIndex: '9999', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      animation: 'fadeInUp 0.3s ease'
+    });
+    document.body.appendChild(toastEl);
+    setTimeout(() => toastEl.remove(), 2500);
+    fetchContent();
   };
 
   const handleDelete = async (postId: string) => {
@@ -639,7 +633,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           onPollVote={handlePollVote}
           onToggleBookmark={handleToggleBookmark}
           onDelete={handleDelete}
-          onRepost={handleRepost}
+          onRepost={() => handleRepost(contentPost)}
           onShare={handleShare}
           onNavigateToPost={onNavigateToPost}
           onNavigateToProfile={onNavigateToProfile}
@@ -794,6 +788,15 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
                 setIsPromoting(false);
                 fetchContent();
               }} 
+            />
+          )}
+
+          {repostTarget && (
+            <RepostModal 
+              post={repostTarget}
+              user={user}
+              onClose={() => setRepostTarget(null)}
+              onSuccess={handleRepostSuccess}
             />
           )}
         </>

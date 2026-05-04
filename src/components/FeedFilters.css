@@ -8,14 +8,55 @@
   margin-right: -16px;
 }
 
+.slider-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .filter-slider {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 4px 16px;
+  padding: 8px 16px;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
+  flex: 1;
+}
+
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.scroll-arrow:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.scroll-arrow.left {
+  left: 0;
+}
+
+.scroll-arrow.right {
+  right: 0;
 }
 
 .filter-slider::-webkit-scrollbar {
@@ -103,6 +144,12 @@
   50% { opacity: 0.5; transform: scale(0.8); }
 }
 
+@media (max-width: 800px) {
+  .scroll-arrow {
+    display: none;
+  }
+}
+
 @media (min-width: 800px) {
   .feed-filters-container {
     width: 100%;
@@ -114,6 +161,12 @@
     flex-wrap: nowrap;
     justify-content: flex-start;
     overflow-x: auto;
-    padding: 4px 0;
+    padding: 8px 0;
+    width: 100%;
+  }
+
+  .slider-wrapper {
+    width: 100%;
+    padding: 0 40px; /* Space for arrows */
   }
 }
