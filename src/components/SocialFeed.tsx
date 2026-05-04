@@ -69,6 +69,21 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
   const fetchContent = async () => {
     setIsLoading(true);
+
+    // Fetch follow weights for the current user to personalize the feed
+    let currentFollowWeights: Record<string, number> = {};
+    if (user) {
+      const { data: weights } = await supabase
+        .from('follows')
+        .select('following_id, weight')
+        .eq('follower_id', user.id);
+      
+      if (weights) {
+        weights.forEach(w => {
+          currentFollowWeights[w.following_id] = w.weight || 1;
+        });
+      }
+    }
     
     let selectString = `
       *,
@@ -438,6 +453,28 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       }
 
       setEscalatedScope(currentEscalation);
+
+      // Final Step: Sort by Influence Weight for Hot/Everybody categories
+      if (user && (activeCategory === 'Hot' || activeCategory === 'Everybody')) {
+        filteredPosts = filteredPosts.sort((a, b) => {
+          const weightA = currentFollowWeights[a.profile_id] || 1;
+          const weightB = currentFollowWeights[b.profile_id] || 1;
+          
+          // 1. Priority Boost (Admin/Official)
+          if ((a.priority || 0) !== (b.priority || 0)) {
+            return (b.priority || 0) - (a.priority || 0);
+          }
+          
+          // 2. Weighted Hot Score
+          // Formula: hot_score * (1 + 0.1 * weight)
+          // A 10x weight gives a 2x total score multiplier
+          const scoreA = (a.hot_score || 0) * (1 + (weightA * 0.1));
+          const scoreB = (b.hot_score || 0) * (1 + (weightB * 0.1));
+          
+          return scoreB - scoreA;
+        });
+      }
+
       setPosts(filteredPosts);
 
       // 4. Fetch User Context (Poll Votes & Post Votes)
