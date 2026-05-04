@@ -281,6 +281,17 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       if (followersData.data) setFollowers(followersData.data);
       if (followingData.data) setFollowing(followingData.data);
       setLoading(false);
+
+      // Log interaction if viewing someone else's profile
+      if (user.id !== targetId) {
+        supabase.rpc('log_social_interaction', { 
+          actor_id: user.id, 
+          target_id: targetId,
+          boost_amount: 1 
+        }).then(({ error }) => {
+          if (error) console.error('Interaction log failed:', error);
+        });
+      }
     };
     fetchProfile();
   }, [user.id, profileId]);

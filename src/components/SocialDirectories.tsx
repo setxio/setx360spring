@@ -5,7 +5,10 @@ import { GroupCreationModal } from './GroupCreationModal';
 import { getAvatarUrl } from '../lib/utils';
 import './SocialDirectories.css';
 
-export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' | 'city' }> = ({ scope = 'national' }) => {
+export const UserDirectory: React.FC<{ 
+  scope?: 'national' | 'state' | 'county' | 'city';
+  onNavigateToProfile?: (id: string) => void;
+}> = ({ scope = 'national', onNavigateToProfile }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +80,17 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
     }
   };
 
+  const handleUserClick = (targetId: string) => {
+    if (currentUser?.id && currentUser.id !== targetId) {
+      supabase.rpc('log_social_interaction', { 
+        actor_id: currentUser.id, 
+        target_id: targetId,
+        boost_amount: 1 
+      });
+    }
+    onNavigateToProfile?.(targetId);
+  };
+
   const filteredUsers = users.filter(user => 
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -112,12 +126,12 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
           </div>
           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '8px' }}>
             {suggestedUsers.map(u => (
-              <div key={u.id} style={{ flexShrink: 0, width: 100, textAlign: 'center', background: 'var(--bg-soft)', borderRadius: '16px', padding: '12px 8px', border: '1px solid var(--border)' }}>
+              <div key={u.id} style={{ flexShrink: 0, width: 100, textAlign: 'center', background: 'var(--bg-soft)', borderRadius: '16px', padding: '12px 8px', border: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => handleUserClick(u.id)}>
                 <img src={getAvatarUrl(u)} alt={u.name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', marginBottom: '6px' }} />
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{u.community || 'Local'}</div>
                 <button
-                  onClick={() => handleFollow(u.id)}
+                  onClick={(e) => { e.stopPropagation(); handleFollow(u.id); }}
                   style={{ fontSize: '0.72rem', fontWeight: 700, padding: '4px 12px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer' }}
                 >
                   + Follow
@@ -134,7 +148,7 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
           <div className="loader-container"><Loader2 className="animate-spin" /></div>
         ) : filteredUsers.length > 0 ? (
           filteredUsers.map(user => (
-            <div key={user.id} className="premium-card user-card">
+            <div key={user.id} className="premium-card user-card" style={{ cursor: 'pointer' }} onClick={() => handleUserClick(user.id)}>
               <img src={getAvatarUrl(user)} alt={user.name} className="user-avatar" />
               <div className="user-info">
                 <h4 className="user-name">{user.name}</h4>
@@ -144,7 +158,7 @@ export const UserDirectory: React.FC<{ scope?: 'national' | 'state' | 'county' |
               {currentUser?.id !== user.id && (
                 <button 
                   className={`follow-btn ${followingMap[user.id] ? 'following' : ''}`}
-                  onClick={() => handleFollow(user.id)}
+                  onClick={(e) => { e.stopPropagation(); handleFollow(user.id); }}
                   style={followingMap[user.id] ? { background: 'var(--bg-soft)', color: 'var(--text-muted)' } : {}}
                 >
                   {followingMap[user.id] ? 'Following' : <><UserPlus size={16} /> Follow</>}
