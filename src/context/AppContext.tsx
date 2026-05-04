@@ -46,7 +46,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isSetxDomain = hostname.includes('setx360.com') || hostname.includes('setx360spring') || hostname.includes('project-xjdn2');
+  // Default to true for this codebase unless explicitly on an efutura domain
+  const isSetxDomain = !hostname.includes('efutura.com') || hostname.includes('setx360') || hostname.includes('setxio');
 
   const [env, setEnvState] = useState<Env>(() => {
     if (typeof window !== 'undefined') {

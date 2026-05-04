@@ -11,8 +11,8 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
   const { isSetxDomain } = useApp();
   const [activeTab, setActiveTab] = useState<'tos' | 'privacy' | 'copyright'>('tos');
 
-  const brandName = isSetxDomain ? 'SETX 360' : 'Efutura';
-  const companyName = isSetxDomain ? 'SETX 360 Platform' : 'Efutura Technologies LLC';
+  const brandName = 'SETX 360';
+  const companyName = 'SETX 360 Platform';
 
   return (
     <div className="legal-notice-container glass">
@@ -153,7 +153,7 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
       <div className="legal-footer">
         <p>© 2026 {companyName}. All Rights Reserved.</p>
         <div className="legal-links">
-          <a href={isSetxDomain ? "mailto:support@setx360.com" : "mailto:support@efutura.com"}>Contact Support <ExternalLink size={14} /></a>
+          <a href="mailto:support@setx360.com">Contact Support <ExternalLink size={14} /></a>
         </div>
       </div>
     </div>

@@ -152,7 +152,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
               <input
                 ref={inputRef}
                 type="text"
-                placeholder={`Search ${isSetxDomain ? 'SETX 360' : 'Efutura'} ${scope === 'national' ? '' : scope === 'state' ? 'Statewide' : scope === 'city' ? 'City' : 'Regional'}...`}
+                placeholder={`Search SETX 360 ${scope === 'national' ? '' : scope === 'state' ? 'Statewide' : scope === 'city' ? 'City' : 'Regional'}...`}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}

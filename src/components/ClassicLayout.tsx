@@ -585,7 +585,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <div onClick={() => setIsTevisOpen(!isTevisOpen)} style={{ position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: isTevisOpen ? `0 0 35px 5px var(--primary)` : (theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none'), transform: isTevisOpen ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.4s ease' }}>
-              <img src={isSetxDomain ? (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png") : "/logo-neo.png"} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
+              <img src={theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png"} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
             </div>
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
