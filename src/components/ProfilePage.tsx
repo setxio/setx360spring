@@ -15,7 +15,8 @@ import {
   Building2,
   Loader2,
   Play,
-  Pin
+  Pin,
+  X
 } from 'lucide-react';
 import { SocialFeed } from './SocialFeed';
 import { PostCard } from './PostCard';
@@ -242,6 +243,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [followingCount, setFollowingCount] = useState(0);
   const [pinnedPost, setPinnedPost] = useState<any>(null);
   const [isFollowingProfile, setIsFollowingProfile] = useState(false);
+  const [showFollowersList, setShowFollowersList] = useState(false);
+  const [showFollowingList, setShowFollowingList] = useState(false);
+  const [followers, setFollowers] = useState<any[]>([]);
+  const [following, setFollowing] = useState<any[]>([]);
+  const [followWeight, setFollowWeight] = useState(1);
+  const [showWeightSelector, setShowWeightSelector] = useState(false);
 
   const targetId = profileId || user.id;
   const isOwnProfile = !profileId || profileId === user.id;
@@ -253,7 +260,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const [profileRes, followersRes, followingRes, followingMeRes, pinnedRes] = await Promise.all([
+      const [profileRes, followersRes, followingRes, followingMeRes, pinnedRes, followersData, followingData] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', targetId).single(),
         supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', targetId),
         supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', targetId),
@@ -262,6 +269,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           : Promise.resolve({ data: null }),
         supabase.from('posts').select(`*, author:profiles!posts_profile_id_fkey(id,name,avatar_url,role,community,is_verified,email)`)
           .eq('profile_id', targetId).eq('is_pinned', true).maybeSingle(),
+        supabase.from('follows').select('*, profiles:follower_id(*)').eq('following_id', targetId),
+        supabase.from('follows').select('*, profiles:following_id(*)').eq('follower_id', targetId)
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
@@ -269,6 +278,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       setFollowingCount(followingRes.count || 0);
       setIsFollowingProfile(!!followingMeRes.data);
       if (pinnedRes.data) setPinnedPost(pinnedRes.data);
+      if (followersData.data) setFollowers(followersData.data);
+      if (followingData.data) setFollowing(followingData.data);
       setLoading(false);
     };
     fetchProfile();
@@ -276,14 +287,25 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const handleFollowToggle = async () => {
     if (!user || isOwnProfile) return;
-    const nowFollowing = !isFollowingProfile;
-    setIsFollowingProfile(nowFollowing);
-    setFollowerCount(c => nowFollowing ? c + 1 : Math.max(0, c - 1));
-    if (nowFollowing) {
-      await supabase.from('follows').insert({ follower_id: user.id, following_id: targetId });
+    
+    if (!isFollowingProfile) {
+      setShowWeightSelector(true);
     } else {
+      setIsFollowingProfile(false);
+      setFollowerCount(c => Math.max(0, c - 1));
       await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', targetId);
     }
+  };
+
+  const confirmFollow = async () => {
+    setIsFollowingProfile(true);
+    setFollowerCount(c => c + 1);
+    setShowWeightSelector(false);
+    await supabase.from('follows').insert({ 
+      follower_id: user.id, 
+      following_id: targetId,
+      weight: followWeight
+    });
   };
 
   const handlePinPost = async (postId: string, currentlyPinned: boolean) => {
@@ -395,12 +417,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {isOwnProfile ? (
             <button className="edit-profile-btn" onClick={() => onNavigate(10)}>Edit Profile</button>
           ) : (
-            <button
-              className={`edit-profile-btn ${isFollowingProfile ? '' : 'primary'}`}
-              onClick={handleFollowToggle}
-            >
-              {isFollowingProfile ? 'Following ✓' : 'Follow'}
-            </button>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <button
+                className={`edit-profile-btn ${isFollowingProfile ? '' : 'primary'}`}
+                onClick={handleFollowToggle}
+              >
+                {isFollowingProfile ? 'Following ✓' : 'Follow'}
+              </button>
+              
+              {showWeightSelector && (
+                <div className="weight-popover glass" style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100, padding: 16, width: 240, marginTop: 10 }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 10 }}>Influence Weight: {followWeight}x</div>
+                  <input 
+                    type="range" min="1" max="10" step="1" 
+                    value={followWeight} 
+                    onChange={(e) => setFollowWeight(parseInt(e.target.value))}
+                    style={{ width: '100%', marginBottom: 12, accentColor: 'var(--primary)' }}
+                  />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="edit-profile-btn primary" style={{ flex: 1, padding: '6px' }} onClick={confirmFollow}>Confirm</button>
+                    <button className="edit-profile-btn" style={{ flex: 1, padding: '6px' }} onClick={() => setShowWeightSelector(false)}>Cancel</button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -481,16 +521,52 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
         {/* Follower / Following Counts */}
         <div style={{ display: 'flex', gap: '24px', marginTop: '12px' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)' }}>{followerCount.toLocaleString()}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Followers</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)' }}>{followingCount.toLocaleString()}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Following</div>
-          </div>
+          {(isOwnProfile || profile?.show_followers) && (
+            <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setShowFollowersList(true)}>
+              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)' }}>{followerCount.toLocaleString()}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Followers</div>
+            </div>
+          )}
+          {(isOwnProfile || profile?.show_following) && (
+            <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setShowFollowingList(true)}>
+              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)' }}>{followingCount.toLocaleString()}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Following</div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Follower/Following Modals */}
+      {(showFollowersList || showFollowingList) && (
+        <div className="modal-overlay" onClick={() => { setShowFollowersList(false); setShowFollowingList(false); }}>
+          <div className="admin-card glass" style={{ maxWidth: 400, width: '90%', maxHeight: '70vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <div className="card-header">
+              <h3>{showFollowersList ? 'Followers' : 'Following'}</h3>
+              <button className="icon-btn" onClick={() => { setShowFollowersList(false); setShowFollowingList(false); }}><X size={18} /></button>
+            </div>
+            <div style={{ padding: '0 16px 16px', overflowY: 'auto' }}>
+              {(showFollowersList ? followers : following).map((f: any) => {
+                const fUser = showFollowersList ? f.profiles : f.profiles; // both are named profiles because of join
+                return (
+                  <div key={f.id} className="follow-list-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div className="user-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem' }}>{fUser?.name?.[0]}</div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{fUser?.name}</div>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>Influence Weight: {f.weight || 1}x</div>
+                      </div>
+                    </div>
+                    <button className="icon-btn" style={{ width: 'auto', padding: '0 12px', fontSize: '0.7rem' }} onClick={() => { onNavigateToProfile?.(fUser.id); setShowFollowersList(false); setShowFollowingList(false); }}>View</button>
+                  </div>
+                );
+              })}
+              {(showFollowersList ? followers : following).length === 0 && (
+                <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No users found.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="profile-tabs">

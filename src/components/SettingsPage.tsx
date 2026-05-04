@@ -41,6 +41,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     enable_typing_indicators: true,
     enable_read_receipts: true,
     blur_nsfw: true,
+    show_following: true,
+    show_followers: true,
   });
   const [trustedPerson, setTrustedPerson] = useState<any>(null);
   const [guardianships, setGuardianships] = useState<any[]>([]);
@@ -54,7 +56,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     const fetchPreferences = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('is_public, allow_dms, enable_online_status, enable_typing_indicators, enable_read_receipts, blur_nsfw')
+        .select('is_public, allow_dms, enable_online_status, enable_typing_indicators, enable_read_receipts, blur_nsfw, show_following, show_followers')
         .eq('id', user.id)
         .single();
       
@@ -66,6 +68,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
           enable_typing_indicators: data.enable_typing_indicators === false ? false : true,
           enable_read_receipts: data.enable_read_receipts === false ? false : true,
           blur_nsfw: data.blur_nsfw === false ? false : true,
+          show_following: data.show_following === false ? false : true,
+          show_followers: data.show_followers === false ? false : true,
         });
       }
     };
@@ -116,7 +120,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     fetchPendingRequests();
   }, [user.id]);
 
-  const handleToggle = async (key: 'is_public' | 'allow_dms' | 'enable_online_status' | 'enable_typing_indicators' | 'enable_read_receipts' | 'blur_nsfw') => {
+  const handleToggle = async (key: 'is_public' | 'allow_dms' | 'enable_online_status' | 'enable_typing_indicators' | 'enable_read_receipts' | 'blur_nsfw' | 'show_following' | 'show_followers') => {
     setIsUpdating(true);
     const newValue = !preferences[key];
     setPreferences(prev => ({ ...prev, [key]: newValue }));
@@ -287,6 +291,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
               <div 
                 className={`toggle-switch ${preferences.blur_nsfw ? 'active' : ''}`}
                 onClick={() => !isUpdating && handleToggle('blur_nsfw')}
+              ></div>
+            </div>
+            <div className="pref-item">
+              <span>Show Following List</span>
+              <div 
+                className={`toggle-switch ${preferences.show_following ? 'active' : ''}`}
+                onClick={() => !isUpdating && handleToggle('show_following')}
+              ></div>
+            </div>
+            <div className="pref-item">
+              <span>Show Followers List</span>
+              <div 
+                className={`toggle-switch ${preferences.show_followers ? 'active' : ''}`}
+                onClick={() => !isUpdating && handleToggle('show_followers')}
               ></div>
             </div>
           </div>
