@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Church, Sparkles, Heart, MessageCircle, PlayCircle, BookOpen, Loader2, Search, Filter, ArrowRight, MapPin, Users } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
+import { SETX_COUNTY_LIST } from '../utils/geo';
 import { ChurchProfileView } from './ChurchProfileView';
 import './FaithView.css';
 
@@ -67,7 +68,7 @@ export const FaithView: React.FC<{ user?: any; scope?: string }> = ({ user: prop
     // Regional filtering for SETX
     if (user && scope !== 'national') {
       if (scope === 'city') query = query.eq('community', user.community);
-      else if (scope === 'county') query = query.in('county', ['Jefferson', 'Orange', 'Jefferson County', 'Orange County']);
+      else if (scope === 'county') query = query.in('county', SETX_COUNTY_LIST);
     }
 
     const { data } = await query;

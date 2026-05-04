@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
+import { SETX_COUNTY_LIST } from '../utils/geo';
 import './JobsView.css';
 
 interface Job {
@@ -68,7 +69,7 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
 
-  const { user: contextUser } = useApp();
+  const { user: contextUser, theme } = useApp();
   const user = propUser || contextUser;
   
   const [applyingId, setApplyingId] = useState<string | null>(null);
@@ -90,7 +91,14 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
 
     if (needsGeoFilter) {
       if (scope === 'city') query = query.eq('user.community', user.community);
-      else if (scope === 'county') query = query.eq('user.county', user.county);
+      else if (scope === 'county') {
+        const isSETX = theme.startsWith('setx-');
+        if (isSETX) {
+          query = query.in('user.county', SETX_COUNTY_LIST);
+        } else {
+          query = query.eq('user.county', user.county);
+        }
+      }
       else if (scope === 'state') query = query.eq('user.state', user.state);
     }
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Tag, ArrowUpRight, Loader2, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { weightByCounty, SETX_COUNTY_LIST } from '../utils/geo';
 import './HotDealsView.css';
 
 interface Product {
@@ -59,7 +60,8 @@ export const HotDealsView: React.FC<HotDealsViewProps> = ({ user, scope = 'natio
         if (scope === 'city') query = query.eq('store.seller.community', user.community);
         else if (scope === 'county') {
           if (isSETX) {
-            query = query.in('store.seller.county', ['Jefferson', 'Orange', 'Jefferson County', 'Orange County']);
+            // All 4 SETX counties
+            query = query.in('store.seller.county', SETX_COUNTY_LIST);
           } else if (user.county) {
             query = query.eq('store.seller.county', user.county);
           }
@@ -74,7 +76,8 @@ export const HotDealsView: React.FC<HotDealsViewProps> = ({ user, scope = 'natio
 
       const { data, error } = await query;
       if (error) throw error;
-      setProducts((data as any[]) || []);
+      const weighted = weightByCounty((data as any[]) || [], user?.county, 'store.seller.county');
+      setProducts(weighted as Product[]);
     } catch (err) {
       console.error('Error fetching hot deals:', err);
     } finally {

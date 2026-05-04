@@ -4,13 +4,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(30px);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   z-index: 9000;
   display: flex;
   justify-content: center;
   padding-top: 80px;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.25s ease-out;
 }
 
 @keyframes fadeIn {
@@ -25,15 +26,17 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   background: var(--bg);
-  animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: slideDown 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes slideDown {
-  from { transform: translateY(-40px) scale(0.95); opacity: 0; }
+  from { transform: translateY(-30px) scale(0.96); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
@@ -53,24 +56,31 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 24px;
+  padding: 14px 24px;
   border-radius: 35px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-input-wrapper-inner:focus-within {
-  background: var(--bg);
+  background: var(--bg-soft);
   border-color: var(--primary);
-  box-shadow: 0 15px 45px rgba(99, 102, 241, 0.2);
-  transform: scale(1.02);
+  box-shadow:
+    0 0 0 4px rgba(var(--primary-rgb, 99, 102, 241), 0.18),
+    0 12px 40px rgba(var(--primary-rgb, 99, 102, 241), 0.15);
+  transform: scale(1.01);
 }
 
 .search-icon {
   color: var(--primary);
-  filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.4));
+  filter: drop-shadow(0 0 6px rgba(var(--primary-rgb, 99, 102, 241), 0.5));
+  transition: transform 0.3s ease;
+}
+
+.search-input-wrapper-inner:focus-within .search-icon {
+  transform: scale(1.15);
 }
 
 .search-input-wrapper-inner input {

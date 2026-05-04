@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
+import { SETX_COUNTY_LIST } from '../utils/geo';
 import './HomesView.css';
 import luxuryHome from '../assets/luxury_home.png';
 
@@ -73,8 +74,9 @@ export const HomesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
   
-  const { user: contextUser } = useApp();
+  const { user: contextUser, theme } = useApp();
   const user = propUser || contextUser;
+  const isSETX = theme.startsWith('setx-');
 
   React.useEffect(() => {
     fetchProperties();
@@ -92,7 +94,13 @@ export const HomesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
 
     if (needsGeoFilter) {
       if (scope === 'city') query = query.eq('seller.community', user.community);
-      else if (scope === 'county') query = query.eq('seller.county', user.county);
+      else if (scope === 'county') {
+        if (isSETX) {
+          query = query.in('seller.county', SETX_COUNTY_LIST);
+        } else {
+          query = query.eq('seller.county', user.county);
+        }
+      }
       else if (scope === 'state') query = query.eq('seller.state', user.state);
     }
 

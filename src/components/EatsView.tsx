@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
+import { SETX_COUNTY_LIST } from '../utils/geo';
 import './EatsView.css';
 
 const CATEGORIES = [
@@ -105,7 +106,13 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
 
     if (needsGeoFilter) {
       if (scope === 'city') query = query.eq('seller.community', user.community);
-      else if (scope === 'county') query = query.eq('seller.county', user.county);
+      else if (scope === 'county') {
+        if (isSETX) {
+          query = query.in('seller.county', SETX_COUNTY_LIST);
+        } else {
+          query = query.eq('seller.county', user.county);
+        }
+      }
       else if (scope === 'state') query = query.eq('seller.state', user.state);
     }
 

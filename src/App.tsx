@@ -112,6 +112,16 @@ const App: React.FC = () => {
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
 
+  // Clear all detail views whenever the user switches environment (env-switcher footer)
+  // This fixes the bug where visiting a store then switching env keeps the store view open
+  useEffect(() => {
+    setActiveStoreId(null);
+    setActivePostId(null);
+    setActiveCommentId(null);
+    setActiveProfileId(null);
+    setActiveGroupId(null);
+  }, [env]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // '/' to search, but not if typing in an input

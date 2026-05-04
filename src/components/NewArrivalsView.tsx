@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Sparkles, Calendar, User, Package, Users, Eye, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { SETX_COUNTY_LIST } from '../utils/geo';
 import './NewArrivalsView.css';
 
 interface ActivityItem {
@@ -44,8 +45,9 @@ export const NewArrivalsView: React.FC<NewArrivalsViewProps> = ({ user, scope = 
         productQuery = productQuery.eq('stores.seller.community', user.community);
       } else if (scope === 'county') {
         if (isSETX) {
-          postQuery = postQuery.in('profiles.county', ['Jefferson', 'Orange', 'Jefferson County', 'Orange County']);
-          productQuery = productQuery.in('stores.seller.county', ['Jefferson', 'Orange', 'Jefferson County', 'Orange County']);
+          // All 4 SETX counties
+          postQuery = postQuery.in('profiles.county', SETX_COUNTY_LIST);
+          productQuery = productQuery.in('stores.seller.county', SETX_COUNTY_LIST);
         } else if (user.county) {
           postQuery = postQuery.eq('profiles.county', user.county);
           productQuery = productQuery.eq('stores.seller.county', user.county);

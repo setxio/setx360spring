@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Search, MoreVertical, Play, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
+import { SETX_COUNTY_LIST } from '../utils/geo';
 import './VideosView.css';
 
 const CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'News', 'Movies', 'Live', 'Fashion', 'Learning'];
@@ -49,6 +51,8 @@ const SAMPLE_VIDEOS = [
 ];
 
 export const VideosView: React.FC<{ user: any; scope: string }> = ({ user, scope = 'city' }) => {
+  const { theme } = useApp();
+  const isSETX = theme.startsWith('setx-');
   const [activeCategory, setActiveCategory] = useState('All');
   const [videos, setVideos] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +74,13 @@ export const VideosView: React.FC<{ user: any; scope: string }> = ({ user, scope
 
     if (needsGeoFilter) {
       if (scope === 'city') query = query.eq('author.community', user.community);
-      else if (scope === 'county') query = query.eq('author.county', user.county);
+      else if (scope === 'county') {
+        if (isSETX) {
+          query = query.in('author.county', SETX_COUNTY_LIST);
+        } else {
+          query = query.eq('author.county', user.county);
+        }
+      }
       else if (scope === 'state') query = query.eq('author.state', user.state);
     }
 
