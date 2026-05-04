@@ -16,7 +16,8 @@ import {
   Loader2,
   Play,
   Pin,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { SocialFeed } from './SocialFeed';
 import { PostCard } from './PostCard';
@@ -249,6 +250,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [following, setFollowing] = useState<any[]>([]);
   const [followWeight, setFollowWeight] = useState(1);
   const [showWeightSelector, setShowWeightSelector] = useState(false);
+  const [showBlockMenu, setShowBlockMenu] = useState(false);
 
   const targetId = profileId || user.id;
   const isOwnProfile = !profileId || profileId === user.id;
@@ -317,6 +319,27 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       following_id: targetId,
       weight: followWeight
     });
+  };
+
+  const handleBlockUser = async (type: 'permanent' | 'cooldown') => {
+    if (!user || isOwnProfile) return;
+    
+    const expiresAt = type === 'cooldown' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null;
+    
+    const { error } = await supabase.from('blocks').insert({
+      blocker_id: user.id,
+      blocked_id: targetId,
+      type,
+      expires_at: expiresAt
+    });
+    
+    if (!error) {
+      alert(type === 'cooldown' ? 'User placed in 7-day cool-down.' : 'User blocked permanently.');
+      onNavigate(0); // Go home after blocking
+    } else {
+      alert('Error blocking user: ' + error.message);
+    }
+    setShowBlockMenu(false);
   };
 
   const handlePinPost = async (postId: string, currentlyPinned: boolean) => {
@@ -428,13 +451,28 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {isOwnProfile ? (
             <button className="edit-profile-btn" onClick={() => onNavigate(10)}>Edit Profile</button>
           ) : (
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', position: 'relative' }}>
               <button
                 className={`edit-profile-btn ${isFollowingProfile ? '' : 'primary'}`}
                 onClick={handleFollowToggle}
               >
                 {isFollowingProfile ? 'Following ✓' : 'Follow'}
               </button>
+              
+              <button className="icon-btn" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0 12px' }} onClick={() => setShowBlockMenu(!showBlockMenu)}>
+                <Shield size={18} />
+              </button>
+
+              {showBlockMenu && (
+                <div className="weight-popover glass" style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100, padding: 12, width: 200, marginTop: 10 }}>
+                  <button className="result-item" style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', color: '#fff', padding: '10px', cursor: 'pointer' }} onClick={() => handleBlockUser('cooldown')}>
+                    7-Day Cool Down
+                  </button>
+                  <button className="result-item" style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', color: '#ef4444', padding: '10px', cursor: 'pointer' }} onClick={() => handleBlockUser('permanent')}>
+                    Permanent Block
+                  </button>
+                </div>
+              )}
               
               {showWeightSelector && (
                 <div className="weight-popover glass" style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100, padding: 16, width: 240, marginTop: 10 }}>

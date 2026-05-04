@@ -50,6 +50,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
   const [guardianSearch, setGuardianSearch] = useState('');
   const [isSearchingGuardian, setIsSearchingGuardian] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [archiveSearch, setArchiveSearch] = useState('');
+  const [isSearchingArchive, setIsSearchingArchive] = useState(false);
+  const [archiveResults, setArchiveResults] = useState<any[]>([]);
   const [showLegal, setShowLegal] = useState(false);
 
   useEffect(() => {
@@ -188,6 +191,46 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
       if (data) setPendingRequests(data);
     } else {
       alert('Error submitting request: ' + error.message);
+    }
+    setIsUpdating(false);
+  };
+
+  const searchArchiveUser = async () => {
+    if (archiveSearch.length < 3) return;
+    setIsSearchingArchive(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, name, email')
+      .ilike('name', `%${archiveSearch}%`)
+      .neq('id', user.id)
+      .limit(5);
+    
+    setArchiveResults(data || []);
+    setIsSearchingArchive(false);
+  };
+
+  const downloadTranscript = async (otherId: string, otherName: string) => {
+    setIsUpdating(true);
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(sender_id.eq.${user.id},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${user.id})`)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      alert('Error fetching transcript: ' + error.message);
+    } else if (messages && messages.length > 0) {
+      const blob = new Blob([JSON.stringify(messages, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `chat_transcript_${otherName.replace(/\s/g, '_')}_${new Date().getTime()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert('Transcript downloaded successfully.');
+    } else {
+      alert('No messages found for this conversation.');
     }
     setIsUpdating(false);
   };
@@ -403,6 +446,49 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
           <div className="pref-item" style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 16 }}>
             <span>View Platform Guidelines</span>
             <ChevronRight size={20} color="var(--primary)" />
+          </div>
+        </section>
+
+        {/* Chat Transcripts & Data Portability */}
+        <section className="settings-card">
+          <h2 className="section-title"><Download size={20} /> Chat Archives</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: -8, marginBottom: 16 }}>
+            Download historical chat transcripts. Search for a person to export your conversation history.
+          </p>
+
+          <div className="guardian-assign">
+            <div className="guardian-search-box">
+              <input 
+                type="text" 
+                placeholder="Search person..." 
+                value={archiveSearch}
+                onChange={(e) => setArchiveSearch(e.target.value)}
+                style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '10px', color: '#fff', width: '100%' }}
+              />
+              <button 
+                onClick={searchArchiveUser} 
+                disabled={isSearchingArchive}
+                style={{ position: 'absolute', right: 5, top: 5, bottom: 5, background: 'var(--primary)', border: 'none', borderRadius: '8px', color: '#fff', padding: '0 15px', cursor: 'pointer' }}
+              >
+                {isSearchingArchive ? <Loader2 className="animate-spin" size={16} /> : 'Search'}
+              </button>
+            </div>
+
+            {archiveResults.length > 0 && (
+              <div className="guardian-results glass" style={{ marginTop: 12, borderRadius: 12, overflow: 'hidden' }}>
+                {archiveResults.map(res => (
+                  <div key={res.id} className="result-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '0.9rem' }}>{res.name}</span>
+                    <button 
+                      onClick={() => downloadTranscript(res.id, res.name)}
+                      style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer' }}
+                    >
+                      Export JSON
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

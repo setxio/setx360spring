@@ -157,6 +157,15 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       .select(selectString)
       .neq('moderation_status', 'hidden');
 
+    // EXCLUDE BLOCKED USERS
+    if (user) {
+      const { data: blocks } = await supabase.from('blocks').select('blocked_id').eq('blocker_id', user.id);
+      const blockedIds = blocks?.map(b => b.blocked_id) || [];
+      if (blockedIds.length > 0) {
+        query = query.not('profile_id', 'in', `(${blockedIds.join(',')})`);
+      }
+    }
+
     // ENFORCE TOWN BOUNDARY (Privacy Mode for Minors)
     const userAge = user ? calculateAge(user.birth_month, user.birth_day, user.birth_year) : 0;
     const isMinor = userAge > 0 && userAge < 18;
@@ -213,7 +222,9 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     }
     else if (activeCategory === 'News') {
       // News comes from verified media roles OR posts explicitly marked as news
-      query = query.or(`category.eq.News,type.eq.news`);
+      // Added journalists and media outlets
+      query = query.or(`category.eq.News,type.eq.news`)
+                   .filter('author.role', 'in', '(media,news,journalist,v_media,v_news,v_journalist,admin)');
     }
     else if (activeCategory === 'Events') {
       // Events explicitly tagged or type event from specific roles
