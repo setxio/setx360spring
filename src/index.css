@@ -65,6 +65,42 @@
   --carousel-bg: rgba(255, 255, 255, 0.02);
 }
 
+/* ── IO (Modern) Light ────────────────────────────────────── */
+[data-theme='io-light'] {
+  --bg: #ffffff;
+  --bg-soft: #fdf8f1; /* The creamy tan from the package */
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
+  --primary: #4f46e5;
+  --secondary: #10b981;
+  /* TopBar color slots */
+  --theme-color-1: #4f46e5;
+  --theme-color-2: #818cf8;
+  --theme-color-3: #10b981;
+  --theme-color-4: #34d399;
+  --button-style: gradient;
+}
+
+/* ── IO (Modern) Dark ─────────────────────────────────────── */
+[data-theme='io-dark'] {
+  --bg: #000000;
+  --bg-soft: #0a0a10;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #1e1e2e;
+  --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --primary: #6366f1;
+  --secondary: #34d399;
+  /* TopBar color slots */
+  --theme-color-1: #6366f1;
+  --theme-color-2: #818cf8;
+  --theme-color-3: #34d399;
+  --theme-color-4: #10b981;
+  --button-style: gradient;
+}
+
 /* ── Civic (Classic) Light ─────────────────────────────────── */
 [data-theme='civic-classic-light'] {
   --bg: #f8f8ff;

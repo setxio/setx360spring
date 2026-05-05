@@ -29,11 +29,13 @@ import {
 import { AdminDataImport } from './AdminDataImport';
 import { AIAssistant } from './AIAssistant';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 import './AdminDashboard.css';
 
 type AdminTab = 'overview' | 'reviews' | 'vendors' | 'directory' | 'modules' | 'moderation' | 'intelligence' | 'alerts' | 'activity' | 'settings';
 
 export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: propTab }) => {
+  const { theme } = useApp();
   const tabMap: Record<number, AdminTab> = {
     0: 'overview',
     1: 'reviews',
@@ -338,7 +340,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
         <div className="admin-card">
           <div className="card-header">
             <h3>Priority Tasks</h3>
-            <span style={{ fontSize: '0.8rem', padding: '4px 10px', borderRadius: '10px', background: 'var(--admin-gold)', color: '#000', fontWeight: 900 }}>{verifications.length}</span>
+            <span style={{ fontSize: '0.8rem', padding: '4px 10px', borderRadius: '10px', background: 'var(--admin-accent)', color: '#fff', fontWeight: 900 }}>{verifications.length}</span>
           </div>
           <div className="mini-verification-list">
             {verifications.slice(0, 5).map(req => (
@@ -388,7 +390,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
             <ShieldCheck size={26} color="black" strokeWidth={2.5} />
           </div>
           <div className="brand-text">
-            <h2>SETX 360</h2>
+            <h2>{theme.startsWith('io-') ? 'IO' : 'SETX'} 360</h2>
             <p>Admin Control</p>
           </div>
         </div>
@@ -427,7 +429,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
 
         {isLoading ? (
           <div className="admin-loading-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-            <Loader2 className="animate-spin" size={48} color="var(--admin-gold)" />
+            <Loader2 className="animate-spin" size={48} color="var(--admin-accent)" />
             <p style={{ marginTop: 16, fontWeight: 700, color: '#94a3b8' }}>Syncing Terminal Systems...</p>
           </div>
         ) : (
@@ -613,7 +615,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                 {/* Custom Fee Modal */}
                 {editingFeeUser && (
                   <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 20 }}>
-                    <div className="stat-card" style={{ maxWidth: 450, width: '100%', border: '1px solid var(--admin-gold)' }}>
+                    <div className="stat-card" style={{ maxWidth: 450, width: '100%', border: '1px solid var(--admin-accent)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                         <h3 style={{ margin: 0 }}>Fee Override: {editingFeeUser.name}</h3>
                         <button className="icon-btn" onClick={() => setEditingFeeUser(null)} style={{ width: 32, height: 32 }}><X size={16} /></button>
@@ -645,7 +647,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                         <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
                           <button 
                             className="icon-btn" 
-                            style={{ flex: 1, background: 'var(--admin-gold)', color: '#000', fontWeight: 900, height: 48, width: 'auto' }}
+                            style={{ flex: 1, background: 'var(--admin-accent)', color: '#fff', fontWeight: 900, height: 48, width: 'auto' }}
                             onClick={handleSaveCustomFees}
                           >
                             Save Override
@@ -704,7 +706,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                     className="icon-btn" 
                     onClick={saveSettings}
                     disabled={isSavingSettings}
-                    style={{ width: 'auto', padding: '0 20px', gap: 8, background: 'var(--admin-gold)', color: '#000' }}
+                    style={{ width: 'auto', padding: '0 20px', gap: 8, background: 'var(--admin-accent)', color: '#fff' }}
                   >
                     {isSavingSettings ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                     Apply Changes
@@ -713,7 +715,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                 
                 <div className="settings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, marginTop: 24 }}>
                   <div className="stat-card">
-                    <h4 style={{ margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign size={20} color="var(--admin-gold)" /> Marketplace Splits</h4>
+                    <h4 style={{ margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign size={20} color="var(--admin-accent)" /> Marketplace Splits</h4>
                     <div className="input-group" style={{ marginBottom: 20 }}>
                       <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 8 }}>
                         <span>Vendor Fee</span>
@@ -723,7 +725,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                         type="range" min="0" max="0.30" step="0.005"
                         value={platformSettings.vendor_fee_percentage}
                         onChange={(e) => setPlatformSettings({...platformSettings, vendor_fee_percentage: parseFloat(e.target.value)})}
-                        style={{ width: '100%', accentColor: 'var(--admin-gold)' }}
+                        style={{ width: '100%', accentColor: 'var(--admin-accent)' }}
                       />
                     </div>
                     <div className="input-group">
@@ -735,7 +737,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                         type="range" min="0" max="0.30" step="0.005"
                         value={platformSettings.driver_fee_percentage}
                         onChange={(e) => setPlatformSettings({...platformSettings, driver_fee_percentage: parseFloat(e.target.value)})}
-                        style={{ width: '100%', accentColor: 'var(--admin-gold)' }}
+                        style={{ width: '100%', accentColor: 'var(--admin-accent)' }}
                       />
                     </div>
                   </div>
@@ -808,7 +810,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                               <div style={{ display: 'flex', gap: 12 }}>
                                 <button 
                                   className="icon-btn" 
-                                  style={{ background: 'var(--admin-gold)', color: '#000', width: 'auto', padding: '0 12px' }}
+                                  style={{ background: 'var(--admin-accent)', color: '#fff', width: 'auto', padding: '0 12px' }}
                                   onClick={() => handleLegacyRequest(req.id, true)}
                                 >
                                   Approve & Generate PIN

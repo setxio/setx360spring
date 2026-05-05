@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { ArrowRight, Plus, Loader2, Star } from 'lucide-react';
+import { ArrowRight, Plus, Star, Filter, ShoppingBag, Zap, Award, MapPin, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { ProductDetailsModal } from './ProductDetailsModal';
+import './MarketHome.css';
 
 interface MarketHomeProps {
   user: any;
@@ -10,16 +11,26 @@ interface MarketHomeProps {
   onNavigateToStore?: (id: string) => void;
 }
 
+const CATEGORIES = [
+  { id: 'all', name: 'All Shops', icon: <ShoppingBag size={16} /> },
+  { id: 'artisanal', name: 'Artisanal', icon: <Award size={16} /> },
+  { id: 'fashion', name: 'Fashion', icon: <Zap size={16} /> },
+  { id: 'home', name: 'Home & Living', icon: <Plus size={16} /> },
+  { id: 'tech', name: 'Tech', icon: <Plus size={16} /> },
+  { id: 'local', name: 'SETX Only', icon: <MapPin size={16} /> }
+];
+
 export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national', onNavigateToStore }) => {
   const { theme } = useApp();
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
     fetchProducts();
-  }, [scope]);
+  }, [scope, activeCategory]);
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -33,8 +44,13 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     let query = supabase
       .from('products')
       .select(`*, ${storeJoin}`)
-      .order('avg_rating', { ascending: false })
-      .limit(6);
+      .order('avg_rating', { ascending: false });
+
+    // Category filter logic (mocked for now as we don't have a category column in DB, 
+    // but in a real app we'd filter here)
+    if (activeCategory !== 'all') {
+      // query = query.eq('category', activeCategory);
+    }
 
     // Apply geo filter based on active notch
     if (needsGeoFilter) {
@@ -53,7 +69,7 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
       }
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.limit(12);
     let fetchedProducts = data || [];
     
     // Escalation Logic for Products
@@ -62,7 +78,6 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
       const isSETX = theme.startsWith('setx-');
       const escalationMap: Record<string, { nextScope: string; filterKey: string; filterValue: string; label: string }> = {
         city: { nextScope: 'county', filterKey: 'stores.seller.county', filterValue: user.county, label: `${user.county || 'your'} County` },
-        // Hide state/national escalation for SETX project
         ...(!isSETX ? {
           county: { nextScope: 'state', filterKey: 'stores.seller.state', filterValue: user.state, label: user.state || 'your state' },
           state: { nextScope: 'national', filterKey: '', filterValue: '', label: 'nationwide' },
@@ -71,7 +86,7 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
       
       const esc = escalationMap[scope];
       if (esc && esc.filterValue) {
-        let escQuery = supabase.from('products').select(`*, stores!inner ( *, seller:profiles!owner_id!inner ( community, county, state, country ) )`).order('avg_rating', { ascending: false }).limit(6);
+        let escQuery = supabase.from('products').select(`*, stores!inner ( *, seller:profiles!owner_id!inner ( community, county, state, country ) )`).order('avg_rating', { ascending: false }).limit(12);
         if (esc.nextScope !== 'national') {
           escQuery = escQuery.eq(esc.filterKey, esc.filterValue);
         }
@@ -95,141 +110,152 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     setIsLoading(false);
   };
 
+  const renderSkeletons = () => (
+    <div className="product-premium-grid">
+      {[1, 2, 3, 4, 5, 6].map(i => (
+        <div key={i} className="product-premium-card" style={{ height: '320px' }}>
+          <div className="skeleton" style={{ width: '100%', height: '220px' }} />
+          <div style={{ padding: '16px' }}>
+            <div className="skeleton" style={{ width: '40%', height: '12px', marginBottom: '8px' }} />
+            <div className="skeleton" style={{ width: '80%', height: '16px', marginBottom: '12px' }} />
+            <div className="skeleton" style={{ width: '30%', height: '20px' }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="market-home">
-      {/* Hero Banner */}
-      <div className="premium-card hero-banner" style={{ 
-        background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-        color: 'white',
-        marginBottom: '24px',
-        border: 'none',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '8px' }}>Spring Sale is Live!</h3>
-          <p style={{ opacity: 0.9, marginBottom: '16px' }}>Get up to 40% off on all local artisanal products.</p>
-          <button style={{ 
-            background: 'white', 
-            color: 'var(--primary)', 
-            border: 'none', 
-            padding: '8px 16px', 
-            borderRadius: '20px',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer'
-          }}>
-            Shop Now <ArrowRight size={16} />
+      {/* Premium Hero */}
+      <div className="market-hero">
+        <img 
+          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200" 
+          alt="Market Hero" 
+          className="market-hero-img"
+        />
+        <div className="market-hero-content">
+          <h2 className="fade-in">Experience Local <br/> Craftsmanship</h2>
+          <p className="fade-in">Discover unique products from verified merchants in your community. Quality goods, delivered with care.</p>
+          <button className="shop-now-btn fade-in">
+            Shop New Arrivals <ArrowRight size={18} />
           </button>
         </div>
       </div>
 
-      {/* SETX Spotlight */}
-      <div className="setx-spotlight glass" style={{ padding: '20px', borderRadius: '24px', marginBottom: '32px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Star size={20} color="var(--primary)" fill="var(--primary)" />
-            <h4 style={{ fontWeight: 800 }}>SETX Local Spotlight</h4>
-          </div>
-          <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 700 }}>Featured This Week</span>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }} className="no-scrollbar">
-          {['Beaumont Botanicals', 'Orange Outfitters', 'Neches River Crafts'].map(name => (
-            <div key={name} className="spotlight-card glass" style={{ minWidth: '160px', padding: '12px', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--primary)', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800 }}>{name[0]}</div>
-              <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{name}</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Verified Seller</div>
-            </div>
-          ))}
-        </div>
+      {/* Category Scroller */}
+      <div className="category-scroller no-scrollbar">
+        {CATEGORIES.map(cat => (
+          <button 
+            key={cat.id} 
+            className={`category-pill ${activeCategory === cat.id ? 'active' : ''}`}
+            onClick={() => setActiveCategory(cat.id)}
+          >
+            {cat.icon}
+            {cat.name}
+          </button>
+        ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h4 style={{ fontWeight: 700 }}>Featured Products</h4>
-        <span style={{ color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>See All</span>
+      {/* Featured Stores Spotlight */}
+      <div className="market-section-header">
+        <h4>Verified Storefronts</h4>
+        <div className="see-all-link" onClick={() => onNavigateToStore?.('all')}>
+          View Directory <ArrowRight size={14} />
+        </div>
+      </div>
+      
+      <div className="spotlight-container no-scrollbar">
+        {['Beaumont Botanicals', 'Orange Outfitters', 'Neches River Crafts'].map((name, i) => (
+          <div key={name} className="store-card-premium" onClick={() => onNavigateToStore?.(`store-${i}`)}>
+            <div className="store-logo-wrapper">
+              {name[0]}
+            </div>
+            <div className="store-info">
+              <h5>{name}</h5>
+              <p>Verified Merchant • 4.9 <Star size={10} fill="var(--primary)" color="var(--primary)" /></p>
+            </div>
+            <ChevronRight size={18} style={{ marginLeft: 'auto', opacity: 0.3 }} />
+          </div>
+        ))}
+      </div>
+
+      <div className="market-section-header">
+        <h4>Trending Products</h4>
+        <div className="see-all-link">
+          Show All <Filter size={14} />
+        </div>
       </div>
       
       {escalatedScope && (
         <div style={{
-          padding: '10px 16px',
-          marginBottom: '16px',
-          background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(157,0,255,0.08))',
-          border: '1px solid rgba(99,102,241,0.2)',
-          borderRadius: '12px',
+          padding: '12px 16px',
+          marginBottom: '24px',
+          background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.1), rgba(var(--secondary-rgb),0.05))',
+          border: '1px solid rgba(var(--primary-rgb),0.2)',
+          borderRadius: '14px',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          fontSize: '0.82rem',
+          gap: '10px',
+          fontSize: '0.85rem',
           color: 'var(--text-muted)',
-          fontWeight: 500
+          fontWeight: 600
         }}>
-          <span>Expanded to <strong style={{ color: 'var(--primary)' }}>{escalatedScope}</strong> — not enough local products yet</span>
+          <MapPin size={16} color="var(--primary)" />
+          <span>Showing results from <strong style={{ color: 'var(--primary)' }}>{escalatedScope}</strong> due to local availability.</span>
         </div>
       )}
 
-      {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-          <Loader2 className="animate-spin" size={32} color="var(--primary)" />
-        </div>
-      ) : products.length === 0 ? (
-        <div className="premium-card" style={{ textAlign: 'center', padding: '40px' }}>
-          <p style={{ color: 'var(--text-muted)' }}>No products found. Check back soon!</p>
+      {isLoading ? renderSkeletons() : products.length === 0 ? (
+        <div className="premium-card" style={{ textAlign: 'center', padding: '60px', borderRadius: '32px' }}>
+          <ShoppingBag size={48} color="var(--primary)" style={{ opacity: 0.2, marginBottom: '16px' }} />
+          <h4 style={{ fontWeight: 800, marginBottom: '8px' }}>No products here yet</h4>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>The local market is still growing. Try changing your search or scope!</p>
         </div>
       ) : (
-        <div className="product-grid" style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', 
-          gap: '16px' 
-        }}>
+        <div className="product-premium-grid">
           {products.map(product => (
             <div 
               key={product.id} 
-              className="premium-card product-card" 
-              style={{ padding: '8px', cursor: 'pointer', transition: 'transform 0.2s' }}
+              className="product-premium-card" 
               onClick={() => setSelectedProduct(product)}
             >
-              <img 
-                src={product.image_urls?.[0] || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=300&h=300&fit=crop'} 
-                alt={product.name} 
-                style={{ width: '100%', borderRadius: '12px', marginBottom: '8px', aspectRatio: '1/1', objectFit: 'cover' }} 
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <p 
-                  style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, cursor: 'pointer' }}
+              {product.priority > 0 && <div className="product-badge">Featured</div>}
+              <div className="product-image-container">
+                <img 
+                  src={product.image_urls?.[0] || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=500&h=500&fit=crop'} 
+                  alt={product.name} 
+                  loading="lazy"
+                />
+                <button 
+                  className="quick-add-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Quick add logic
+                  }}
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
+              
+              <div className="product-details-content">
+                <div 
+                  className="product-store-link"
                   onClick={(e) => { e.stopPropagation(); if (product.store_id) onNavigateToStore?.(product.store_id); }}
                 >
                   {product.stores?.name || 'Local Store'}
-                </p>
-                {product.review_count > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#f59e0b', fontSize: '0.7rem', fontWeight: 700 }}>
-                    <Star size={10} fill="currentColor" />
-                    <span>{product.avg_rating.toFixed(1)}</span>
-                  </div>
-                )}
-              </div>
-              <h5 style={{ fontWeight: 700, fontSize: '0.85rem', margin: '2px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h5>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.95rem' }}>${product.price}</span>
-                <button 
-                  style={{ 
-                    background: 'var(--primary)', 
-                    color: 'white', 
-                    border: 'none', 
-                    padding: '6px', 
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  <Plus size={14} />
-                </button>
+                </div>
+                <h5 className="product-name-premium">{product.name}</h5>
+                
+                <div className="product-price-row">
+                  <div className="product-price-premium">${product.price}</div>
+                  {product.review_count > 0 && (
+                    <div className="product-rating-premium">
+                      <Star size={12} fill="currentColor" />
+                      <span>{product.avg_rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -246,3 +272,4 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     </div>
   );
 };
+

@@ -9,8 +9,10 @@ interface LegalNoticeProps {
 export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<'tos' | 'privacy' | 'copyright'>('tos');
 
-  const brandName = 'SETX 360';
-  const companyName = 'SETX 360 Platform';
+  const { theme } = useApp();
+  const isIO = theme.startsWith('io-');
+  const brandName = isIO ? 'IO' : 'SETX 360';
+  const companyName = isIO ? 'IO Platform' : 'SETX 360 Platform';
 
   return (
     <div className="legal-notice-container glass">

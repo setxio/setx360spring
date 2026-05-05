@@ -11,7 +11,7 @@ async function apply() {
     await client.connect();
     console.log('Connected to Supabase DB');
     
-    const sql = fs.readFileSync('supabase/migrations/20260502_civic_services_seed.sql', 'utf8');
+    const sql = fs.readFileSync('supabase/migrations/20260505_seed_premium_market.sql', 'utf8');
     await client.query(sql);
     
     console.log('Migration applied successfully!');

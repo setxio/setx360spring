@@ -39,7 +39,7 @@ export const AdminDataImport: React.FC = () => {
     <div className="admin-import-tool glass">
       <div className="tool-header">
         <div className="tool-icon">
-          <Database size={24} color="var(--admin-gold)" />
+          <Database size={24} color="var(--admin-accent)" />
         </div>
         <div className="tool-title">
           <h3>Regional Data Porter</h3>

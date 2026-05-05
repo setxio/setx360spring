@@ -1,10 +1,11 @@
 :root {
-  --admin-gold: #fbbf24;
-  --admin-gold-glow: rgba(251, 191, 36, 0.4);
+  --admin-accent: #3b82f6;
+  --admin-accent-glow: rgba(59, 130, 246, 0.25);
+  --admin-secondary: #06b6d4;
   --admin-sidebar-width: 280px;
-  --admin-bg: #020617;
-  --admin-surface: rgba(30, 41, 59, 0.4);
-  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-bg: #000000;
+  --admin-surface: rgba(15, 23, 42, 0.4);
+  --admin-border: rgba(255, 255, 255, 0.05);
 }
 
 .admin-dashboard-container {
@@ -41,12 +42,12 @@
 .brand-icon {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, var(--admin-gold), #d97706);
+  background: linear-gradient(135deg, var(--admin-accent), var(--admin-secondary));
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px var(--admin-gold-glow);
+  box-shadow: 0 8px 24px var(--admin-accent-glow);
 }
 
 .brand-text h2 {
@@ -61,7 +62,7 @@
 
 .brand-text p {
   font-size: 0.6rem;
-  color: var(--admin-gold);
+  color: var(--admin-accent);
   text-transform: uppercase;
   font-weight: 900;
   letter-spacing: 2px;
@@ -99,9 +100,9 @@
 }
 
 .nav-item.active {
-  background: linear-gradient(to right, rgba(251, 191, 36, 0.15), transparent);
-  color: var(--admin-gold);
-  box-shadow: inset 2px 0 0 var(--admin-gold);
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.15), transparent);
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--admin-accent);
 }
 
 .sidebar-footer {
@@ -187,12 +188,12 @@
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background: rgba(251, 191, 36, 0.1);
+  background: rgba(59, 130, 246, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
-  color: var(--admin-gold);
+  color: var(--admin-accent);
 }
 
 .stat-value {
@@ -289,10 +290,10 @@
   width: 56px;
   height: 56px;
   border-radius: 18px;
-  background: var(--admin-gold);
-  color: #000;
+  background: var(--admin-accent);
+  color: #fff;
   border: none;
-  box-shadow: 0 8px 32px var(--admin-gold-glow);
+  box-shadow: 0 8px 32px var(--admin-accent-glow);
   align-items: center;
   justify-content: center;
   cursor: pointer;

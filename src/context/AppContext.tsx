@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 
 export type Env = 'discover' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard';
 export type Theme =
-  | 'light' | 'dark'
+  | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
   | 'setx-light' | 'setx-dark'
   | 'neo-light' | 'neo-dark'
@@ -61,7 +61,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return (localStorage.getItem('ecity_env') as Env) || 'market';
   });
 
-  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('ecity_theme') as Theme) || 'setx-dark');
+  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('ecity_theme') as Theme) || 'io-light');
   const [layout, setLayoutState] = useState<Layout>(() => (localStorage.getItem('ecity_layout') as Layout) || 'classic');
   
   

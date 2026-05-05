@@ -121,8 +121,8 @@ export const AIAssistant: React.FC = () => {
       <div className="admin-card" style={{ display: 'flex', flexDirection: 'column', padding: '24px', position: 'relative', overflow: 'hidden' }}>
         <div className="card-header" style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: 'var(--admin-gold)', padding: '10px', borderRadius: '12px' }}>
-              <Terminal size={24} color="#000" />
+            <div style={{ background: 'var(--admin-accent)', padding: '10px', borderRadius: '12px' }}>
+              <Terminal size={24} color="#fff" />
             </div>
             <div>
               <h3 style={{ margin: 0 }}>AI Architect Terminal</h3>
@@ -160,9 +160,9 @@ export const AIAssistant: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="proposed-action-card" 
-              style={{ background: 'rgba(255, 215, 0, 0.05)', border: '1px solid var(--admin-gold)', borderRadius: '16px', padding: '20px' }}
+              style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid var(--admin-accent)', borderRadius: '16px', padding: '20px' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', color: 'var(--admin-gold)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', color: 'var(--admin-accent)' }}>
                 <Zap size={20} />
                 <h4 style={{ margin: 0 }}>Proposed Infrastructure Update</h4>
               </div>
@@ -178,7 +178,7 @@ export const AIAssistant: React.FC = () => {
                 <button 
                   onClick={applyProposedAction}
                   disabled={isProcessing}
-                  style={{ background: 'var(--admin-gold)', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  style={{ background: 'var(--admin-accent)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                 >
                   {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
                   Execute Plan
@@ -208,13 +208,13 @@ export const AIAssistant: React.FC = () => {
               disabled={isProcessing}
             />
             <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)' }}>
-              <Sparkles size={20} color="var(--admin-gold)" />
+              <Sparkles size={20} color="var(--admin-accent)" />
             </div>
           </div>
           <button 
             type="submit"
             disabled={isProcessing || !query.trim()}
-            style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'var(--admin-gold)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#000' }}
+            style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'var(--admin-accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}
           >
             {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <Send size={24} />}
           </button>
@@ -252,12 +252,12 @@ export const AIAssistant: React.FC = () => {
         {/* Maintenance History */}
         <div className="admin-card" style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <History size={18} color="var(--admin-gold)" /> <h4>AI Activity</h4>
+            <History size={18} color="var(--admin-accent)" /> <h4>AI Activity</h4>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {history.map(log => (
-              <div key={log.id} style={{ position: 'relative', paddingLeft: '20px', borderLeft: '2px solid rgba(255,215,0,0.1)' }}>
-                <div style={{ position: 'absolute', left: '-6px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--admin-gold)' }}></div>
+              <div key={log.id} style={{ position: 'relative', paddingLeft: '20px', borderLeft: '2px solid rgba(59, 130, 246, 0.1)' }}>
+                <div style={{ position: 'absolute', left: '-6px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--admin-accent)' }}></div>
                 <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{log.action_type.toUpperCase()}</div>
                 <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '4px' }}>{log.description}</div>
                 <div style={{ fontSize: '0.65rem', opacity: 0.5 }}>{new Date(log.created_at).toLocaleString()}</div>

@@ -8,8 +8,10 @@ export const ThemeCustomizer: React.FC = () => {
   const { theme, setTheme, layout, setLayout } = useApp();
 
   const themes: { id: Theme; label: string; icon: any }[] = [
-    { id: 'setx-dark',        label: 'Civic Classic',   icon: <LayoutGrid size={16} /> },
-    { id: 'setx-light',       label: 'Civic Light',     icon: <LayoutGrid size={16} /> },
+    { id: 'io-light',          label: 'IO Light',        icon: <Sparkles size={16} /> },
+    { id: 'io-dark',           label: 'IO Dark',         icon: <Sparkles size={16} /> },
+    { id: 'setx-dark',         label: 'Civic Classic',   icon: <LayoutGrid size={16} /> },
+    { id: 'setx-light',        label: 'Civic Light',     icon: <LayoutGrid size={16} /> },
   ];
 
   return (

@@ -579,13 +579,13 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 0', minHeight: '52px' }}>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
             <h1 className="logo-text" onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'baseline', gap: '2px', color: theme.includes('light') ? '#000' : '#fff' }}>
-              {scope === 'city' ? (user?.community || 'City') : 'SETX'}
+              {theme.startsWith('io-') ? 'IO' : (scope === 'city' ? (user?.community || 'City') : 'SETX')}
               <span style={{ fontSize: '1.2rem', fontWeight: 700, color: env === 'discover' ? '#c084fc' : env === 'news' ? '#f87171' : env === 'social' ? '#3b82f6' : env === 'faith' ? '#8b5cf6' : env === 'events' ? '#f43f5e' : env === 'market' ? '#22c55e' : 'var(--primary)', transition: 'color 0.3s ease', lineHeight: 1 }}> 360</span>
             </h1>
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <div onClick={() => setIsTevisOpen(!isTevisOpen)} style={{ position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: isTevisOpen ? `0 0 35px 5px var(--primary)` : (theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none'), transform: isTevisOpen ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.4s ease' }}>
-              <img src={theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png"} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
+              <img src={theme.startsWith('io-') ? "/logo-io.png" : (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png")} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
             </div>
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
