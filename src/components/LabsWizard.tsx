@@ -10,9 +10,12 @@ import {
   Zap,
   Globe,
   Star,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import './LabsWizard.css';
+
+import { supabase } from '../lib/supabase';
 
 interface LabsWizardProps {
   onBack: () => void;
@@ -20,6 +23,8 @@ interface LabsWizardProps {
 
 export const LabsWizard: React.FC<LabsWizardProps> = ({ onBack }) => {
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -41,6 +46,45 @@ export const LabsWizard: React.FC<LabsWizardProps> = ({ onBack }) => {
 
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
+
+  const handleComplete = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+            phone: formData.phone,
+            role: 'business'
+          }
+        }
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('No user created');
+
+      const { error: storeError } = await supabase
+        .from('stores')
+        .insert({
+          owner_id: authData.user.id,
+          name: formData.businessName,
+          category: formData.category,
+          slug: formData.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+          status: 'Live',
+          subscription_tier: formData.plan
+        });
+
+      if (storeError) throw storeError;
+      nextStep();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderStep = () => {
     switch(step) {
@@ -183,10 +227,13 @@ export const LabsWizard: React.FC<LabsWizardProps> = ({ onBack }) => {
                   onChange={e => setFormData({...formData, password: e.target.value})}
                 />
               </div>
+              {error && <div className="wizard-error fade-in">{error}</div>}
             </div>
             <footer>
-              <button className="wizard-prev-btn" onClick={prevStep}><ArrowLeft size={18} /> Back</button>
-              <button className="wizard-next-btn" disabled={!formData.email || !formData.password} onClick={nextStep}>Complete Setup <ArrowRight size={18} /></button>
+              <button className="wizard-prev-btn" onClick={prevStep} disabled={isLoading}><ArrowLeft size={18} /> Back</button>
+              <button className="wizard-next-btn" disabled={!formData.email || !formData.password || isLoading} onClick={handleComplete}>
+                {isLoading ? <Loader2 className="animate-spin" size={18} /> : 'Complete Setup'} <ArrowRight size={18} />
+              </button>
             </footer>
           </div>
         );

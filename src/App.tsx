@@ -186,7 +186,18 @@ const App: React.FC = () => {
 
     // Existing authenticated views
     if (!user) return null; // Should be handled by parent, but for safety
-    if (activeStoreId && (env === 'market' || env === 'dashboard')) {
+    
+    // Vendor Dashboard (CRM)
+    if (env === 'dashboard') {
+      return (
+        <VendorDashboard 
+          user={user} 
+          initialStoreId={activeStoreId} 
+        />
+      );
+    }
+
+    if (activeStoreId && env === 'market') {
       return (
         <StoreFrontView 
           storeId={activeStoreId} 

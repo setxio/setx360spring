@@ -19,15 +19,16 @@ import {
   Eye,
   Settings
 } from 'lucide-react';
-import { SignUpFlow } from './SignUpFlow';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
+import { LabsWizard } from './LabsWizard';
 import './LabsView.css';
 
 export const LabsView: React.FC = () => {
-  const { user, setEnv } = useApp();
+  const { user, setEnv, setActiveStoreId } = useApp();
   const [activeTab, setActiveTab] = useState<'portfolio' | 'audit' | 'integrations' | 'domains' | 'store' | 'settings'>('portfolio');
   const [isCreatingSite, setIsCreatingSite] = useState(false);
+  const [isOnboarding, setIsOnboarding] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
   const [newSiteSlug, setNewSiteSlug] = useState('');
   const [myProjects, setMyProjects] = useState<any[]>([]);
@@ -73,14 +74,26 @@ export const LabsView: React.FC = () => {
   if (!user) {
     return (
       <div className="labs-onboarding-gate">
-        <div className="onboarding-card glass fade-in">
-          <Code2 size={48} className="labs-logo-icon" />
-          <h2>Founder Onboarding</h2>
-          <p>Join SETX Labs to build standalone websites and manage your regional business portfolio.</p>
-          <div className="onboarding-actions">
-            <SignUpFlow />
+        {isOnboarding ? (
+          <div className="wizard-container-full fade-in">
+            <LabsWizard onBack={() => setIsOnboarding(false)} />
           </div>
-        </div>
+        ) : (
+          <div className="onboarding-card glass fade-in">
+            <div className="card-brand">
+              <img src="/bolt.png" alt="Bolt" style={{ width: '48px', height: '48px', marginBottom: '16px' }} />
+            </div>
+            <h2>Partner Onboarding</h2>
+            <p>Join SETX Labs to build standalone websites and manage your regional business portfolio.</p>
+            <div className="onboarding-actions">
+              <button className="primary-labs-btn" onClick={() => setIsOnboarding(true)}>
+                Start Walkthrough Wizard
+              </button>
+              <div className="divider"><span>OR</span></div>
+              <SignUpFlow />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -91,7 +104,7 @@ export const LabsView: React.FC = () => {
       <aside className="labs-sidebar">
         <div className="sidebar-brand">
           <div className="labs-logo">
-            <Code2 size={24} />
+            <img src="/bolt.png" alt="Bolt" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
             <span>SETX <strong>Labs</strong></span>
           </div>
         </div>
@@ -194,7 +207,13 @@ export const LabsView: React.FC = () => {
                           </div>
                           <div className="card-actions">
                             <button className="action-btn secondary"><Eye size={16} /> View Site</button>
-                            <button className="action-btn primary"><Settings size={16} /> Manage CRM</button>
+                            <button 
+                              className="action-btn primary"
+                              onClick={() => {
+                                setActiveStoreId(project.id);
+                                setEnv('dashboard');
+                              }}
+                            ><Settings size={16} /> Manage CRM</button>
                           </div>
                         </div>
                       ))

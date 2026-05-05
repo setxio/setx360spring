@@ -388,4 +388,51 @@
   to { transform: rotate(360deg); }
 }
 
-.labs-header {
+.wizard-container-full {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.onboarding-actions .divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 16px 0;
+  opacity: 0.3;
+}
+
+.onboarding-actions .divider span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.onboarding-actions .divider::before,
+.onboarding-actions .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+}
+
+.primary-labs-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.primary-labs-btn:hover {
+  transform: translateY(-2px);
+}

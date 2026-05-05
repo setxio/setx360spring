@@ -30,9 +30,10 @@ import './VendorDashboard.css';
 
 interface VendorDashboardProps {
   user: any;
+  initialStoreId?: string | null;
 }
 
-export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: number, onNavigateToStore?: (id: string) => void }> = ({ user, activeTab: propTab, onNavigateToStore }) => {
+export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: number, onNavigateToStore?: (id: string) => void }> = ({ user, initialStoreId, activeTab: propTab, onNavigateToStore }) => {
   const [stores, setStores] = useState<any[]>([]);
   const [currentStore, setCurrentStore] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
@@ -84,8 +85,21 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
 
     if (storeData && storeData.length > 0) {
       setStores(storeData);
-      const activeStore = currentStore ? storeData.find((s: any) => s.id === currentStore.id) || storeData[0] : storeData[0];
+      
+      // If we have an initialStoreId, prioritize it
+      let activeStore = null;
+      if (initialStoreId) {
+        activeStore = storeData.find((s: any) => s.id === initialStoreId);
+      }
+      
+      if (!activeStore) {
+        activeStore = currentStore ? storeData.find((s: any) => s.id === currentStore.id) || storeData[0] : storeData[0];
+      }
+      
       setCurrentStore(activeStore);
+      if (initialStoreId && activeStore) {
+        setIsMasterMode(false); // Force individual mode if a specific store is requested
+      }
 
       const { data: productData } = await supabase.from('products').select('*').eq('store_id', activeStore.id).order('created_at', { ascending: false });
       const { data: orderData } = await supabase.from('orders').select('*, profiles:customer_id(*)').eq('store_id', activeStore.id).order('created_at', { ascending: false });

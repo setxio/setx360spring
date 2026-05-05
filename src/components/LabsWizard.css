@@ -214,3 +214,14 @@
 }
 
 .receipt-footer { font-size: 0.8rem; opacity: 0.5; text-align: center; margin-top: 16px; }
+.wizard-error {
+  background: rgba(239,68,68,0.1);
+  color: #ef4444;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 16px;
+  text-align: center;
+  border: 1px solid rgba(239,68,68,0.2);
+}

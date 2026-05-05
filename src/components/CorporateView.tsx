@@ -30,7 +30,10 @@ export const CorporateView: React.FC = () => {
 
       {/* Top Nav */}
       <nav className="corporate-nav glass">
-        <div className="nav-logo">SETX<span>.IO</span></div>
+        <div className="nav-logo">
+          <img src="/bolt.png" alt="Bolt" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+          SETX<span>.IO</span>
+        </div>
         <div className="nav-links">
           <button className="nav-link">Solutions</button>
           <button className="nav-link" onClick={() => setEnv('labs')}>Labs</button>
@@ -138,7 +141,10 @@ export const CorporateView: React.FC = () => {
 
       {/* Footer Branding */}
       <footer className="corporate-footer">
-        <div className="footer-logo">SETX<span>.IO</span></div>
+        <div className="footer-logo">
+          <img src="/bolt.png" alt="Bolt" style={{ width: '20px', height: '20px', objectFit: 'contain', opacity: 0.8 }} />
+          SETX<span>.IO</span>
+        </div>
         <p>&copy; 2026 SETX.IO Professional Services. All Rights Reserved.</p>
       </footer>
     </div>
