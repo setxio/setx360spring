@@ -58,7 +58,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return urlEnv;
       }
     }
-    return (localStorage.getItem('ecity_env') as Env) || 'social';
+    return (localStorage.getItem('ecity_env') as Env) || 'market';
   });
 
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('ecity_theme') as Theme) || 'setx-dark');
@@ -149,7 +149,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    setEnv('discover');
+    setEnv('market');
     setActiveTab(0);
   };
 
@@ -198,7 +198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setEnv('admin');
         setActiveTab(0);
       } else {
-        setEnv('social');
+        setEnv('market');
         setActiveTab(0);
       }
     }
@@ -219,7 +219,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleAuth(session.user);
       } else {
         setUser(null);
-        setEnv('social');
+        setEnv('market');
         setActiveTab(0);
       }
     });

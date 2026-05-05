@@ -610,7 +610,8 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           <div className="top-switch-container auto-hide-target" style={{ padding: '4px 0 8px' }}>
             <div className="two-notches">
               <div className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('county')} style={{ cursor: 'pointer' }} title={`${user?.county || 'Regional'} (County)`} />
-              <div className={`notch notch-3 ${scope === 'city' ? 'active' : ''} ${showNotchPulse && scope === 'county' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('city')} style={{ cursor: 'pointer' }} title={`${user?.community || 'Local'} (City)`} />
+              {/* City notch hidden per focus request */}
+              {/* <div className={`notch notch-3 ${scope === 'city' ? 'active' : ''} ${showNotchPulse && scope === 'county' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('city')} style={{ cursor: 'pointer' }} title={`${user?.community || 'Local'} (City)`} /> */}
             </div>
           </div>
         )}
@@ -685,7 +686,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
               <div className="sw-btn spacer" aria-hidden="true" />
-              {['discover', 'social', 'market', 'events', 'news', 'faith'].map(id => {
+              {['market'].map(id => {
                 const item = id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
                              id === 'social'   ? { id: 'social',   icon: <Rss size={18} />, label: 'Social' } :
                              id === 'market'   ? { id: 'market',   icon: <Store size={18} />, label: 'Market' } :
