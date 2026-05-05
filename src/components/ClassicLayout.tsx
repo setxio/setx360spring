@@ -62,7 +62,9 @@ import {
   Megaphone,
   Bot,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  Award
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, type Env } from '../context/AppContext';
