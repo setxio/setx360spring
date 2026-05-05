@@ -28,10 +28,11 @@ import {
 } from 'lucide-react';
 import { AdminDataImport } from './AdminDataImport';
 import { AIAssistant } from './AIAssistant';
+import { AdminCrmView } from './AdminCrmView';
 import { supabase } from '../lib/supabase';
 import './AdminDashboard.css';
 
-type AdminTab = 'overview' | 'reviews' | 'vendors' | 'directory' | 'modules' | 'moderation' | 'intelligence' | 'alerts' | 'activity' | 'settings';
+type AdminTab = 'overview' | 'reviews' | 'vendors' | 'directory' | 'crm' | 'modules' | 'moderation' | 'intelligence' | 'alerts' | 'activity' | 'settings';
 
 export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: propTab }) => {
   const tabMap: Record<number, AdminTab> = {
@@ -39,12 +40,13 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
     1: 'reviews',
     2: 'vendors',
     3: 'directory',
-    4: 'modules',
-    5: 'moderation',
-    6: 'intelligence',
-    7: 'alerts',
-    8: 'activity',
-    9: 'settings'
+    4: 'crm',
+    5: 'modules',
+    6: 'moderation',
+    7: 'intelligence',
+    8: 'alerts',
+    9: 'activity',
+    10: 'settings'
   };
   
   const [activeTab, setActiveTab] = useState<AdminTab>((propTab !== undefined && tabMap[propTab]) ? tabMap[propTab] : 'overview');
@@ -397,6 +399,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
           <NavItem tab="overview" icon={Home} label="Overview" />
           <NavItem tab="directory" icon={Users} label="Citizen Directory" />
           <NavItem tab="vendors" icon={Store} label="Merchant Registry" />
+          <NavItem tab="crm" icon={LucideActivity} label="Ultimate CRM" />
           <NavItem tab="reviews" icon={Shield} label="Verifications" />
           <NavItem tab="moderation" icon={ShieldAlert} label="Content Moderation" />
           <NavItem tab="alerts" icon={Siren} label="Crisis Center" />
@@ -486,6 +489,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                 </div>
               </div>
             )}
+            {activeTab === 'crm' && <AdminCrmView />}
             {activeTab === 'overview' && renderOverview()}
             {activeTab === 'vendors' && (
               <div className="admin-card">

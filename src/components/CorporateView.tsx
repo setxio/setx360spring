@@ -18,6 +18,20 @@ export const CorporateView: React.FC = () => {
   const { setEnv } = useApp();
   return (
     <div className="corporate-container fade-in">
+      {/* Top Nav */}
+      <nav className="corporate-nav glass">
+        <div className="nav-logo">SETX<span>.IO</span></div>
+        <div className="nav-links">
+          <button className="nav-link">Solutions</button>
+          <button className="nav-link" onClick={() => setEnv('labs')}>Labs</button>
+          <div className="nav-divider"></div>
+          <button className="nav-link login" onClick={() => { /* Open Login */ }}>Partner Login</button>
+          <button className="nav-terminal-btn" onClick={() => { /* Open Admin Login */ }}>
+            <ShieldCheck size={16} /> Admin Terminal
+          </button>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <header className="corporate-hero">
         <div className="hero-content">

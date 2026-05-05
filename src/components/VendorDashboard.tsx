@@ -25,6 +25,7 @@ import { StoreFrontEditor } from './StoreFrontEditor';
 import { RestaurantDashboard } from './RestaurantDashboard';
 import { ServicesDashboard } from './ServicesDashboard';
 import { MasterBusinessDashboard } from './MasterBusinessDashboard';
+import { BusinessCrmView } from './BusinessCrmView';
 import './VendorDashboard.css';
 
 interface VendorDashboardProps {
@@ -42,9 +43,9 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
   const [isShowingWizard, setIsShowingWizard] = useState(false);
   const [isMasterMode, setIsMasterMode] = useState(false);
   
-  // tabMap must match vendorNav order in App.tsx: products,orders,withdrawals,settings,overview,ads,storefront,team
-  const tabMap = ['products', 'orders', 'withdrawals', 'settings', 'overview', 'ads', 'storefront', 'team'];
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'withdrawals' | 'settings' | 'ads' | 'storefront' | 'team'>((propTab !== undefined && tabMap[propTab]) ? tabMap[propTab] as any : 'overview');
+  // tabMap must match vendorNav order in App.tsx: products,orders,withdrawals,settings,overview,ads,storefront,team,crm
+  const tabMap = ['products', 'orders', 'withdrawals', 'settings', 'overview', 'ads', 'storefront', 'team', 'crm'];
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'withdrawals' | 'settings' | 'ads' | 'storefront' | 'team' | 'crm'>((propTab !== undefined && tabMap[propTab]) ? tabMap[propTab] as any : 'overview');
   const [showProductModal, setShowProductModal] = useState(false);
   const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', stock_quantity: 10 });
   const [savingProduct, setSavingProduct] = useState(false);
@@ -273,6 +274,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
         <button className={`vendor-tab-link ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}><TrendingUp size={18} /> Overview</button>
         <button className={`vendor-tab-link ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}><Package size={18} /> Products</button>
         <button className={`vendor-tab-link ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}><ShoppingBag size={18} /> Orders</button>
+        <button className={`vendor-tab-link ${activeTab === 'crm' ? 'active' : ''}`} onClick={() => setActiveTab('crm')}><Users size={18} /> CRM</button>
         {platformSettings?.is_withdrawal_enabled && <button className={`vendor-tab-link ${activeTab === 'withdrawals' ? 'active' : ''}`} onClick={() => setActiveTab('withdrawals')}><DollarSign size={18} /> Withdrawals</button>}
         <button className={`vendor-tab-link ${activeTab === 'ads' ? 'active' : ''}`} onClick={() => setActiveTab('ads')}><Megaphone size={18} /> Ads</button>
         <button className={`vendor-tab-link ${activeTab === 'storefront' ? 'active' : ''}`} onClick={() => setActiveTab('storefront')}><Layout size={18} /> Store Front</button>
@@ -514,6 +516,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
         {activeTab === 'ads' && <div className="fade-in"><AdManager user={user} /></div>}
         {activeTab === 'storefront' && currentStore && <div className="fade-in"><StoreFrontEditor store={currentStore} onUpdate={fetchVendorData} /></div>}
         {activeTab === 'team' && currentStore && <div className="fade-in"><StaffManagement entityId={currentStore.id} entityType="business" user={user} /></div>}
+        {activeTab === 'crm' && currentStore && <div className="fade-in"><BusinessCrmView storeId={currentStore.id} /></div>}
       </main>
     </div>
   );

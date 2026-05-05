@@ -17,6 +17,7 @@ import { AdManager } from './AdManager';
 import { supabase } from '../lib/supabase';
 import { StaffManagement } from './StaffManagement';
 import { getOrCreateWallet } from '../lib/payments';
+import { BusinessCrmView } from './BusinessCrmView';
 import './VendorDashboard.css'; // Reusing styles for consistency
 
 interface RestaurantDashboardProps {
@@ -32,7 +33,7 @@ export const RestaurantDashboard: React.FC<RestaurantDashboardProps> = ({ user, 
   const [orders, setOrders] = useState<any[]>([]);
   const [storeWallet, setStoreWallet] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'orders' | 'ads' | 'team' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'orders' | 'ads' | 'team' | 'settings' | 'crm'>('overview');
   const [showMenuModal, setShowMenuModal] = useState(false);
   const [newMenuItem, setNewMenuItem] = useState({ name: '', price: '', description: '' });
 
@@ -104,6 +105,7 @@ export const RestaurantDashboard: React.FC<RestaurantDashboardProps> = ({ user, 
         <button className={`vendor-tab-link ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}><TrendingUp size={18} /> Overview</button>
         <button className={`vendor-tab-link ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => setActiveTab('menu')}><Utensils size={18} /> Menu</button>
         <button className={`vendor-tab-link ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}><ClipboardList size={18} /> Orders</button>
+        <button className={`vendor-tab-link ${activeTab === 'crm' ? 'active' : ''}`} onClick={() => setActiveTab('crm')}><Users size={18} /> CRM</button>
         <button className={`vendor-tab-link ${activeTab === 'ads' ? 'active' : ''}`} onClick={() => setActiveTab('ads')}><Megaphone size={18} /> Promotions</button>
         <button className={`vendor-tab-link ${activeTab === 'team' ? 'active' : ''}`} onClick={() => setActiveTab('team')}><Users size={18} /> Staff</button>
         <button className={`vendor-tab-link ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Settings size={18} /> Settings</button>
@@ -171,6 +173,7 @@ export const RestaurantDashboard: React.FC<RestaurantDashboardProps> = ({ user, 
 
         {activeTab === 'ads' && <AdManager user={user} />}
         {activeTab === 'team' && <StaffManagement entityId={currentStore.id} entityType="business" user={user} />}
+        {activeTab === 'crm' && <BusinessCrmView storeId={currentStore.id} />}
       </main>
     </div>
   );

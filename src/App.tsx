@@ -60,18 +60,21 @@ const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
 const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
-
+const BusinessCrmView = lazy(() => import('./components/BusinessCrmView').then(m => ({ default: m.BusinessCrmView })));
 
 import { useApp } from './context/AppContext';
+import { supabase } from './lib/supabase';
 
 const App: React.FC = () => {
   const { 
     user, env, theme, scope, activeTab, isLoading,
     setEnv, setTheme, setActiveTab, setIsSearchOpen, toggleTheme, updateUser,
-    isSetxIO, layout
+    isSetxIO, isSetx360, projectSlug, layout
   } = useApp();
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [projectStore, setProjectStore] = useState<any>(null);
+  const [isStoreLoading, setIsStoreLoading] = useState(false);
   
   // Auto-hide scroll logic is handled inside each layout component (ClassicLayout, MinimalLayout)
   // to avoid duplicate handlers fighting over the same DOM classes.
@@ -82,6 +85,7 @@ const App: React.FC = () => {
   const notchHasInteracted = localStorage.getItem('setx360_notch_interacted') === 'true';
 
   useEffect(() => {
+    // Service Worker Update Check
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(registration => {
         registration.addEventListener('updatefound', () => {
@@ -96,7 +100,30 @@ const App: React.FC = () => {
         });
       });
     }
-  }, []);
+
+    // Project Store Lookup
+    const fetchProjectStore = async () => {
+      const hostname = window.location.hostname;
+      const isSystemDomain = hostname.includes('setxio') || hostname.includes('setx360') || hostname.includes('setx.io');
+      
+      if (projectSlug || !isSystemDomain) {
+        setIsStoreLoading(true);
+        let query = supabase.from('stores').select('*');
+        
+        if (projectSlug) {
+          query = query.eq('slug', projectSlug);
+        } else if (!isSystemDomain) {
+          query = query.eq('custom_domain', hostname);
+        }
+
+        const { data } = await query.single();
+        if (data) setProjectStore(data);
+        setIsStoreLoading(false);
+      }
+    };
+
+    fetchProjectStore();
+  }, [projectSlug]);
 
   useEffect(() => {
     // Increment session count for notch discovery pulse (max 3)
@@ -141,6 +168,17 @@ const App: React.FC = () => {
 
 
   const renderView = () => {
+    // Handle Project Slugs or Custom Domains
+    if (projectStore) {
+      const isOwner = user?.id === projectStore.owner_id;
+      // If owner is logged in and not explicitly in "market" mode, show dashboard
+      if (isOwner && env !== 'market') {
+        return <VendorDashboard user={user} />;
+      }
+      // Otherwise show the public storefront/website
+      return <StoreFrontView storeId={projectStore.id} currentUser={user} onBack={() => {}} />;
+    }
+
     // Force Corporate View on IO domain for public visitors
     if (isSetxIO && env === 'market' && activeTab === 0 && !activeStoreId) {
       return <CorporateView />;

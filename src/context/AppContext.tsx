@@ -40,6 +40,7 @@ interface AppContextType {
   isSetxDomain: boolean;
   isSetxIO: boolean;
   isSetx360: boolean;
+  projectSlug: string | null;
   layout: Layout;
   setLayout: (layout: Layout) => void;
 }
@@ -48,11 +49,16 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   // Default to true for this codebase unless explicitly on an efutura domain
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const isSetxIO = hostname.toLowerCase().includes('setx.io') || params?.get('project') === 'io';
   const isSetx360 = hostname.toLowerCase().includes('setx360.com') || params?.get('project') === '360';
   const isSetxDomain = !hostname.includes('efutura.com') || hostname.includes('setx360') || hostname.includes('setxio') || hostname.includes('setx.io') || params?.get('project') !== null;
+
+  // Detect Project Slug (e.g. setx.io/my-business)
+  const pathParts = pathname.split('/').filter(Boolean);
+  const projectSlug = (isSetxIO && pathParts.length > 0) ? pathParts[0] : null;
 
   const [env, setEnvState] = useState<Env>(() => {
     if (typeof window !== 'undefined') {
@@ -342,6 +348,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isSetxDomain,
     isSetxIO,
     isSetx360,
+    projectSlug,
     layout,
     setLayout
   };

@@ -21,6 +21,9 @@ import './LabsView.css';
 
 export const LabsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'solutions' | 'integrations' | 'domains' | 'infrastructure' | 'store' | 'forum'>('solutions');
+  const [isCreatingSite, setIsCreatingSite] = useState(false);
+  const [newSiteName, setNewSiteName] = useState('');
+  const [newSiteSlug, setNewSiteSlug] = useState('');
 
   const templates = [
     { name: 'Restaurant Pro', category: 'Food & Drink', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=400', sync: ['Menu', 'Orders', 'Social'] },
@@ -66,7 +69,7 @@ export const LabsView: React.FC = () => {
           <section className="labs-section">
             <div className="section-header">
               <h2>Site Solutions & Templates</h2>
-              <button className="primary-labs-btn"><Plus size={18} /> New Standalone Site</button>
+              <button className="primary-labs-btn" onClick={() => setIsCreatingSite(true)}><Plus size={18} /> New Standalone Site</button>
             </div>
             <div className="template-grid">
               {templates.map(t => (
@@ -87,6 +90,43 @@ export const LabsView: React.FC = () => {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Create Site Modal */}
+        {isCreatingSite && (
+          <div className="labs-modal-overlay glass" onClick={() => setIsCreatingSite(false)}>
+            <div className="labs-modal premium-card fade-in" onClick={e => e.stopPropagation()}>
+              <header className="modal-header">
+                <Layout className="modal-icon" />
+                <div>
+                  <h3>Launch Your New Project</h3>
+                  <p>Start with a temporary SETX.IO address.</p>
+                </div>
+              </header>
+              <div className="modal-body">
+                <div className="input-group">
+                  <label>Business or Project Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Beaumont Bistro"
+                    value={newSiteName}
+                    onChange={(e) => {
+                      setNewSiteName(e.target.value);
+                      setNewSiteSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+                    }}
+                  />
+                </div>
+                <div className="slug-preview">
+                  <span className="label">Temporary URL:</span>
+                  <span className="url">setx.io/<strong>{newSiteSlug || 'your-slug'}</strong></span>
+                </div>
+              </div>
+              <footer className="modal-footer">
+                <button className="secondary-labs-btn" onClick={() => setIsCreatingSite(false)}>Cancel</button>
+                <button className="primary-labs-btn" disabled={!newSiteSlug}>Initialize Project <ArrowRight size={16} /></button>
+              </footer>
+            </div>
+          </div>
         )}
 
         {activeTab === 'integrations' && (

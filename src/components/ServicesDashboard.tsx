@@ -15,6 +15,7 @@ import { AdManager } from './AdManager';
 import { supabase } from '../lib/supabase';
 import { StaffManagement } from './StaffManagement';
 import { getOrCreateWallet } from '../lib/payments';
+import { BusinessCrmView } from './BusinessCrmView';
 import './VendorDashboard.css';
 
 interface ServicesDashboardProps {
@@ -29,7 +30,7 @@ export const ServicesDashboard: React.FC<ServicesDashboardProps> = ({ user, curr
   const [products, setProducts] = useState<any[]>([]);
   const [storeWallet, setStoreWallet] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'bookings' | 'ads' | 'team' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'bookings' | 'ads' | 'team' | 'settings' | 'crm'>('overview');
 
   useEffect(() => {
     fetchServicesData();
@@ -80,6 +81,7 @@ export const ServicesDashboard: React.FC<ServicesDashboardProps> = ({ user, curr
         <button className={`vendor-tab-link ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}><TrendingUp size={18} /> Insights</button>
         <button className={`vendor-tab-link ${activeTab === 'services' ? 'active' : ''}`} onClick={() => setActiveTab('services')}><Briefcase size={18} /> My Services</button>
         <button className={`vendor-tab-link ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => setActiveTab('bookings')}><Calendar size={18} /> Inquiries</button>
+        <button className={`vendor-tab-link ${activeTab === 'crm' ? 'active' : ''}`} onClick={() => setActiveTab('crm')}><Users size={18} /> CRM</button>
         <button className={`vendor-tab-link ${activeTab === 'ads' ? 'active' : ''}`} onClick={() => setActiveTab('ads')}><Megaphone size={18} /> Lead Gen</button>
         <button className={`vendor-tab-link ${activeTab === 'team' ? 'active' : ''}`} onClick={() => setActiveTab('team')}><Users size={18} /> Staff</button>
         <button className={`vendor-tab-link ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Settings size={18} /> Settings</button>
@@ -123,6 +125,7 @@ export const ServicesDashboard: React.FC<ServicesDashboardProps> = ({ user, curr
 
         {activeTab === 'ads' && <AdManager user={user} />}
         {activeTab === 'team' && <StaffManagement entityId={currentStore.id} entityType="business" user={user} />}
+        {activeTab === 'crm' && <BusinessCrmView storeId={currentStore.id} />}
       </main>
     </div>
   );
