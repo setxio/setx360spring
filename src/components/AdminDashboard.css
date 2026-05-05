@@ -1,7 +1,7 @@
 :root {
-  --admin-accent: #3b82f6;
-  --admin-accent-glow: rgba(59, 130, 246, 0.25);
-  --admin-secondary: #06b6d4;
+  --admin-accent: #7000f4;
+  --admin-accent-glow: rgba(112, 0, 244, 0.25);
+  --admin-secondary: #8b5cf6;
   --admin-sidebar-width: 280px;
   --admin-bg: #000000;
   --admin-surface: rgba(15, 23, 42, 0.4);

@@ -16,8 +16,8 @@
   /* Primary Palettes */
   --social-primary: #a855f7; /* Purple */
   --social-secondary: #06b6d4; /* Cyan */
-  --market-primary: #10b981; /* Green */
-  --market-secondary: #2563eb; /* Blue */
+  --market-primary: #7000f4; /* Purple */
+  --market-secondary: #000000; /* Black */
   --discover-primary: #06b6d4; /* Cyan */
   --discover-secondary: #a855f7; /* Purple */
   --jobs-violet: #7c3aed;
@@ -74,12 +74,12 @@
   --border: #e2e8f0;
   --shadow: 0 10px 25px -5px rgba(112, 0, 244, 0.1), 0 8px 10px -6px rgba(112, 0, 244, 0.1);
   --primary: #7000f4; /* The exact purple */
-  --secondary: #000000; /* Black */
+  --secondary: #8b5cf6; /* A slightly lighter purple accent */
   /* TopBar color slots */
   --theme-color-1: #7000f4;
   --theme-color-2: #8b5cf6;
-  --theme-color-3: #000000;
-  --theme-color-4: #64748b;
+  --theme-color-3: #c084fc;
+  --theme-color-4: #e9d5ff;
   --button-style: gradient;
 }
 
@@ -91,13 +91,13 @@
   --text-muted: #94a3b8;
   --border: #1e1e2e;
   --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  --primary: #6366f1;
-  --secondary: #34d399;
+  --primary: #7000f4;
+  --secondary: #8b5cf6;
   /* TopBar color slots */
-  --theme-color-1: #6366f1;
-  --theme-color-2: #818cf8;
-  --theme-color-3: #34d399;
-  --theme-color-4: #10b981;
+  --theme-color-1: #7000f4;
+  --theme-color-2: #8b5cf6;
+  --theme-color-3: #c084fc;
+  --theme-color-4: #e9d5ff;
   --button-style: gradient;
 }
 
@@ -369,14 +369,14 @@
 
 /* ─── Spring: Renewal ─── */
 [data-theme='spring'] {
-  --theme-primary: 142 71% 45%;   /* Emerald Green */
-  --theme-secondary: 330 81% 60%; /* Rose Pink */
-  --theme-gradient-from: #10b981;
-  --theme-gradient-to: #ec4899;
-  --theme-color-1: #10b981;
-  --theme-color-2: #34d399;
-  --theme-color-3: #f472b6;
-  --theme-color-4: #ec4899;
+  --theme-primary: 260 70% 50%;   /* Royal Purple */
+  --theme-secondary: 290 80% 60%; /* Vibrant Purple */
+  --theme-gradient-from: #7c3aed;
+  --theme-gradient-to: #d946ef;
+  --theme-color-1: #8b5cf6;
+  --theme-color-2: #a855f7;
+  --theme-color-3: #c084fc;
+  --theme-color-4: #d946ef;
 }
 
 /* ── Summer: Solstice ─── */
@@ -468,7 +468,7 @@ body {
 
 /* ── Text Formatting ─────────────────────────────── */
 .hashtag {
-  color: #10b981; /* Green */
+  color: #7000f4; /* Purple */
   font-weight: 600;
   cursor: pointer;
 }
@@ -664,12 +664,12 @@ body {
 }
 
 .notif-settings-btn.subscribed {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.05);
+  border-color: #7000f4;
+  background: rgba(112, 0, 244, 0.05);
 }
 
 .notif-settings-btn.subscribed svg {
-  color: #10b981;
+  color: #7000f4;
 }
 
 .notif-settings-btn:hover {

@@ -350,7 +350,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                     <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{req.role_requested}</div>
                   </div>
                 </div>
-                <button onClick={() => handleAction(req.id, req.profile_id, req.role_requested, true)} className="icon-btn approve" style={{ width: 32, height: 32, color: '#10b981' }}><CheckCircle size={16} /></button>
+                <button onClick={() => handleAction(req.id, req.profile_id, req.role_requested, true)} className="icon-btn approve" style={{ width: 32, height: 32, color: '#7000f4' }}><CheckCircle size={16} /></button>
               </div>
             ))}
             {verifications.length === 0 && <p style={{ textAlign: 'center', padding: '20px 0', color: '#64748b' }}>All caught up!</p>}
