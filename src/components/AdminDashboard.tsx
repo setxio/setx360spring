@@ -390,7 +390,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
             <ShieldCheck size={26} color="black" strokeWidth={2.5} />
           </div>
           <div className="brand-text">
-            <h2>{theme.startsWith('io-') ? 'IO' : 'SETX'} 360</h2>
+            <h2>SETX 360</h2>
             <p>Admin Control</p>
           </div>
         </div>

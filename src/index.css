@@ -68,18 +68,18 @@
 /* ── IO (Modern) Light ────────────────────────────────────── */
 [data-theme='io-light'] {
   --bg: #ffffff;
-  --bg-soft: #fdf8f1; /* The creamy tan from the package */
-  --text: #0f172a;
-  --text-muted: #64748b;
+  --bg-soft: #f8f8ff; /* Ghost White */
+  --text: #000000;
+  --text-muted: #64748b; /* Grey */
   --border: #e2e8f0;
-  --shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
-  --primary: #4f46e5;
-  --secondary: #10b981;
+  --shadow: 0 10px 25px -5px rgba(112, 0, 244, 0.1), 0 8px 10px -6px rgba(112, 0, 244, 0.1);
+  --primary: #7000f4; /* The exact purple */
+  --secondary: #000000; /* Black */
   /* TopBar color slots */
-  --theme-color-1: #4f46e5;
-  --theme-color-2: #818cf8;
-  --theme-color-3: #10b981;
-  --theme-color-4: #34d399;
+  --theme-color-1: #7000f4;
+  --theme-color-2: #8b5cf6;
+  --theme-color-3: #000000;
+  --theme-color-4: #64748b;
   --button-style: gradient;
 }
 

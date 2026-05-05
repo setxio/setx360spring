@@ -295,7 +295,7 @@ export const SignUpFlow: React.FC = () => {
                     style={{ width: 100, height: 100, marginBottom: 24, objectFit: 'contain' }} 
                   />
                   <h3>Sign In</h3>
-                  <p>Access the {theme.startsWith('io-') ? 'IO' : 'SETX 360'} Platform</p>
+                  <p>Access the SETX 360 Platform</p>
                 </div>
                 <div className="form-inputs">
                   <div className="input-group">
@@ -429,7 +429,7 @@ export const SignUpFlow: React.FC = () => {
             ) : (
               <>
                 <div className="signup-header">
-                  <h3>Join {theme.startsWith('io-') ? 'IO' : 'SETX'} 360</h3>
+                  <h3>Join SETX 360</h3>
                   <p>Select your account type to get started</p>
                 </div>
                 <div className="type-grid">

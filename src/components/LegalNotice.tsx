@@ -12,8 +12,8 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
 
   const { theme } = useApp();
   const isIO = theme.startsWith('io-');
-  const brandName = isIO ? 'IO' : 'SETX 360';
-  const companyName = isIO ? 'IO Platform' : 'SETX 360 Platform';
+  const brandName = 'SETX 360';
+  const companyName = 'SETX 360 Platform';
 
   return (
     <div className="legal-notice-container glass">
