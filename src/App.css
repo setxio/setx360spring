@@ -200,7 +200,7 @@
 
 .sw-btn.active.discover { --active-color: #c084fc; } /* Lavender */
 .sw-btn.active.social   { --active-color: #3b82f6; } /* Blue */
-.sw-btn.active.market   { --active-color: #7000f4; } /* Purple */
+.sw-btn.active.market   { --active-color: var(--market-primary); }
 .sw-btn.active.eats     { --active-color: #f97316; } /* Orange */
 .sw-btn.active.rides    { --active-color: #facc15; } /* Yellow */
 .sw-btn.active.services { --active-color: #6366f1; } /* Indigo */

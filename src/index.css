@@ -16,8 +16,8 @@
   /* Primary Palettes */
   --social-primary: #a855f7; /* Purple */
   --social-secondary: #06b6d4; /* Cyan */
-  --market-primary: #7000f4; /* Purple */
-  --market-secondary: #000000; /* Black */
+  --market-primary: #10b981; /* Green */
+  --market-secondary: #2563eb; /* Blue */
   --discover-primary: #06b6d4; /* Cyan */
   --discover-secondary: #a855f7; /* Purple */
   --jobs-violet: #7c3aed;
@@ -80,6 +80,8 @@
   --theme-color-2: #8b5cf6;
   --theme-color-3: #c084fc;
   --theme-color-4: #e9d5ff;
+  --market-primary: #7000f4;
+  --market-secondary: #000000;
   --button-style: gradient;
 }
 
@@ -98,6 +100,8 @@
   --theme-color-2: #8b5cf6;
   --theme-color-3: #c084fc;
   --theme-color-4: #e9d5ff;
+  --market-primary: #7000f4;
+  --market-secondary: #000000;
   --button-style: gradient;
 }
 
