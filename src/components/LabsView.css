@@ -5,6 +5,34 @@
   padding: 40px;
 }
 
+/* Onboarding Gate */
+.labs-onboarding-gate {
+  min-height: 100vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.onboarding-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 40px;
+  border-radius: 32px;
+  text-align: center;
+}
+
+.onboarding-card h2 { font-size: 2rem; margin: 24px 0 12px; }
+.onboarding-card p { opacity: 0.6; margin-bottom: 40px; line-height: 1.6; }
+
+.onboarding-actions {
+  background: rgba(255,255,255,0.02);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
 .labs-header {
   display: flex;
   justify-content: space-between;

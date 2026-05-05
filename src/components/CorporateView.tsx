@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { SignUpFlow } from './SignUpFlow';
+import React from 'react';
 import { 
   ShieldCheck, 
   Target, 
@@ -17,18 +16,9 @@ import './CorporateView.css';
 
 export const CorporateView: React.FC = () => {
   const { setEnv, user, logout } = useApp();
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   return (
     <div className="corporate-container fade-in">
-      {isAuthOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--surface)' }}>
-          <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10001 }}>
-            <button onClick={() => setIsAuthOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: 12, cursor: 'pointer', fontWeight: 700 }}>Close Login</button>
-          </div>
-          <SignUpFlow />
-        </div>
-      )}
       {/* Top Nav */}
       <nav className="corporate-nav glass">
         <div className="nav-logo">SETX<span>.IO</span></div>
@@ -44,8 +34,8 @@ export const CorporateView: React.FC = () => {
             </>
           ) : (
             <>
-              <button className="nav-link login" onClick={() => setIsAuthOpen(true)}>Partner Login</button>
-              <button className="nav-terminal-btn" onClick={() => setIsAuthOpen(true)}>
+              <button className="nav-link login" onClick={() => setEnv('labs')}>Partner Login</button>
+              <button className="nav-terminal-btn" onClick={() => setEnv('labs')}>
                 <ShieldCheck size={16} /> Admin Terminal
               </button>
             </>

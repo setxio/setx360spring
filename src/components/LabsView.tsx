@@ -17,13 +17,32 @@ import {
   Star,
   Users
 } from 'lucide-react';
+import { SignUpFlow } from './SignUpFlow';
+import { useApp } from '../context/AppContext';
 import './LabsView.css';
 
 export const LabsView: React.FC = () => {
+  const { user, setEnv } = useApp();
   const [activeTab, setActiveTab] = useState<'solutions' | 'integrations' | 'domains' | 'infrastructure' | 'store' | 'forum'>('solutions');
   const [isCreatingSite, setIsCreatingSite] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
   const [newSiteSlug, setNewSiteSlug] = useState('');
+  const [onboardingStep, setOnboardingStep] = useState<1 | 2>(1);
+
+  if (!user) {
+    return (
+      <div className="labs-onboarding-gate">
+        <div className="onboarding-card glass fade-in">
+          <Code2 size={48} className="labs-logo-icon" />
+          <h2>Founder Onboarding</h2>
+          <p>Join SETX Labs to build standalone websites and manage your regional business portfolio.</p>
+          <div className="onboarding-actions">
+            <SignUpFlow />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const templates = [
     { name: 'Restaurant Pro', category: 'Food & Drink', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=400', sync: ['Menu', 'Orders', 'Social'] },
@@ -124,9 +143,9 @@ export const LabsView: React.FC = () => {
               <footer className="modal-footer">
                 <button className="secondary-labs-btn" onClick={() => setIsCreatingSite(false)}>Cancel</button>
                 <button className="primary-labs-btn" disabled={!newSiteSlug} onClick={() => {
-                  alert(`Initializing project: ${newSiteName}. You will be redirected once sync is complete.`);
+                  alert(`Initializing project: ${newSiteName}. This will be added to your Master Portfolio.`);
                   setIsCreatingSite(false);
-                }}>Initialize Project <ArrowRight size={16} /></button>
+                }}>Confirm & Launch Business <ArrowRight size={16} /></button>
               </footer>
             </div>
           </div>
