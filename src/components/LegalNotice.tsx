@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, FileText, Copyright, ChevronLeft, ExternalLink } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import './LegalNotice.css';
 
 interface LegalNoticeProps {

@@ -132,16 +132,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleTheme = () => {
     setThemeState(prev => {
       let next: Theme;
-      if (prev === 'light') next = 'dark';
-      else if (prev === 'dark') next = 'light';
+      if (prev === 'io-light') next = 'io-dark';
+      else if (prev === 'io-dark') next = 'io-light';
       else if (prev.endsWith('-light')) next = prev.replace('-light', '-dark') as Theme;
       else if (prev.endsWith('-dark')) next = prev.replace('-dark', '-light') as Theme;
-      else next = prev.includes('dark') ? 'light' : 'dark';
+      else next = prev.includes('dark') ? 'io-light' : 'io-dark';
       
       localStorage.setItem('ecity_theme', next);
       document.documentElement.setAttribute('data-theme', next);
 
-      
       return next;
     });
   };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette, Check, LayoutGrid, Monitor, Smartphone } from 'lucide-react';
+import { Palette, Check, LayoutGrid, Monitor, Smartphone, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import type { Theme } from '../context/AppContext';
 import './ThemeCustomizer.css';

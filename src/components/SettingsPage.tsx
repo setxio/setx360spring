@@ -14,16 +14,7 @@ import { ThemeCustomizer } from './ThemeCustomizer';
 import { LegalNotice } from './LegalNotice';
 import { PushNotificationManager } from './PushNotificationManager';
 
-type Theme =
-  | 'light' | 'dark'
-  | 'civic-classic-light' | 'civic-classic-dark'
-  | 'setx-light' | 'setx-dark'
-  | 'neo-light' | 'neo-dark'
-  | 'neo-ii-light' | 'neo-ii-dark'
-  | 'twilight-light' | 'twilight-dark'
-  | 'twilight-ii-light' | 'twilight-ii-dark'
-  | 'efutura-light' | 'efutura-dark'
-  | 'porch' | 'spring' | 'summer' | 'autumn' | 'winter' | 'dynamic' | 'custom';
+import { useApp, type Theme } from '../context/AppContext';
 
 interface SettingsPageProps {
   user: any;
