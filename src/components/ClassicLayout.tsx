@@ -360,6 +360,18 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     setActiveTab(0);
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     scrollTimeout.current = setTimeout(() => {
+      isInternalScroll.current = false;
+    }, 1000);
+  };
+
+  const getBadgeIcon = (role: string) => {
+    if (role?.startsWith('v_')) return <CheckCircle size={14} color="var(--primary)" />;
+    if (role === 'admin') return <ShieldCheck size={14} color="var(--admin-gold)" />;
+    return <Clock size={14} style={{ opacity: 0.5 }} />;
+  };
+
+  // Nav Items
+  const discoverNav = [
     { icon: <Compass size={24} />, label: 'Discover' },
     { icon: <TrendingUp size={24} />, label: 'Trending' },
     { icon: <Zap size={24} />, label: 'Hot Deals' },
