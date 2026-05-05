@@ -11,7 +11,6 @@ export const LegalNotice: React.FC<LegalNoticeProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<'tos' | 'privacy' | 'copyright'>('tos');
 
   const { theme } = useApp();
-  const isIO = theme.startsWith('io-');
   const brandName = 'SETX 360';
   const companyName = 'SETX 360 Platform';
 

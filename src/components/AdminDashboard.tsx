@@ -29,13 +29,11 @@ import {
 import { AdminDataImport } from './AdminDataImport';
 import { AIAssistant } from './AIAssistant';
 import { supabase } from '../lib/supabase';
-import { useApp } from '../context/AppContext';
 import './AdminDashboard.css';
 
 type AdminTab = 'overview' | 'reviews' | 'vendors' | 'directory' | 'modules' | 'moderation' | 'intelligence' | 'alerts' | 'activity' | 'settings';
 
 export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: propTab }) => {
-  const { theme } = useApp();
   const tabMap: Record<number, AdminTab> = {
     0: 'overview',
     1: 'reviews',
