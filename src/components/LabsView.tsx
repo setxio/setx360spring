@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Code2, 
   Globe, 
   Puzzle, 
   Settings2, 
@@ -19,13 +18,18 @@ import {
   Eye,
   Settings
 } from 'lucide-react';
+import { SignUpFlow } from './SignUpFlow';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { LabsWizard } from './LabsWizard';
 import './LabsView.css';
 
-export const LabsView: React.FC = () => {
-  const { user, setEnv, setActiveStoreId } = useApp();
+interface LabsViewProps {
+  setActiveStoreId: (id: string | null) => void;
+}
+
+export const LabsView: React.FC<LabsViewProps> = ({ setActiveStoreId }) => {
+  const { user, setEnv } = useApp();
   const [activeTab, setActiveTab] = useState<'portfolio' | 'audit' | 'integrations' | 'domains' | 'store' | 'settings'>('portfolio');
   const [isCreatingSite, setIsCreatingSite] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);

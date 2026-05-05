@@ -181,21 +181,13 @@ const App: React.FC = () => {
     }
 
     if (env === 'labs') {
-      return <LabsView />;
+      return <LabsView setActiveStoreId={setActiveStoreId} />;
     }
 
     // Existing authenticated views
     if (!user) return null; // Should be handled by parent, but for safety
     
-    // Vendor Dashboard (CRM)
-    if (env === 'dashboard') {
-      return (
-        <VendorDashboard 
-          user={user} 
-          initialStoreId={activeStoreId} 
-        />
-      );
-    }
+
 
     if (activeStoreId && env === 'market') {
       return (
@@ -329,7 +321,14 @@ const App: React.FC = () => {
       if (['artist', 'media', 'venue'].includes(role) || hasClearance('creator')) return <CreatorDashboard user={user} activeTab={activeTab} />;
       
       // Default Vendor Dashboard (Retail) or Specialized ones
-      return <VendorDashboard user={user} activeTab={activeTab} onNavigateToStore={setActiveStoreId} />;
+      return (
+        <VendorDashboard 
+          user={user} 
+          activeTab={activeTab} 
+          initialStoreId={activeStoreId} 
+          onNavigateToStore={setActiveStoreId} 
+        />
+      );
     }
     
     if (env === 'admin') return <AdminDashboard activeTab={activeTab} />;
