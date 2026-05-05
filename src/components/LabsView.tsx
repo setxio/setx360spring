@@ -22,12 +22,11 @@ import { useApp } from '../context/AppContext';
 import './LabsView.css';
 
 export const LabsView: React.FC = () => {
-  const { user, setEnv } = useApp();
+  const { user } = useApp();
   const [activeTab, setActiveTab] = useState<'solutions' | 'integrations' | 'domains' | 'infrastructure' | 'store' | 'forum'>('solutions');
   const [isCreatingSite, setIsCreatingSite] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
   const [newSiteSlug, setNewSiteSlug] = useState('');
-  const [onboardingStep, setOnboardingStep] = useState<1 | 2>(1);
 
   if (!user) {
     return (
