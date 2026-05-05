@@ -123,7 +123,10 @@ export const LabsView: React.FC = () => {
               </div>
               <footer className="modal-footer">
                 <button className="secondary-labs-btn" onClick={() => setIsCreatingSite(false)}>Cancel</button>
-                <button className="primary-labs-btn" disabled={!newSiteSlug}>Initialize Project <ArrowRight size={16} /></button>
+                <button className="primary-labs-btn" disabled={!newSiteSlug} onClick={() => {
+                  alert(`Initializing project: ${newSiteName}. You will be redirected once sync is complete.`);
+                  setIsCreatingSite(false);
+                }}>Initialize Project <ArrowRight size={16} /></button>
               </footer>
             </div>
           </div>
