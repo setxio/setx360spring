@@ -11,9 +11,11 @@ import {
   Zap,
   Building2
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import './CorporateView.css';
 
 export const CorporateView: React.FC = () => {
+  const { setEnv } = useApp();
   return (
     <div className="corporate-container fade-in">
       {/* Hero Section */}
@@ -85,6 +87,18 @@ export const CorporateView: React.FC = () => {
             </div>
             <ArrowRight className="go-arrow" />
           </div>
+        </div>
+      </section>
+
+      {/* Labs Promo */}
+      <section className="corporate-section labs-promo glass">
+        <div className="promo-content">
+          <Code className="promo-icon" />
+          <h2>SETX Labs</h2>
+          <p>The builder for the next generation of regional businesses. Create standalone websites that tie directly into the 360 ecosystem.</p>
+          <button className="primary-corporate-btn" onClick={() => setEnv('labs')}>
+            Explore Labs <ArrowRight size={18} />
+          </button>
         </div>
       </section>
 

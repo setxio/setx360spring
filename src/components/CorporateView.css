@@ -247,3 +247,37 @@
   .hero-visual { display: none; }
   .section-grid { grid-template-columns: 1fr; }
 }
+
+.labs-promo {
+  padding: 80px;
+  text-align: center;
+  border-radius: 40px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.1) 100%);
+}
+
+.promo-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.promo-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--primary);
+  margin-bottom: 24px;
+}
+
+.labs-promo h2 {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.labs-promo p {
+  font-size: 1.1rem;
+  opacity: 0.7;
+  margin-bottom: 32px;
+}
+
+.labs-promo .primary-corporate-btn {
+  margin: 0 auto;
+}

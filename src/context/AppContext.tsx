@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
-export type Env = 'discover' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard';
+export type Env = 'discover' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
@@ -50,18 +50,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   // Default to true for this codebase unless explicitly on an efutura domain
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const isSetxIO = hostname.includes('setx.io') || params?.get('project') === 'io';
-  const isSetx360 = hostname.includes('setx360.com') || params?.get('project') === '360';
+  const isSetxIO = hostname.toLowerCase().includes('setx.io') || params?.get('project') === 'io';
+  const isSetx360 = hostname.toLowerCase().includes('setx360.com') || params?.get('project') === '360';
   const isSetxDomain = !hostname.includes('efutura.com') || hostname.includes('setx360') || hostname.includes('setxio') || hostname.includes('setx.io') || params?.get('project') !== null;
 
   const [env, setEnvState] = useState<Env>(() => {
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const urlEnv = params.get('env') as Env;
-      if (urlEnv) {
-        localStorage.setItem('ecity_env', urlEnv);
-        return urlEnv;
-      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const envParam = urlParams.get('env');
+      if (envParam) return envParam as Env;
+      if (isSetxIO) return 'market';
     }
     return (localStorage.getItem('ecity_env') as Env) || 'market';
   });
@@ -83,6 +81,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localStorage.setItem('ecity_tab', urlTab);
         return Number(urlTab);
       }
+      if (isSetxIO) return 0;
     }
     return Number(localStorage.getItem('ecity_tab')) || 0;
   });

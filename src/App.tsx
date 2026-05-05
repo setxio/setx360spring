@@ -59,6 +59,7 @@ const SportsView       = lazy(() => import('./components/SportsView').then(m => 
 const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(m => ({ default: m.WeatherNewsView })));
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
+const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
 
 
 import { useApp } from './context/AppContext';
@@ -142,6 +143,10 @@ const App: React.FC = () => {
   const renderView = () => {
     if (isSetxIO && env === 'market' && activeTab === 0 && !activeStoreId) {
       return <CorporateView />;
+    }
+
+    if (env === 'labs') {
+      return <LabsView />;
     }
 
     // Store detail view — only in market or dashboard envs
