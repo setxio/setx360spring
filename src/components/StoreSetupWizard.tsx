@@ -161,11 +161,11 @@ export const StoreSetupWizard: React.FC<StoreSetupWizardProps> = ({ user, onComp
                       onChange={e => setFormData({ ...formData, category: e.target.value, subcategory: '' })}
                       style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
                     >
-                      <option value="retail">Retail</option>
-                      <option value="services">Services</option>
-                      <option value="dining">Dining</option>
-                      <option value="arts & crafts">Arts & Crafts</option>
-                      <option value="other">Other</option>
+                      <option value="Retail">Retail</option>
+                      <option value="Services">Services</option>
+                      <option value="Food & Drink">Food & Drink</option>
+                      <option value="Artisan">Artisan</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                   {formData.category.toLowerCase() === 'retail' && (

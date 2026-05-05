@@ -102,7 +102,7 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
       selectString = `*, seller:profiles!owner_id!inner(community, county, state, country)`;
     }
 
-    let query = supabase.from('stores').select(selectString).eq('category', 'Dining').order('created_at', { ascending: false }).limit(20);
+    let query = supabase.from('stores').select(selectString).eq('category', 'Food & Drink').order('created_at', { ascending: false }).limit(20);
 
     if (needsGeoFilter) {
       if (scope === 'city') query = query.eq('seller.community', user.community);
@@ -131,7 +131,7 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
       };
       const esc = escalationMap[scope];
       if (esc && esc.filterValue) {
-        let escQuery = supabase.from('stores').select(`*, seller:profiles!owner_id!inner(community, county, state, country)`).eq('category', 'Dining').order('created_at', { ascending: false }).limit(20);
+        let escQuery = supabase.from('stores').select(`*, seller:profiles!owner_id!inner(community, county, state, country)`).eq('category', 'Food & Drink').order('created_at', { ascending: false }).limit(20);
         if (esc.nextScope !== 'national') escQuery = escQuery.eq(esc.filterKey, esc.filterValue);
         const { data: escData } = await escQuery;
         if (escData && escData.length > 0) {

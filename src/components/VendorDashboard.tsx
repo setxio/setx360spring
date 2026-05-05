@@ -22,6 +22,9 @@ import { getOrCreateWallet, processRefund } from '../lib/payments';
 import { StoreSetupWizard } from './StoreSetupWizard';
 import { StoreIntegrations } from './StoreIntegrations';
 import { StoreFrontEditor } from './StoreFrontEditor';
+import { RestaurantDashboard } from './RestaurantDashboard';
+import { ServicesDashboard } from './ServicesDashboard';
+import { MasterBusinessDashboard } from './MasterBusinessDashboard';
 import './VendorDashboard.css';
 
 interface VendorDashboardProps {
@@ -37,6 +40,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
   const [storeWallet, setStoreWallet] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isShowingWizard, setIsShowingWizard] = useState(false);
+  const [isMasterMode, setIsMasterMode] = useState(false);
   
   // tabMap must match vendorNav order in App.tsx: products,orders,withdrawals,settings,overview,ads,storefront,team
   const tabMap = ['products', 'orders', 'withdrawals', 'settings', 'overview', 'ads', 'storefront', 'team'];
@@ -58,6 +62,13 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
       fetchVendorData();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Auto-enter master mode if user has multiple stores and no specific store was pre-selected
+    if (stores.length > 1 && !currentStore) {
+      setIsMasterMode(true);
+    }
+  }, [stores]);
 
   const fetchVendorData = async () => {
     setIsLoading(true);
@@ -168,13 +179,62 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
     </div>
   );
 
+  if (isMasterMode && stores.length > 1) {
+    return (
+      <MasterBusinessDashboard 
+        user={user} 
+        stores={stores} 
+        onSelectStore={(s) => { setIsMasterMode(false); setCurrentStore(s); fetchVendorData(); }} 
+      />
+    );
+  }
+
+  if (currentStore?.category === 'Food & Drink') {
+    return (
+      <RestaurantDashboard 
+        user={user} 
+        currentStore={currentStore} 
+        stores={stores} 
+        onStoreChange={(s) => { setCurrentStore(s); fetchVendorData(); }} 
+        onNavigateToStore={onNavigateToStore}
+      />
+    );
+  }
+
+  if (currentStore?.category === 'Services') {
+    return (
+      <ServicesDashboard 
+        user={user} 
+        currentStore={currentStore} 
+        stores={stores} 
+        onStoreChange={(s) => { setCurrentStore(s); fetchVendorData(); }} 
+        onNavigateToStore={onNavigateToStore}
+      />
+    );
+  }
+
   return (
     <div className="vendor-dashboard-container">
       {stores.length > 1 && (
         <div className="store-switcher glass">
           <label>Managing Store:</label>
-          <select value={currentStore.id} onChange={(e) => { const selected = stores.find(s => s.id === e.target.value); setCurrentStore(selected); fetchVendorData(); }}>
-            {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          <select 
+            value={isMasterMode ? 'master' : currentStore?.id} 
+            onChange={(e) => { 
+              if (e.target.value === 'master') {
+                setIsMasterMode(true);
+              } else {
+                const selected = stores.find(s => s.id === e.target.value); 
+                setIsMasterMode(false);
+                setCurrentStore(selected); 
+                fetchVendorData(); 
+              }
+            }}
+          >
+            <option value="master">✨ Master Portfolio</option>
+            <optgroup label="Establishments">
+              {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </optgroup>
           </select>
         </div>
       )}

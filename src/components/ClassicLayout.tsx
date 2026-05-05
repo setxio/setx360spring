@@ -112,7 +112,8 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
 }) => {
   const { 
     user, env, theme, scope, activeTab, unreadCount, isSearchOpen,
-    setEnv, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser
+    setEnv, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser,
+    isSetxIO
   } = useApp();
 
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -576,75 +577,77 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="sticky-header-group glass">
-        <ThemeTopBar />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 0', minHeight: '52px' }}>
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-            <h1 className="logo-text" onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'baseline', gap: '2px', color: theme.includes('light') ? '#000' : '#fff' }}>
-              {scope === 'city' ? (user?.community || 'City') : 'SETX'}
-              <span style={{ 
-                fontSize: '1.2rem', 
-                fontWeight: 700, 
-                color: theme.startsWith('io-') ? '#7000f4' : (
-                  env === 'discover' ? '#06b6d4' : 
-                  env === 'social'   ? '#3b82f6' : 
-                  env === 'events'   ? '#facc15' : 
-                  env === 'news'     ? '#1e40af' : 
-                  env === 'faith'    ? '#8b5cf6' : 
-                  env === 'market'   ? '#10b981' : 
-                  env === 'eats'     ? '#f97316' : 
-                  env === 'services' ? '#334155' : 
-                  env === 'jobs'     ? '#172554' : 
-                  'var(--primary)'
-                ), 
-                transition: 'color 0.3s ease', 
-                lineHeight: 1 
-              }}> 360</span>
-            </h1>
-          </div>
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div onClick={() => setIsTevisOpen(!isTevisOpen)} style={{ position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: isTevisOpen ? `0 0 35px 5px var(--primary)` : (theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none'), transform: isTevisOpen ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.4s ease' }}>
-              <img src={theme.startsWith('io-') ? "/logo-io.png" : (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png")} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
+      {!isSetxIO && (
+        <div className="sticky-header-group glass">
+          <ThemeTopBar />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 0', minHeight: '52px' }}>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+              <h1 className="logo-text" onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'baseline', gap: '2px', color: theme.includes('light') ? '#000' : '#fff' }}>
+                {scope === 'city' ? (user?.community || 'City') : 'SETX'}
+                <span style={{ 
+                  fontSize: '1.2rem', 
+                  fontWeight: 700, 
+                  color: theme.startsWith('io-') ? '#7000f4' : (
+                    env === 'discover' ? '#06b6d4' : 
+                    env === 'social'   ? '#3b82f6' : 
+                    env === 'events'   ? '#facc15' : 
+                    env === 'news'     ? '#1e40af' : 
+                    env === 'faith'    ? '#8b5cf6' : 
+                    env === 'market'   ? '#10b981' : 
+                    env === 'eats'     ? '#f97316' : 
+                    env === 'services' ? '#334155' : 
+                    env === 'jobs'     ? '#172554' : 
+                    'var(--primary)'
+                  ), 
+                  transition: 'color 0.3s ease', 
+                  lineHeight: 1 
+                }}> 360</span>
+              </h1>
             </div>
-          </div>
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
-            {user ? (
-              <>
-                <button onClick={toggleTheme} title="Toggle theme" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '6px 8px', cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center' }}>
-                  {theme.includes('light') ? <Moon size={18} /> : <Sun size={18} />}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div onClick={() => setIsTevisOpen(!isTevisOpen)} style={{ position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: isTevisOpen ? `0 0 35px 5px var(--primary)` : (theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none'), transform: isTevisOpen ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.4s ease' }}>
+                <img src={theme.startsWith('io-') ? "/logo-io.png" : (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png")} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
+              </div>
+            </div>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
+              {user ? (
+                <>
+                  <button onClick={toggleTheme} title="Toggle theme" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '6px 8px', cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center' }}>
+                    {theme.includes('light') ? <Moon size={18} /> : <Sun size={18} />}
+                  </button>
+                  <div className="user-profile-badge" onClick={() => !user.role.startsWith('v_') && setIsVerifying(true)} style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: user.role.startsWith('v_') ? 'default' : 'pointer', padding: '4px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>{getBadgeIcon(user.role)}</div>
+                    <Avatar url={user.avatar_url} name={user.name} size={32} />
+                  </div>
+                </>
+              ) : (
+                <button onClick={toggleTheme} className="theme-toggle" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)', padding: '8px' }}>
+                  {theme.includes('light') ? <Moon size={20} /> : <Sun size={20} />}
                 </button>
-                <div className="user-profile-badge" onClick={() => !user.role.startsWith('v_') && setIsVerifying(true)} style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: user.role.startsWith('v_') ? 'default' : 'pointer', padding: '4px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>{getBadgeIcon(user.role)}</div>
-                  <Avatar url={user.avatar_url} name={user.name} size={32} />
-                </div>
-              </>
-            ) : (
-              <button onClick={toggleTheme} className="theme-toggle" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text)', padding: '8px' }}>
-                {theme.includes('light') ? <Moon size={20} /> : <Sun size={20} />}
-              </button>
-            )}
+              )}
+            </div>
           </div>
+          {user && (
+            <div className="top-switch-container auto-hide-target" style={{ padding: '4px 0 8px' }}>
+              <div className="two-notches">
+                <div className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('county')} style={{ cursor: 'pointer' }} title={`${user?.county || 'Regional'} (County)`} />
+                {/* City notch hidden per focus request */}
+                {/* <div className={`notch notch-3 ${scope === 'city' ? 'active' : ''} ${showNotchPulse && scope === 'county' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('city')} style={{ cursor: 'pointer' }} title={`${user?.community || 'Local'} (City)`} /> */}
+              </div>
+            </div>
+          )}
+          {user && (
+            <header className="main-header auto-hide-target" style={{ padding: '0 16px 8px' }}>
+              <div className="header-content" style={{ display: 'block' }}>
+                <button className="header-action-btn search-trigger" onClick={() => setIsSearchOpen(true)} style={{ width: '100%', background: theme.endsWith('-dark') ? 'rgba(255,255,255,0.08)' : '#fff', border: theme === 'setx-light' ? '2px solid var(--primary)' : theme.endsWith('-light') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', padding: '12px 20px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '14px', justifyContent: 'flex-start', boxShadow: theme.endsWith('-light') ? '0 4px 15px rgba(0,0,0,0.08)' : '0 4px 20px rgba(0,0,0,0.2)', transition: 'all 0.2s ease' }}>
+                  <SearchIcon size={20} className="search-icon-anim" style={{ color: 'var(--primary)' }} />
+                  <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.8 }}>Search {scope}...</span>
+                </button>
+              </div>
+            </header>
+          )}
         </div>
-        {user && (
-          <div className="top-switch-container auto-hide-target" style={{ padding: '4px 0 8px' }}>
-            <div className="two-notches">
-              <div className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('county')} style={{ cursor: 'pointer' }} title={`${user?.county || 'Regional'} (County)`} />
-              {/* City notch hidden per focus request */}
-              {/* <div className={`notch notch-3 ${scope === 'city' ? 'active' : ''} ${showNotchPulse && scope === 'county' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('city')} style={{ cursor: 'pointer' }} title={`${user?.community || 'Local'} (City)`} /> */}
-            </div>
-          </div>
-        )}
-        {user && (
-          <header className="main-header auto-hide-target" style={{ padding: '0 16px 8px' }}>
-            <div className="header-content" style={{ display: 'block' }}>
-              <button className="header-action-btn search-trigger" onClick={() => setIsSearchOpen(true)} style={{ width: '100%', background: theme.endsWith('-dark') ? 'rgba(255,255,255,0.08)' : '#fff', border: theme === 'setx-light' ? '2px solid var(--primary)' : theme.endsWith('-light') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', padding: '12px 20px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '14px', justifyContent: 'flex-start', boxShadow: theme.endsWith('-light') ? '0 4px 15px rgba(0,0,0,0.08)' : '0 4px 20px rgba(0,0,0,0.2)', transition: 'all 0.2s ease' }}>
-                <SearchIcon size={20} className="search-icon-anim" style={{ color: 'var(--primary)' }} />
-                <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.8 }}>Search {scope}...</span>
-              </button>
-            </div>
-          </header>
-        )}
-      </div>
+      )}
 
       <Suspense fallback={null}>
         <SearchOverlay 
@@ -699,7 +702,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         )}
       </main>
 
-      {user && (
+      {!isSetxIO && user && (
         <div className="env-switcher-footer auto-hide-target">
           <div className="switcher-wrapper glass">
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
@@ -734,7 +737,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         </div>
       )}
 
-      {user && (
+      {!isSetxIO && user && (
         <nav className="bottom-nav glass auto-hide-target">
           <div className="nav-items-scroll">
             {currentNav.map((item, index) => (

@@ -38,6 +38,8 @@ interface AppContextType {
   updateUser: (data: any) => void;
   refreshUser: () => Promise<void>;
   isSetxDomain: boolean;
+  isSetxIO: boolean;
+  isSetx360: boolean;
   layout: Layout;
   setLayout: (layout: Layout) => void;
 }
@@ -47,7 +49,10 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   // Default to true for this codebase unless explicitly on an efutura domain
-  const isSetxDomain = !hostname.includes('efutura.com') || hostname.includes('setx360') || hostname.includes('setxio');
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isSetxIO = hostname.includes('setx.io') || params?.get('project') === 'io';
+  const isSetx360 = hostname.includes('setx360.com') || params?.get('project') === '360';
+  const isSetxDomain = !hostname.includes('efutura.com') || hostname.includes('setx360') || hostname.includes('setxio') || hostname.includes('setx.io') || params?.get('project') !== null;
 
   const [env, setEnvState] = useState<Env>(() => {
     if (typeof window !== 'undefined') {
@@ -61,7 +66,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return (localStorage.getItem('ecity_env') as Env) || 'market';
   });
 
-  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('ecity_theme') as Theme) || 'civic-classic-light');
+  const [theme, setThemeState] = useState<Theme>(() => {
+    const saved = localStorage.getItem('ecity_theme') as Theme;
+    if (saved) return saved;
+    if (isSetxIO) return 'io-dark';
+    return 'civic-classic-light';
+  });
   const [layout, setLayoutState] = useState<Layout>(() => (localStorage.getItem('ecity_layout') as Layout) || 'classic');
   
   
@@ -331,6 +341,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     },
     isSetxDomain,
+    isSetxIO,
+    isSetx360,
     layout,
     setLayout
   };

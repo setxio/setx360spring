@@ -58,13 +58,16 @@ const FaithView        = lazy(() => import('./components/FaithView').then(m => (
 const SportsView       = lazy(() => import('./components/SportsView').then(m => ({ default: m.SportsView })));
 const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(m => ({ default: m.WeatherNewsView })));
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
+const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
+
 
 import { useApp } from './context/AppContext';
 
 const App: React.FC = () => {
   const { 
     user, env, theme, scope, activeTab, isLoading,
-    setEnv, setTheme, setActiveTab, setIsSearchOpen, toggleTheme, updateUser
+    setEnv, setTheme, setActiveTab, setIsSearchOpen, toggleTheme, updateUser,
+    isSetxIO, layout
   } = useApp();
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -134,9 +137,13 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setIsSearchOpen]);
 
-  const { layout } = useApp();
+
 
   const renderView = () => {
+    if (isSetxIO && env === 'market' && activeTab === 0 && !activeStoreId) {
+      return <CorporateView />;
+    }
+
     // Store detail view — only in market or dashboard envs
     if (activeStoreId && (env === 'market' || env === 'dashboard')) {
       return (
@@ -268,6 +275,8 @@ const App: React.FC = () => {
       if (['official', 'chamber', 'city_worker', 'city_manager'].includes(role) || hasClearance('civic')) return <CivicDashboard user={user} activeTab={activeTab} />;
       if (['church', 'non_profit'].includes(role) || hasClearance('ministry')) return <MinistryDashboard user={user} activeTab={activeTab} />;
       if (['artist', 'media', 'venue'].includes(role) || hasClearance('creator')) return <CreatorDashboard user={user} activeTab={activeTab} />;
+      
+      // Default Vendor Dashboard (Retail) or Specialized ones
       return <VendorDashboard user={user} activeTab={activeTab} onNavigateToStore={setActiveStoreId} />;
     }
     

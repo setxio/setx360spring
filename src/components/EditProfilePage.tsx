@@ -416,8 +416,9 @@ export const EditProfilePage: React.FC<EditProfilePageProps> = ({ user, onUpdate
                         <option value="Food & Drink">Food & Drink</option>
                         <option value="Services">Services</option>
                         <option value="Retail">Retail</option>
+                        <option value="Health">Health</option>
+                        <option value="Artisan">Artisan</option>
                         <option value="Non-Profit">Non-Profit</option>
-                        <option value="Health">Health & Wellness</option>
                         <option value="Education">Education</option>
                         <option value="Government">Government</option>
                       </select>

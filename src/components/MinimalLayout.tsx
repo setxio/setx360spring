@@ -40,7 +40,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
 }) => {
   const { 
     user, env, theme, unreadCount, isSearchOpen,
-    setEnv, setActiveTab, setIsSearchOpen, toggleTheme, logout
+    setEnv, setActiveTab, setIsSearchOpen, toggleTheme, logout, isSetxIO
   } = useApp();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -73,64 +73,66 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
       flexDirection: 'column'
     }}>
       {/* Top Header */}
-      <header style={{
-        height: '64px',
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid var(--glass-border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 20px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer' }}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: theme.includes('light') ? '#000' : '#fff' }}>
-            SETX <span style={{ 
-              color: theme.startsWith('io-') ? '#7000f4' : (
-                env === 'discover' ? '#06b6d4' : 
-                env === 'social'   ? '#3b82f6' : 
-                env === 'events'   ? '#facc15' : 
-                env === 'news'     ? '#1e40af' : 
-                env === 'faith'    ? '#8b5cf6' : 
-                env === 'market'   ? '#10b981' : 
-                env === 'eats'     ? '#f97316' : 
-                env === 'services' ? '#334155' : 
-                env === 'jobs'     ? '#172554' : 
-                'var(--primary)'
-              ),
-              transition: 'color 0.3s ease'
-            }}>360</span>
-          </h1>
-        </div>
+      {!isSetxIO && (
+        <header style={{
+          height: '64px',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid var(--glass-border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 20px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer' }}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: theme.includes('light') ? '#000' : '#fff' }}>
+              SETX <span style={{ 
+                color: theme.startsWith('io-') ? '#7000f4' : (
+                  env === 'discover' ? '#06b6d4' : 
+                  env === 'social'   ? '#3b82f6' : 
+                  env === 'events'   ? '#facc15' : 
+                  env === 'news'     ? '#1e40af' : 
+                  env === 'faith'    ? '#8b5cf6' : 
+                  env === 'market'   ? '#10b981' : 
+                  env === 'eats'     ? '#f97316' : 
+                  env === 'services' ? '#334155' : 
+                  env === 'jobs'     ? '#172554' : 
+                  'var(--primary)'
+                ),
+                transition: 'color 0.3s ease'
+              }}>360</span>
+            </h1>
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button 
-            onClick={() => setIsSearchOpen(true)}
-            style={{ background: 'var(--glass-bg-strong)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)', cursor: 'pointer' }}
-          >
-            <SearchIcon size={20} />
-          </button>
-          
-          {user && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ position: 'relative' }}>
-                <Bell size={22} color="var(--text-muted)" />
-                {unreadCount > 0 && <span style={{ position: 'absolute', top: -2, right: -2, background: 'red', color: 'white', fontSize: '10px', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadCount}</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button 
+              onClick={() => setIsSearchOpen(true)}
+              style={{ background: 'var(--glass-bg-strong)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)', cursor: 'pointer' }}
+            >
+              <SearchIcon size={20} />
+            </button>
+            
+            {user && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ position: 'relative' }}>
+                  <Bell size={22} color="var(--text-muted)" />
+                  {unreadCount > 0 && <span style={{ position: 'absolute', top: -2, right: -2, background: 'red', color: 'white', fontSize: '10px', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadCount}</span>}
+                </div>
+                <Avatar url={user.avatar_url} name={user.name} size={36} />
               </div>
-              <Avatar url={user.avatar_url} name={user.name} size={36} />
-            </div>
-          )}
-        </div>
-      </header>
+            )}
+          </div>
+        </header>
+      )}
 
       {/* Mobile/Side Menu */}
       <AnimatePresence>
@@ -245,7 +247,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
       <GlobalChatBubbles user={user} />
       
       {/* Floating Action Button for Tevis */}
-      {user && (
+      {!isSetxIO && user && (
         <button 
           onClick={() => setIsTevisOpen(true)}
           style={{
