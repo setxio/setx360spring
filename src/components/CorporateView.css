@@ -48,6 +48,19 @@
 
 .nav-link:hover { opacity: 1; }
 
+.nav-user-brief {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.nav-user-brief strong { color: var(--primary); }
+
+.nav-link.logout {
+  color: #f43f5e;
+  opacity: 1;
+  font-weight: 700;
+}
+
 .nav-divider {
   width: 1px;
   height: 20px;

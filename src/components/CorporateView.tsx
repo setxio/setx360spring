@@ -16,7 +16,7 @@ import { useApp } from '../context/AppContext';
 import './CorporateView.css';
 
 export const CorporateView: React.FC = () => {
-  const { setEnv } = useApp();
+  const { setEnv, user, logout } = useApp();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   return (
@@ -36,10 +36,20 @@ export const CorporateView: React.FC = () => {
           <button className="nav-link">Solutions</button>
           <button className="nav-link" onClick={() => setEnv('labs')}>Labs</button>
           <div className="nav-divider"></div>
-          <button className="nav-link login" onClick={() => setIsAuthOpen(true)}>Partner Login</button>
-          <button className="nav-terminal-btn" onClick={() => setIsAuthOpen(true)}>
-            <ShieldCheck size={16} /> Admin Terminal
-          </button>
+          
+          {user ? (
+            <>
+              <span className="nav-user-brief">Hello, <strong>{user.full_name || 'Partner'}</strong></span>
+              <button className="nav-link logout" onClick={() => logout()}>Sign Out</button>
+            </>
+          ) : (
+            <>
+              <button className="nav-link login" onClick={() => setIsAuthOpen(true)}>Partner Login</button>
+              <button className="nav-terminal-btn" onClick={() => setIsAuthOpen(true)}>
+                <ShieldCheck size={16} /> Admin Terminal
+              </button>
+            </>
+          )}
         </div>
       </nav>
 
