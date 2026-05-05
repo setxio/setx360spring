@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { 
   Shield, 
-  BarChart3, 
   Users, 
   AlertTriangle, 
   Download, 
   RefreshCw,
   Search,
-  Filter,
   Globe,
   Database,
-  Lock,
   ArrowUpRight,
   TrendingUp,
   Activity

@@ -60,7 +60,6 @@ const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
 const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
-const BusinessCrmView = lazy(() => import('./components/BusinessCrmView').then(m => ({ default: m.BusinessCrmView })));
 
 import { useApp } from './context/AppContext';
 import { supabase } from './lib/supabase';
@@ -69,12 +68,11 @@ const App: React.FC = () => {
   const { 
     user, env, theme, scope, activeTab, isLoading,
     setEnv, setTheme, setActiveTab, setIsSearchOpen, toggleTheme, updateUser,
-    isSetxIO, isSetx360, projectSlug, layout
+    isSetxIO, projectSlug, layout
   } = useApp();
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [projectStore, setProjectStore] = useState<any>(null);
-  const [isStoreLoading, setIsStoreLoading] = useState(false);
   
   // Auto-hide scroll logic is handled inside each layout component (ClassicLayout, MinimalLayout)
   // to avoid duplicate handlers fighting over the same DOM classes.
@@ -107,7 +105,6 @@ const App: React.FC = () => {
       const isSystemDomain = hostname.includes('setxio') || hostname.includes('setx360') || hostname.includes('setx.io');
       
       if (projectSlug || !isSystemDomain) {
-        setIsStoreLoading(true);
         let query = supabase.from('stores').select('*');
         
         if (projectSlug) {
@@ -118,7 +115,6 @@ const App: React.FC = () => {
 
         const { data } = await query.single();
         if (data) setProjectStore(data);
-        setIsStoreLoading(false);
       }
     };
 

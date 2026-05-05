@@ -516,7 +516,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
         {activeTab === 'ads' && <div className="fade-in"><AdManager user={user} /></div>}
         {activeTab === 'storefront' && currentStore && <div className="fade-in"><StoreFrontEditor store={currentStore} onUpdate={fetchVendorData} /></div>}
         {activeTab === 'team' && currentStore && <div className="fade-in"><StaffManagement entityId={currentStore.id} entityType="business" user={user} /></div>}
-        {activeTab === 'crm' && currentStore && <div className="fade-in"><BusinessCrmView storeId={currentStore.id} /></div>}
+        {activeTab === 'crm' && currentStore && <div className="fade-in"><BusinessCrmView /></div>}
       </main>
     </div>
   );

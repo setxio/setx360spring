@@ -12,7 +12,6 @@ import {
   MoreVertical,
   ChevronRight,
   TrendingUp,
-  Target,
   DollarSign,
   MessageSquare
 } from 'lucide-react';
@@ -28,7 +27,7 @@ interface Lead {
   tags: string[];
 }
 
-export const BusinessCrmView: React.FC<{ storeId?: string }> = ({ storeId }) => {
+export const BusinessCrmView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'pipeline' | 'list' | 'tasks'>('pipeline');
 

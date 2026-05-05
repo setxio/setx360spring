@@ -173,7 +173,7 @@ export const RestaurantDashboard: React.FC<RestaurantDashboardProps> = ({ user, 
 
         {activeTab === 'ads' && <AdManager user={user} />}
         {activeTab === 'team' && <StaffManagement entityId={currentStore.id} entityType="business" user={user} />}
-        {activeTab === 'crm' && <BusinessCrmView storeId={currentStore.id} />}
+        {activeTab === 'crm' && <BusinessCrmView />}
       </main>
     </div>
   );
