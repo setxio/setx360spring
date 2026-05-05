@@ -14,7 +14,7 @@ import { ThemeCustomizer } from './ThemeCustomizer';
 import { LegalNotice } from './LegalNotice';
 import { PushNotificationManager } from './PushNotificationManager';
 
-import { useApp, type Theme } from '../context/AppContext';
+import { type Theme } from '../context/AppContext';
 
 interface SettingsPageProps {
   user: any;
