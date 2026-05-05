@@ -12,13 +12,22 @@ import {
   Building2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { LabsWizard } from './LabsWizard';
 import './CorporateView.css';
 
 export const CorporateView: React.FC = () => {
   const { setEnv, user, logout } = useApp();
+  const [isWizardOpen, setIsWizardOpen] = React.useState(false);
 
   return (
     <div className="corporate-container fade-in">
+      {/* Wizard Overlay */}
+      {isWizardOpen && (
+        <div className="wizard-overlay">
+          <LabsWizard onBack={() => setIsWizardOpen(false)} />
+        </div>
+      )}
+
       {/* Top Nav */}
       <nav className="corporate-nav glass">
         <div className="nav-logo">SETX<span>.IO</span></div>
@@ -35,8 +44,8 @@ export const CorporateView: React.FC = () => {
           ) : (
             <>
               <button className="nav-link login" onClick={() => setEnv('labs')}>Partner Login</button>
-              <button className="nav-terminal-btn" onClick={() => setEnv('labs')}>
-                <ShieldCheck size={16} /> Admin Terminal
+              <button className="nav-signup-btn" onClick={() => setIsWizardOpen(true)}>
+                Sign Up
               </button>
             </>
           )}

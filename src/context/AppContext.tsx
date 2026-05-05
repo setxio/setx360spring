@@ -206,10 +206,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setUser(userData);
     
-    // Auto-switch env if just logged in and in discover
-    if (localStorage.getItem('ecity_env') === 'discover' || !localStorage.getItem('ecity_env')) {
-      if (userData.role === 'admin') {
+    // Auto-switch env if just logged in
+    const currentEnv = localStorage.getItem('ecity_env');
+    if (currentEnv === 'discover' || !currentEnv || isSetxIO) {
+      if (userData.email === 'setxplatform@gmail.com' || userData.role === 'admin') {
         setEnv('admin');
+        setActiveTab(0);
+      } else if (isSetxIO) {
+        setEnv('labs');
         setActiveTab(0);
       } else {
         setEnv('market');

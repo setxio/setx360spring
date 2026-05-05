@@ -87,6 +87,23 @@
   color: #fff;
 }
 
+.nav-signup-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-signup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(99,102,241,0.2);
+}
+
 .corporate-hero {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
