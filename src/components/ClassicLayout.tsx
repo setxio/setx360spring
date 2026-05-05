@@ -686,7 +686,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
               <div className="sw-btn spacer" aria-hidden="true" />
-              {['market'].map(id => {
+              {['discover', 'social', 'market', 'events', 'news', 'faith'].map(id => {
                 const item = id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
                              id === 'social'   ? { id: 'social',   icon: <Rss size={18} />, label: 'Social' } :
                              id === 'market'   ? { id: 'market',   icon: <Store size={18} />, label: 'Market' } :

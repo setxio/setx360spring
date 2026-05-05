@@ -47,7 +47,12 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
   const [isTevisOpen, setIsTevisOpen] = useState(false);
 
   const navigation = [
-    { id: 'market',   label: 'Market',  icon: <SearchIcon size={20} /> },
+    { id: 'discover', label: 'Discover', icon: <SearchIcon size={20} /> },
+    { id: 'social',   label: 'Social',   icon: <SearchIcon size={20} /> },
+    { id: 'market',   label: 'Market',   icon: <SearchIcon size={20} /> },
+    { id: 'events',   label: 'Events',   icon: <SearchIcon size={20} /> },
+    { id: 'news',     label: 'News',     icon: <SearchIcon size={20} /> },
+    { id: 'faith',    label: 'Faith',    icon: <SearchIcon size={20} /> },
   ];
 
   const handleNavClick = (id: Env) => {
