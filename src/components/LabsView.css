@@ -345,7 +345,47 @@
   background: #000;
 }
 
-.onboarding-card {
-  background: #0d0d12;
-  border: 1px solid rgba(255,255,255,0.05);
+/* Loading & Empty States */
+.labs-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 24px;
+  color: var(--primary);
 }
+
+.labs-loading p {
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.empty-portfolio {
+  grid-column: 1 / -1;
+  padding: 80px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid #dcdcde;
+}
+
+.empty-portfolio h3 { font-size: 1.5rem; }
+.empty-portfolio p { opacity: 0.6; max-width: 400px; }
+
+.spin {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.labs-header {

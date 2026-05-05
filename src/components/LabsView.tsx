@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { SignUpFlow } from './SignUpFlow';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../lib/supabase';
 import './LabsView.css';
 
 export const LabsView: React.FC = () => {
@@ -29,9 +30,45 @@ export const LabsView: React.FC = () => {
   const [isCreatingSite, setIsCreatingSite] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
   const [newSiteSlug, setNewSiteSlug] = useState('');
+  const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [allProjects, setAllProjects] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Auto-route super-admin
   const isSuperAdmin = user?.email === 'setxplatform@gmail.com' || user?.role === 'admin';
+
+  React.useEffect(() => {
+    const fetchLabsData = async () => {
+      if (!user) return;
+      setIsLoading(true);
+      
+      try {
+        // Fetch User's Portfolio
+        const { data: userStores } = await supabase
+          .from('stores')
+          .select('*')
+          .eq('owner_id', user.id);
+        
+        if (userStores) setMyProjects(userStores);
+
+        // Fetch Global Audit if Admin
+        if (isSuperAdmin) {
+          const { data: globalStores } = await supabase
+            .from('stores')
+            .select('*, profiles(name, first_name, last_name)')
+            .order('created_at', { ascending: false });
+          
+          if (globalStores) setAllProjects(globalStores);
+        }
+      } catch (error) {
+        console.error('Labs Data Fetch Error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLabsData();
+  }, [user, isSuperAdmin]);
 
   if (!user) {
     return (
@@ -47,18 +84,6 @@ export const LabsView: React.FC = () => {
       </div>
     );
   }
-
-  const myProjects = [
-    { name: 'Cajun Gourmet', category: 'Food', domain: 'cajungourmet.setx.io', status: 'Live', leads: 42 },
-    { name: 'Beaumont Bistro', category: 'Food', domain: 'beaumontbistro.com', status: 'Draft', leads: 0 },
-  ];
-
-  const allEcosystemProjects = [
-    { name: 'Cajun Gourmet', partner: 'James Wilson', type: 'Restaurant', leads: 124, health: 'Optimal' },
-    { name: 'Regional Tech', partner: 'Sarah Miller', type: 'Services', leads: 82, health: 'Optimal' },
-    { name: 'Civic Center', partner: 'City of Beaumont', type: 'Civic', leads: 512, health: 'Optimal' },
-    { name: 'Louis Kitchen', partner: 'Louis P.', type: 'Restaurant', leads: 18, health: 'Warning' },
-  ];
 
   return (
     <div className="labs-wp-container fade-in">
@@ -115,107 +140,131 @@ export const LabsView: React.FC = () => {
         </header>
 
         <div className="labs-body">
-          {activeTab === 'portfolio' && (
-            <div className="portfolio-view fade-in">
-              <div className="view-header">
-                <div>
-                  <h1>My Venture Portfolio</h1>
-                  <p>Manage your collection of regional businesses and websites.</p>
-                </div>
-                <button className="create-site-btn" onClick={() => setIsCreatingSite(true)}>
-                  <Plus size={18} /> Add New Venture
-                </button>
-              </div>
+          {isLoading ? (
+            <div className="labs-loading fade-in">
+              <Cpu size={48} className="spin" />
+              <p>Syncing Ecosystem Data...</p>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'portfolio' && (
+                <div className="portfolio-view fade-in">
+                  <div className="view-header">
+                    <div>
+                      <h1>My Venture Portfolio</h1>
+                      <p>Manage your collection of regional businesses and websites.</p>
+                    </div>
+                    <button className="create-site-btn" onClick={() => setIsCreatingSite(true)}>
+                      <Plus size={18} /> Add New Venture
+                    </button>
+                  </div>
 
-              <div className="project-grid">
-                {myProjects.map(project => (
-                  <div key={project.name} className="project-card glass">
-                    <div className="card-top">
-                      <div className="card-info">
-                        <span className="category">{project.category}</span>
-                        <h3>{project.name}</h3>
-                        <span className="domain">{project.domain}</span>
+                  <div className="project-grid">
+                    {myProjects.length === 0 ? (
+                      <div className="empty-portfolio glass fade-in">
+                        <Layout size={48} />
+                        <h3>Your Portfolio is Empty</h3>
+                        <p>Launch your first regional business to start building your portfolio.</p>
+                        <button className="primary-labs-btn" onClick={() => setIsCreatingSite(true)}>
+                          Start Your First Venture
+                        </button>
                       </div>
-                      <div className={`status-pill ${project.status.toLowerCase()}`}>{project.status}</div>
+                    ) : (
+                      myProjects.map(project => (
+                        <div key={project.id} className="project-card glass">
+                          <div className="card-top">
+                            <div className="card-info">
+                              <span className="category">{project.category || 'Venture'}</span>
+                              <h3>{project.name}</h3>
+                              <span className="domain">{project.custom_domain || `${project.slug}.setx.io`}</span>
+                            </div>
+                            <div className={`status-pill ${project.status?.toLowerCase() || 'live'}`}>
+                              {project.status || 'Live'}
+                            </div>
+                          </div>
+                          <div className="card-stats">
+                            <div className="stat-item">
+                              <Users size={14} />
+                              <span>{project.lead_count || 0} Leads</span>
+                            </div>
+                            <div className="stat-item">
+                              <BarChart3 size={14} />
+                              <span>{project.visit_count || 0} Hits</span>
+                            </div>
+                          </div>
+                          <div className="card-actions">
+                            <button className="action-btn secondary"><Eye size={16} /> View Site</button>
+                            <button className="action-btn primary"><Settings size={16} /> Manage CRM</button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    
+                    {myProjects.length > 0 && (
+                      <div className="add-project-card" onClick={() => setIsCreatingSite(true)}>
+                        <Plus size={32} />
+                        <span>Launch New Project</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'audit' && isSuperAdmin && (
+                <div className="audit-view fade-in">
+                  <div className="view-header">
+                    <div>
+                      <h1>Ecosystem Audit</h1>
+                      <p>Global oversight of all regional projects and sync health.</p>
                     </div>
-                    <div className="card-stats">
-                      <div className="stat-item">
-                        <Users size={14} />
-                        <span>{project.leads} Leads</span>
-                      </div>
-                      <div className="stat-item">
-                        <BarChart3 size={14} />
-                        <span>2.4k Hits</span>
-                      </div>
-                    </div>
-                    <div className="card-actions">
-                      <button className="action-btn secondary"><Eye size={16} /> View Site</button>
-                      <button className="action-btn primary"><Settings size={16} /> Manage CRM</button>
+                    <div className="filter-pills">
+                      <span className="filter-pill active">All ({allProjects.length})</span>
+                      <span className="filter-pill">Active</span>
+                      <span className="filter-pill">Issues</span>
                     </div>
                   </div>
-                ))}
-                
-                <div className="add-project-card" onClick={() => setIsCreatingSite(true)}>
-                  <Plus size={32} />
-                  <span>Launch New Project</span>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {activeTab === 'audit' && isSuperAdmin && (
-            <div className="audit-view fade-in">
-              <div className="view-header">
-                <div>
-                  <h1>Ecosystem Audit</h1>
-                  <p>Global oversight of all regional projects and sync health.</p>
+                  <div className="audit-table-wrapper glass">
+                    <table className="audit-table">
+                      <thead>
+                        <tr>
+                          <th>Project Name</th>
+                          <th>Partner</th>
+                          <th>Type</th>
+                          <th>Lead Count</th>
+                          <th>Sync Health</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allProjects.map(project => (
+                          <tr key={project.id}>
+                            <td className="name-cell">
+                              <div className="project-thumb"></div>
+                              {project.name}
+                            </td>
+                            <td>{project.profiles?.name || project.profiles?.first_name || 'Partner'}</td>
+                            <td>{project.category || 'General'}</td>
+                            <td><strong>{project.lead_count || 0}</strong></td>
+                            <td>
+                              <span className={`health-badge optimal`}>
+                                Optimal
+                              </span>
+                            </td>
+                            <td>
+                              <div className="table-actions">
+                                <button title="View Site"><ExternalLink size={16} /></button>
+                                <button title="View Partner CRM"><Settings size={16} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div className="filter-pills">
-                  <span className="filter-pill active">All</span>
-                  <span className="filter-pill">Active</span>
-                  <span className="filter-pill">Issues</span>
-                </div>
-              </div>
-
-              <div className="audit-table-wrapper glass">
-                <table className="audit-table">
-                  <thead>
-                    <tr>
-                      <th>Project Name</th>
-                      <th>Partner</th>
-                      <th>Type</th>
-                      <th>Lead Count</th>
-                      <th>Sync Health</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allEcosystemProjects.map(project => (
-                      <tr key={project.name}>
-                        <td className="name-cell">
-                          <div className="project-thumb"></div>
-                          {project.name}
-                        </td>
-                        <td>{project.partner}</td>
-                        <td>{project.type}</td>
-                        <td><strong>{project.leads}</strong></td>
-                        <td>
-                          <span className={`health-badge ${project.health.toLowerCase()}`}>
-                            {project.health}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="table-actions">
-                            <button title="View Site"><ExternalLink size={16} /></button>
-                            <button title="View Partner CRM"><Settings size={16} /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+              )}
+            </>
           )}
 
           {/* Site Creation Modal */}

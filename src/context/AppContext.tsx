@@ -258,6 +258,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => subscription.unsubscribe();
   }, [handleAuth]);
 
+  // Handle Dynamic Branding (Title & Favicon)
+  useEffect(() => {
+    const favicon = document.getElementById('favicon') as HTMLLinkElement;
+    if (isSetxIO) {
+      document.title = 'SETX.IO | Regional WaaS Platform';
+      if (favicon) favicon.href = '/bolt.png';
+    } else if (isSetx360) {
+      document.title = 'SETX 360 | The Regional Super-App';
+      if (favicon) favicon.href = '/favicon.png';
+    } else {
+      document.title = 'SETX 360';
+      if (favicon) favicon.href = '/favicon.png';
+    }
+  }, [isSetxIO, isSetx360]);
+
   // Notifications Sync
   useEffect(() => {
     if (user) {
