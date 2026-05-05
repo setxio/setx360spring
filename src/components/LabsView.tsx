@@ -11,12 +11,16 @@ import {
   Layout, 
   ExternalLink,
   ShieldCheck,
-  Zap
+  Zap,
+  ShoppingBag,
+  MessageSquare,
+  Star,
+  Users
 } from 'lucide-react';
 import './LabsView.css';
 
 export const LabsView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'solutions' | 'integrations' | 'domains' | 'infrastructure'>('solutions');
+  const [activeTab, setActiveTab] = useState<'solutions' | 'integrations' | 'domains' | 'infrastructure' | 'store' | 'forum'>('solutions');
 
   const templates = [
     { name: 'Restaurant Pro', category: 'Food & Drink', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=400', sync: ['Menu', 'Orders', 'Social'] },
@@ -50,8 +54,10 @@ export const LabsView: React.FC = () => {
       {/* Main Navigation */}
       <nav className="labs-nav">
         <button className={activeTab === 'solutions' ? 'active' : ''} onClick={() => setActiveTab('solutions')}><Layout size={18} /> Website Builder</button>
+        <button className={activeTab === 'store' ? 'active' : ''} onClick={() => setActiveTab('store')}><ShoppingBag size={18} /> Theme Store</button>
         <button className={activeTab === 'integrations' ? 'active' : ''} onClick={() => setActiveTab('integrations')}><Puzzle size={18} /> 360 Integrations</button>
         <button className={activeTab === 'domains' ? 'active' : ''} onClick={() => setActiveTab('domains')}><Globe size={18} /> Domain Management</button>
+        <button className={activeTab === 'forum' ? 'active' : ''} onClick={() => setActiveTab('forum')}><MessageSquare size={18} /> Dev Forum</button>
         <button className={activeTab === 'infrastructure' ? 'active' : ''} onClick={() => setActiveTab('infrastructure')}><Settings2 size={18} /> Settings</button>
       </nav>
 
@@ -140,6 +146,68 @@ export const LabsView: React.FC = () => {
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </section>
+        )}
+        {activeTab === 'store' && (
+          <section className="labs-section">
+            <div className="section-header">
+              <h2>Premium Theme Store</h2>
+              <div className="filter-group">
+                <button className="filter-btn active">All</button>
+                <button className="filter-btn">Free</button>
+                <button className="filter-btn">Premium</button>
+              </div>
+            </div>
+            <div className="template-grid">
+              {[
+                { name: 'Neo-Genesis', price: '$49', rating: 4.9, image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=400' },
+                { name: 'Pure Civic', price: 'Free', rating: 4.7, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=400' },
+                { name: 'Cajun Gourmet', price: '$29', rating: 5.0, image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&q=80&w=400' }
+              ].map(theme => (
+                <div key={theme.name} className="template-card theme-card glass">
+                  <div className="template-preview" style={{ backgroundImage: `url(${theme.image})` }}>
+                    <div className="price-tag">{theme.price}</div>
+                  </div>
+                  <div className="template-info">
+                    <div className="theme-meta">
+                      <h3>{theme.name}</h3>
+                      <div className="rating"><Star size={14} fill="currentColor" /> {theme.rating}</div>
+                    </div>
+                    <button className="install-btn">Install Theme</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'forum' && (
+          <section className="labs-section">
+            <div className="section-header">
+              <h2>Developer Forum</h2>
+              <button className="primary-labs-btn">Start Discussion</button>
+            </div>
+            <div className="forum-list">
+              {[
+                { title: 'Best practices for 360 Market Sync?', author: 'dev_tx', replies: 24, activity: '2m ago' },
+                { title: 'Custom CSS variables for stand-alone restaurant themes', author: 'setx_pro', replies: 8, activity: '1h ago' },
+                { title: 'Domain pointing issues with .io extensions', author: 'labs_ninja', replies: 15, activity: '3h ago' }
+              ].map(post => (
+                <div key={post.title} className="forum-item glass">
+                  <div className="forum-main">
+                    <MessageSquare size={20} className="forum-icon" />
+                    <div>
+                      <h3>{post.title}</h3>
+                      <span className="author">Posted by {post.author}</span>
+                    </div>
+                  </div>
+                  <div className="forum-meta">
+                    <div className="meta-stat"><Users size={14} /> {post.replies}</div>
+                    <div className="meta-stat">{post.activity}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         )}

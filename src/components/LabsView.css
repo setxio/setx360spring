@@ -293,3 +293,121 @@
   .labs-nav button { min-width: 160px; }
   .integration-item { flex-direction: column; text-align: center; gap: 20px; }
 }
+
+.filter-group {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.price-tag {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.theme-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.theme-meta h3 { margin: 0; }
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #fbbf24;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.install-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--primary);
+  background: rgba(99,102,241,0.05);
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.install-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.forum-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.forum-item {
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.forum-item:hover {
+  background: rgba(255,255,255,0.05);
+  transform: translateX(4px);
+}
+
+.forum-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.forum-icon { color: var(--primary); opacity: 0.8; }
+
+.forum-main h3 { margin: 0 0 4px 0; font-size: 1.1rem; }
+
+.author { font-size: 0.8rem; opacity: 0.5; }
+
+.forum-meta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  font-weight: 600;
+}
+
+.meta-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
