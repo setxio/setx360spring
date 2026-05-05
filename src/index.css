@@ -439,6 +439,15 @@
   --secondary: var(--discover-secondary);
 }
 
+/* Civic-specific environment accent overrides */
+html:not([data-theme^='io-']) [data-env='social']   { --primary: #a855f7; }
+html:not([data-theme^='io-']) [data-env='events']   { --primary: #facc15; }
+html:not([data-theme^='io-']) [data-env='news']     { --primary: #1e40af; }
+html:not([data-theme^='io-']) [data-env='faith']    { --primary: #8b5cf6; }
+html:not([data-theme^='io-']) [data-env='eats']     { --primary: #f97316; }
+html:not([data-theme^='io-']) [data-env='services'] { --primary: #334155; }
+html:not([data-theme^='io-']) [data-env='jobs']     { --primary: #172554; }
+
 * {
   box-sizing: border-box;
   margin: 0;

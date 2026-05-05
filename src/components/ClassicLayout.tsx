@@ -360,18 +360,6 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     setActiveTab(0);
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     scrollTimeout.current = setTimeout(() => {
-      isInternalScroll.current = false;
-    }, 1000);
-  };
-
-  const getBadgeIcon = (role: string) => {
-    if (role?.startsWith('v_')) return <CheckCircle size={14} color="var(--primary)" />;
-    if (role === 'admin') return <ShieldCheck size={14} color="var(--admin-gold)" />;
-    return <Clock size={14} style={{ opacity: 0.5 }} />;
-  };
-
-  // Nav Items
-  const discoverNav = [
     { icon: <Compass size={24} />, label: 'Discover' },
     { icon: <TrendingUp size={24} />, label: 'Trending' },
     { icon: <Zap size={24} />, label: 'Hot Deals' },
@@ -580,7 +568,24 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
             <h1 className="logo-text" onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'baseline', gap: '2px', color: theme.includes('light') ? '#000' : '#fff' }}>
               {scope === 'city' ? (user?.community || 'City') : 'SETX'}
-              <span style={{ fontSize: '1.2rem', fontWeight: 700, color: theme.startsWith('io-') ? '#7000f4' : (env === 'discover' ? '#c084fc' : env === 'news' ? '#f87171' : env === 'social' ? '#3b82f6' : env === 'faith' ? '#8b5cf6' : env === 'events' ? '#f43f5e' : env === 'market' ? '#22c55e' : 'var(--primary)'), transition: 'color 0.3s ease', lineHeight: 1 }}> 360</span>
+              <span style={{ 
+                fontSize: '1.2rem', 
+                fontWeight: 700, 
+                color: theme.startsWith('io-') ? '#7000f4' : (
+                  env === 'discover' ? '#06b6d4' : 
+                  env === 'social'   ? '#3b82f6' : 
+                  env === 'events'   ? '#facc15' : 
+                  env === 'news'     ? '#1e40af' : 
+                  env === 'faith'    ? '#8b5cf6' : 
+                  env === 'market'   ? '#10b981' : 
+                  env === 'eats'     ? '#f97316' : 
+                  env === 'services' ? '#334155' : 
+                  env === 'jobs'     ? '#172554' : 
+                  'var(--primary)'
+                ), 
+                transition: 'color 0.3s ease', 
+                lineHeight: 1 
+              }}> 360</span>
             </h1>
           </div>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -686,13 +691,16 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
               <div className="sw-btn spacer" aria-hidden="true" />
-              {['discover', 'social', 'market', 'events', 'news', 'faith'].map(id => {
+              {['discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs'].map(id => {
                 const item = id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
                              id === 'social'   ? { id: 'social',   icon: <Rss size={18} />, label: 'Social' } :
                              id === 'market'   ? { id: 'market',   icon: <Store size={18} />, label: 'Market' } :
                              id === 'events'   ? { id: 'events',   icon: <Calendar size={18} />, label: 'Events' } :
                              id === 'news'     ? { id: 'news',     icon: <Newspaper size={18} />, label: 'News' } :
-                             { id: 'faith',    icon: <Church size={18} />, label: 'Faith' };
+                             id === 'faith'    ? { id: 'faith',    icon: <Church size={18} />, label: 'Faith' } :
+                             id === 'eats'     ? { id: 'eats',     icon: <Zap size={18} />, label: 'Eats' } :
+                             id === 'services' ? { id: 'services', icon: <Plus size={18} />, label: 'Services' } :
+                             { id: 'jobs',     icon: <Award size={18} />, label: 'Jobs' };
                 return (
                   <button key={item.id} className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} onClick={() => handleEnvClick(item.id as Env)}>
                     {item.icon} {item.label}

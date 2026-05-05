@@ -198,22 +198,21 @@
   color: var(--active-color, var(--primary));
 }
 
-.sw-btn.active.discover { --active-color: #c084fc; } /* Lavender */
-.sw-btn.active.social   { --active-color: #3b82f6; } /* Blue */
+.sw-btn.active.discover { --active-color: #06b6d4; }
+.sw-btn.active.social   { --active-color: #3b82f6; }
 .sw-btn.active.market   { --active-color: var(--market-primary); }
-.sw-btn.active.eats     { --active-color: #f97316; } /* Orange */
-.sw-btn.active.rides    { --active-color: #facc15; } /* Yellow */
-.sw-btn.active.services { --active-color: #6366f1; } /* Indigo */
-.sw-btn.active.events   { --active-color: #f43f5e; } /* Rose */
-.sw-btn.active.wallet   { --active-color: #06b6d4; } /* Cyan */
-.sw-btn.active.care     { --active-color: #ef4444; } /* Red */
-.sw-btn.active.homes    { --active-color: #14b8a6; } /* Teal */
-.sw-btn.active.auto     { --active-color: #94a3b8; } /* Slate */
-.sw-btn.active.travel   { --active-color: #84cc16; } /* Lime */
-.sw-btn.active.jobs     { --active-color: #7c3aed; } /* Violet */
-.sw-btn.active.events   { --active-color: #f43f5e; } /* Rose */
-.sw-btn.active.faith    { --active-color: #8b5cf6; } /* Violet */
-.sw-btn.active.news     { --active-color: #f87171; } /* Salmon */
+.sw-btn.active.eats     { --active-color: #f97316; }
+.sw-btn.active.rides    { --active-color: #facc15; }
+.sw-btn.active.services { --active-color: #334155; }
+.sw-btn.active.events   { --active-color: #facc15; }
+.sw-btn.active.wallet   { --active-color: #06b6d4; }
+.sw-btn.active.care     { --active-color: #ef4444; }
+.sw-btn.active.homes    { --active-color: #14b8a6; }
+.sw-btn.active.auto     { --active-color: #94a3b8; }
+.sw-btn.active.travel   { --active-color: #84cc16; }
+.sw-btn.active.jobs     { --active-color: #172554; }
+.sw-btn.active.faith    { --active-color: #8b5cf6; }
+.sw-btn.active.news     { --active-color: #1e40af; }
 .sw-btn.active.vendor   { --active-color: #7000f4; }
 .sw-btn.active.admin    { --active-color: #8b5cf6; }
 

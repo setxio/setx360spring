@@ -93,8 +93,22 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--primary)' }}>
-            SETX <span style={{ color: theme.startsWith('io-') ? '#7000f4' : 'var(--text)' }}>360</span>
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: theme.includes('light') ? '#000' : '#fff' }}>
+            SETX <span style={{ 
+              color: theme.startsWith('io-') ? '#7000f4' : (
+                env === 'discover' ? '#06b6d4' : 
+                env === 'social'   ? '#3b82f6' : 
+                env === 'events'   ? '#facc15' : 
+                env === 'news'     ? '#1e40af' : 
+                env === 'faith'    ? '#8b5cf6' : 
+                env === 'market'   ? '#10b981' : 
+                env === 'eats'     ? '#f97316' : 
+                env === 'services' ? '#334155' : 
+                env === 'jobs'     ? '#172554' : 
+                'var(--primary)'
+              ),
+              transition: 'color 0.3s ease'
+            }}>360</span>
           </h1>
         </div>
 
