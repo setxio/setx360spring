@@ -11,16 +11,11 @@ import {
   Layout, 
   ExternalLink,
   ShieldCheck,
-  Zap,
   ShoppingBag,
-  MessageSquare,
-  Star,
   Users,
   Grid,
-  FileText,
   BarChart3,
   Search,
-  ChevronRight,
   Eye,
   Settings
 } from 'lucide-react';
