@@ -86,7 +86,7 @@
 /* ── IO (Modern) Dark ─────────────────────────────────────── */
 [data-theme='io-dark'] {
   --bg: #000000;
-  --bg-soft: #0a0a10;
+  --bg-soft: #050505; /* Even darker ghost-like black */
   --text: #f8fafc;
   --text-muted: #94a3b8;
   --border: #1e1e2e;
@@ -520,8 +520,9 @@ body {
 }
 
 [data-theme='neo-dark'] .glass,
-[data-theme='neo-ii-dark'] .glass {
-  background: rgba(0, 0, 0, 0.75);
+[data-theme='neo-ii-dark'] .glass,
+[data-theme='io-dark'] .glass {
+  background: rgba(0, 0, 0, 0.85);
   border-bottom-color: rgba(112, 0, 244, 0.2);
 }
 
