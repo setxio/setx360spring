@@ -681,10 +681,8 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         <VerificationModal user={user} onClose={() => { setIsVerifying(false); refreshUser(); }} />
       )}
 
-      <main className="content-area" style={{ paddingTop: !user ? '40px' : '0' }}>
-        {!user ? (
-          <SignUpFlow />
-        ) : (
+      <main className="content-area" style={{ paddingTop: (!user && !isSetxIO && env !== 'labs') ? '40px' : '0' }}>
+        {(user || isSetxIO || env === 'labs') ? (
           <AnimatePresence mode="wait">
             <motion.div
               key={env + activeTab}
@@ -699,6 +697,8 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
               </Suspense>
             </motion.div>
           </AnimatePresence>
+        ) : (
+          <SignUpFlow />
         )}
       </main>
 

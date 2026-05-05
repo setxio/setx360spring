@@ -204,12 +204,12 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
 
       {/* Main Content */}
       <main style={{ flex: 1, padding: '20px' }}>
-        {!user ? (
-          <SignUpFlow />
-        ) : (
+        {(user || isSetxIO || env === 'labs') ? (
           <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}><Loader2 className="animate-spin" size={32} color="var(--primary)" /></div>}>
             {renderView()}
           </Suspense>
+        ) : (
+          <SignUpFlow />
         )}
       </main>
 
