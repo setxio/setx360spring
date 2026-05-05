@@ -141,6 +141,7 @@ const App: React.FC = () => {
 
 
   const renderView = () => {
+    // Force Corporate View on IO domain for public visitors
     if (isSetxIO && env === 'market' && activeTab === 0 && !activeStoreId) {
       return <CorporateView />;
     }
@@ -149,7 +150,8 @@ const App: React.FC = () => {
       return <LabsView />;
     }
 
-    // Store detail view — only in market or dashboard envs
+    // Existing authenticated views
+    if (!user) return null; // Should be handled by parent, but for safety
     if (activeStoreId && (env === 'market' || env === 'dashboard')) {
       return (
         <StoreFrontView 
