@@ -288,19 +288,22 @@ export const LabsWizard: React.FC<LabsWizardProps> = ({ onBack }) => {
             </header>
             <div className="step-body">
               <div className="plans-grid">
-                {PLANS.map(p => (
-                  <div 
-                    key={p.id} 
-                    className={`plan-card glass ${formData.plan === p.id ? 'active' : ''}`}
-                    onClick={() => setFormData({...formData, plan: p.id})}
-                  >
-                    <p.icon className="plan-icon" />
-                    <h3>{p.name}</h3>
-                    <div className="price">{p.price || '$0'}<span>/mo</span></div>
-                    <p>{p.desc}</p>
-                    {formData.plan === p.id && <Check className="check-icon" />}
-                  </div>
-                ))}
+                {PLANS.map(plan => {
+                  const Icon = plan.icon;
+                  return (
+                    <div 
+                      key={plan.id} 
+                      className={`plan-card glass ${formData.plan === plan.id ? 'active' : ''}`}
+                      onClick={() => setFormData({...formData, plan: plan.id})}
+                    >
+                      <Icon className="plan-icon" />
+                      <h3>{plan.name}</h3>
+                      <div className="price">{plan.price}<span>/mo</span></div>
+                      <span>{plan.desc}</span>
+                      {formData.plan === plan.id && <Check className="check-icon" />}
+                    </div>
+                  );
+                })}
               </div>
               {formData.plan !== 'free' && (
                 <div className="billing-section fade-in">
