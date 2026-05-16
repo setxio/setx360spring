@@ -596,7 +596,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     >
       {!isSetxIO && (
         <div className="sticky-header-group glass">
-          <ThemeTopBar />
+          <ThemeTopBar key={env + '-' + theme} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 0', minHeight: '52px' }}>
             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
               <h1 className="logo-text" onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'baseline', gap: '2px', color: theme.includes('light') ? '#000' : '#fff' }}>
@@ -604,19 +604,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                 <span style={{ 
                   fontSize: '1.2rem', 
                   fontWeight: 700, 
-                  color: theme.startsWith('io-') ? '#7000f4' : (
-                    env === 'me'       ? 'var(--primary)' :
-                    env === 'discover' ? '#06b6d4' : 
-                    env === 'social'   ? '#3b82f6' : 
-                    env === 'events'   ? '#facc15' : 
-                    env === 'news'     ? '#1e40af' : 
-                    env === 'faith'    ? '#8b5cf6' : 
-                    env === 'market'   ? '#10b981' : 
-                    env === 'eats'     ? '#f97316' : 
-                    env === 'services' ? '#334155' : 
-                    env === 'jobs'     ? '#172554' : 
-                    'var(--primary)'
-                  ), 
+                  color: 'var(--primary)', 
                   transition: 'color 0.3s ease', 
                   lineHeight: 1 
                 }}> 360</span>

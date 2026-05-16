@@ -429,24 +429,21 @@
   background: linear-gradient(to bottom right, var(--theme-gradient-from), var(--theme-gradient-via), var(--theme-gradient-to)) !important;
 }
 
-[data-env='market'] {
-  --primary: var(--market-primary);
-  --secondary: var(--market-secondary);
-}
-
-[data-env='discover'] {
-  --primary: var(--discover-primary);
-  --secondary: var(--discover-secondary);
-}
-
-/* Civic-specific environment accent overrides */
-html:not([data-theme^='io-']) [data-env='social']   { --primary: #a855f7; }
-html:not([data-theme^='io-']) [data-env='events']   { --primary: #facc15; }
-html:not([data-theme^='io-']) [data-env='news']     { --primary: #1e40af; }
-html:not([data-theme^='io-']) [data-env='faith']    { --primary: #8b5cf6; }
-html:not([data-theme^='io-']) [data-env='eats']     { --primary: #f97316; }
-html:not([data-theme^='io-']) [data-env='services'] { --primary: #334155; }
-html:not([data-theme^='io-']) [data-env='jobs']     { --primary: #172554; }
+[data-env='market']   { --primary: #10b981; --secondary: #2563eb; }
+[data-env='discover'] { --primary: #06b6d4; --secondary: #a855f7; }
+[data-env='social']   { --primary: #3b82f6; --secondary: #06b6d4; }
+[data-env='events']   { --primary: #facc15; --secondary: #f97316; }
+[data-env='news']     { --primary: #1e40af; --secondary: #3b82f6; }
+[data-env='faith']    { --primary: #8b5cf6; --secondary: #c084fc; }
+[data-env='eats']     { --primary: #f97316; --secondary: #facc15; }
+[data-env='services'] { --primary: #334155; --secondary: #64748b; }
+[data-env='jobs']     { --primary: #172554; --secondary: #3b82f6; }
+[data-env='rides']    { --primary: #facc15; --secondary: #f97316; }
+[data-env='wallet']   { --primary: #06b6d4; --secondary: #3b82f6; }
+[data-env='care']     { --primary: #ef4444; --secondary: #f97316; }
+[data-env='homes']    { --primary: #14b8a6; --secondary: #06b6d4; }
+[data-env='auto']     { --primary: #94a3b8; --secondary: #cbd5e1; }
+[data-env='travel']   { --primary: #84cc16; --secondary: #10b981; }
 
 * {
   box-sizing: border-box;

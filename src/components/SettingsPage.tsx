@@ -6,7 +6,8 @@ import {
   LogOut,
   ChevronRight,
   Download,
-  Bell
+  Bell,
+  RefreshCw
 } from 'lucide-react';
 import './SettingsPage.css';
 
@@ -270,6 +271,30 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     setIsUpdating(false);
   };
 
+  const handleForceUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.update();
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+      }
+      if ('caches' in window) {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
+      }
+      // Force reload from server
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to force update:', err);
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="settings-page">
       <div className="settings-header">
@@ -428,6 +453,23 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
           <h2 className="section-title"><Bell size={20} /> Push Notifications</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: -8, marginBottom: 16 }}>Control how you receive real-time updates and alerts on this device.</p>
           <PushNotificationManager />
+        </section>
+
+        {/* PWA App Updates & Cache */}
+        <section className="settings-card">
+          <h2 className="section-title"><RefreshCw size={20} /> App Updates & Cache</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: -8, marginBottom: 16 }}>
+            Check for the latest Vercel deployment and clear local PWA cache.
+          </p>
+          <button 
+            className="secondary-btn" 
+            onClick={handleForceUpdate}
+            disabled={isUpdating}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 700 }}
+          >
+            {isUpdating ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
+            Check for Updates / Clear Cache
+          </button>
         </section>
 
         {/* Legal Section */}
