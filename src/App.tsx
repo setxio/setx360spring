@@ -90,6 +90,12 @@ const App: React.FC = () => {
     // Service Worker Update Check
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(registration => {
+        // 1. Check if there is already an update waiting in the background
+        if (registration.waiting) {
+          setUpdateAvailable(true);
+        }
+
+        // 2. Listen for new updates found during the session
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
@@ -100,6 +106,9 @@ const App: React.FC = () => {
             });
           }
         });
+
+        // 3. Force a check for updates every time the app loads
+        registration.update().catch(err => console.log('SW update check failed', err));
       });
     }
 
@@ -132,8 +141,33 @@ const App: React.FC = () => {
     }
   }, [user, notchHasInteracted, notchSessions]);
 
-  const handleUpdate = () => {
-    window.location.reload();
+  const handleUpdate = async () => {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    
+    if ('caches' in window) {
+      try {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    
+    // Give SW a moment to activate before reloading
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
 
