@@ -71,10 +71,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('ecity_theme') as Theme;
-    if (saved) return saved;
+    if (typeof window !== 'undefined') {
+      const migrated = localStorage.getItem('ecity_theme_migrated_neodark');
+      if (!migrated) {
+        localStorage.setItem('ecity_theme_migrated_neodark', 'true');
+        const defaultTheme = isSetxIO ? 'io-dark' : 'neo-dark';
+        localStorage.setItem('ecity_theme', defaultTheme);
+        return defaultTheme;
+      }
+      const saved = localStorage.getItem('ecity_theme') as Theme;
+      if (saved) return saved;
+    }
     if (isSetxIO) return 'io-dark';
-    return 'civic-classic-light';
+    return 'neo-dark';
   });
   const [layout, setLayoutState] = useState<Layout>(() => (localStorage.getItem('ecity_layout') as Layout) || 'classic');
   
