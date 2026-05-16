@@ -92,14 +92,18 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   // ── Dismissed bubbles persistence ──
   const addDismissed = async (profileId: string) => {
     const now = new Date().toISOString();
-    let updated: Record<string, string> = {};
     
-    setDismissedBubbles(prev => {
-      updated = { ...prev, [profileId]: now };
-      return updated;
-    });
+    setDismissedBubbles(prev => ({ ...prev, [profileId]: now }));
     
     try {
+      let currentLocal: Record<string, string> = {};
+      const raw = localStorage.getItem(`setx360_dismissed_map_${user.id}`);
+      if (raw) {
+        try { currentLocal = JSON.parse(raw); } catch(e) {}
+      }
+      
+      const updated = { ...currentLocal, [profileId]: now };
+      
       localStorage.setItem(`setx360_dismissed_map_${user.id}`, JSON.stringify(updated));
       await supabase.from('profiles').update({ dismissed_bubbles: updated }).eq('id', user.id);
     } catch (err) {
@@ -108,22 +112,27 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   };
 
   const removeDismissed = async (profileId: string) => {
-    let updated: Record<string, string> | null = null;
-    
     setDismissedBubbles(prev => {
       if (!prev[profileId]) return prev;
-      updated = { ...prev };
-      delete updated[profileId];
-      return updated;
+      const copy = { ...prev };
+      delete copy[profileId];
+      return copy;
     });
 
-    if (updated) {
-      try {
-        localStorage.setItem(`setx360_dismissed_map_${user.id}`, JSON.stringify(updated));
-        await supabase.from('profiles').update({ dismissed_bubbles: updated }).eq('id', user.id);
-      } catch (err) {
-        console.error('Error removing dismissed bubble:', err);
+    try {
+      let currentLocal: Record<string, string> = {};
+      const raw = localStorage.getItem(`setx360_dismissed_map_${user.id}`);
+      if (raw) {
+        try { currentLocal = JSON.parse(raw); } catch(e) {}
       }
+      
+      if (currentLocal[profileId]) {
+        delete currentLocal[profileId];
+        localStorage.setItem(`setx360_dismissed_map_${user.id}`, JSON.stringify(currentLocal));
+        await supabase.from('profiles').update({ dismissed_bubbles: currentLocal }).eq('id', user.id);
+      }
+    } catch (err) {
+      console.error('Error removing dismissed bubble:', err);
     }
   };
 
