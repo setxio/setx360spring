@@ -277,46 +277,71 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
     }
   }, [sessions, expandedChatId, typingUsers]);
 
-  // Typing presence — stable channel ref, doesn't re-subscribe on every keystroke
+  // Typing indicator via Realtime Broadcast
   useEffect(() => {
     if (!expandedChatId || !user || user.enable_typing_indicators === false) return;
 
     const channelId = [user.id, expandedChatId].sort().join('-');
-    const channel = supabase.channel(`typing-${channelId}`, {
-      config: { presence: { key: user.id } }
-    })
-    .on('presence', { event: 'sync' }, () => {
-      const state = channel.presenceState();
-      const typing = Object.values(state).some((p: any) => 
-        p[0]?.user_id === expandedChatId && p[0]?.is_typing
-      );
-      setTypingUsers(prev => {
-        const newSet = new Set(prev);
-        if (typing) newSet.add(expandedChatId);
-        else newSet.delete(expandedChatId);
-        return newSet;
+    const channel = supabase.channel(`broadcast-typing-${channelId}`)
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        const senderId = payload.payload?.userId;
+        const isUserTyping = payload.payload?.isTyping;
+        if (senderId === expandedChatId) {
+          setTypingUsers(prev => {
+            const next = new Set(prev);
+            if (isUserTyping) next.add(senderId);
+            else next.delete(senderId);
+            return next;
+          });
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && isTypingRef.current) {
+          await channel.send({
+            type: 'broadcast',
+            event: 'typing',
+            payload: { userId: user.id, isTyping: true }
+          });
+        }
       });
-    })
-    .subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await channel.track({ user_id: user.id, is_typing: isTypingRef.current });
-      }
-    });
 
     typingChannelRef.current = channel;
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
       typingChannelRef.current = null;
+      setTypingUsers(new Set());
     };
-  }, [expandedChatId, user]); // ← removed isTyping to prevent channel teardown on every keystroke
+  }, [expandedChatId, user]);
 
-  // Update typing state on existing channel without re-subscribing
+  // Update typing state via Broadcast
   useEffect(() => {
     isTypingRef.current = isTyping;
-    if (typingChannelRef.current) {
-      typingChannelRef.current.track({ user_id: user.id, is_typing: isTyping });
+    if (typingChannelRef.current && user?.enable_typing_indicators !== false) {
+      typingChannelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { userId: user.id, isTyping: isTyping }
+      });
     }
-  }, [isTyping]);
+  }, [isTyping, user]);
+
+  // Ensure expanded bubble stays within viewport on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (!expandedChatId || !containerRef.current) return;
+      const el = containerRef.current;
+      const rect = el.getBoundingClientRect();
+      if (rect.left + 320 > window.innerWidth) {
+        if (window.innerWidth >= 768) {
+          const maxLeft = window.innerWidth - 340;
+          el.style.left = `${Math.max(20, maxLeft)}px`;
+          el.style.right = 'auto';
+        }
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [expandedChatId]);
 
   const handleIncomingMessage = async (message: Message) => {
     const senderId = message.sender_id;
@@ -418,8 +443,8 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
         savedPosition.current = null;
       }
     } else {
-      // Expanding — on mobile, snap to left if on right half to prevent overflow
-      if (el && window.innerWidth < 768) {
+      // Expanding — clamp position to fit inside viewport
+      if (el) {
         const rect = el.getBoundingClientRect();
         const isChatWiderThanRemaining = rect.left + 320 > window.innerWidth;
         if (isChatWiderThanRemaining) {
@@ -429,9 +454,14 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
             right: el.style.right,
             bottom: el.style.bottom,
           };
-          el.style.left = '8px';
-          el.style.right = 'auto';
-          // keep top/bottom as-is
+          if (window.innerWidth < 768) {
+            el.style.left = '8px';
+            el.style.right = 'auto';
+          } else {
+            const maxLeft = window.innerWidth - 340;
+            el.style.left = `${Math.max(20, maxLeft)}px`;
+            el.style.right = 'auto';
+          }
         }
       }
       setExpandedChatId(profileId);

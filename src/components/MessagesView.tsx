@@ -69,41 +69,46 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     scrollToBottom();
   }, [allMessages, activeChatId, otherUserTyping]);
 
-  // Typing presence — use a stable channel ref so it doesn't re-subscribe on every keystroke
+  // Typing indicator via Realtime Broadcast
   useEffect(() => {
     if (!activeChatId || !user || user.enable_typing_indicators === false) return;
 
     const channelId = [user.id, activeChatId].sort().join('-');
-    const channel = supabase.channel(`typing-${channelId}`, {
-      config: { presence: { key: user.id } }
-    })
-    .on('presence', { event: 'sync' }, () => {
-      const state = channel.presenceState();
-      const typing = Object.values(state).some((p: any) => 
-        p[0]?.user_id === activeChatId && p[0]?.is_typing
-      );
-      setOtherUserTyping(typing);
-    })
-    .subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await channel.track({ user_id: user.id, is_typing: isTypingRef.current });
-      }
-    });
+    const channel = supabase.channel(`broadcast-typing-${channelId}`)
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (payload.payload?.userId === activeChatId) {
+          setOtherUserTyping(payload.payload?.isTyping || false);
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && isTypingRef.current) {
+          await channel.send({
+            type: 'broadcast',
+            event: 'typing',
+            payload: { userId: user.id, isTyping: true }
+          });
+        }
+      });
 
     typingChannelRef.current = channel;
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
       typingChannelRef.current = null;
+      setOtherUserTyping(false);
     };
-  }, [activeChatId, user]); // ← removed isTyping to prevent channel teardown on every keystroke
+  }, [activeChatId, user]);
 
-  // Update typing state on the existing channel without re-subscribing
+  // Update typing state via Broadcast
   useEffect(() => {
     isTypingRef.current = isTyping;
-    if (typingChannelRef.current) {
-      typingChannelRef.current.track({ user_id: user.id, is_typing: isTyping });
+    if (typingChannelRef.current && user?.enable_typing_indicators !== false) {
+      typingChannelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { userId: user.id, isTyping: isTyping }
+      });
     }
-  }, [isTyping]);
+  }, [isTyping, user]);
 
   useEffect(() => {
     fetchInitialData();
