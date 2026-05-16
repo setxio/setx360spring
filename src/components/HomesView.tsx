@@ -16,7 +16,7 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { SETX_COUNTY_LIST } from '../utils/geo';
 import './HomesView.css';
-import luxuryHome from '../assets/luxury_home.png';
+const luxuryHome = '/luxury_home.png';
 
 interface Listing {
   id: string;

@@ -61,6 +61,10 @@ const CivicsView       = lazy(() => import('./components/CivicsView').then(m => 
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
 const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
 
+const Overview         = lazy(() => import('./components/Overview').then(m => ({ default: m.Overview })));
+const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
+const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
+
 import { useApp } from './context/AppContext';
 import { supabase } from './lib/supabase';
 
@@ -239,6 +243,19 @@ const App: React.FC = () => {
           onNavigateToProfile={setActiveProfileId}
         />
       );
+    }
+
+    if (env === 'me') {
+      switch (activeTab) {
+        case 0: return <MePortal />;
+        case 1: return <Overview user={user} />;
+        case 2: return <OrdersView />;
+        case 3: return <WalletView activeTab={0} user={user} scope={scope} />;
+        case 4: return <SavedView />;
+        case 5: return <NotificationsView user={user} />;
+        case 6: return <SettingsPage user={user} theme={theme} toggleTheme={toggleTheme} setTheme={setTheme} />;
+        default: return <MePortal />;
+      }
     }
 
     if (env === 'discover') {

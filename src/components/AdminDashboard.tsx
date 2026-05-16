@@ -77,13 +77,16 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
   const [vendors, setVendors] = useState<any[]>([]);
   const [flaggedPosts, setFlaggedPosts] = useState<any[]>([]);
   const [legacyRequests, setLegacyRequests] = useState<any[]>([]);
+  const [platforms, setPlatforms] = useState<any[]>([]);
+  const [selectedPlatformSlug, setSelectedPlatformSlug] = useState('setx360');
   const [platformSettings, setPlatformSettings] = useState<any>({
     vendor_fee_percentage: 0.10,
     driver_fee_percentage: 0.10,
     base_delivery_fee: 3.00,
     stripe_connected: false,
     is_refunds_enabled: true,
-    refund_window_days: 30
+    refund_window_days: 30,
+    platform_public_key: ''
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [editingFeeUser, setEditingFeeUser] = useState<any>(null);
@@ -116,7 +119,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
         supabase.from('posts').select('*, author:profiles!posts_profile_id_fkey(name, avatar_url)').in('moderation_status', ['flagged', 'hidden']),
         supabase.from('platform_activity').select('*, profiles(*)').order('created_at', { ascending: false }).limit(20),
         supabase.from('ads').select('id', { count: 'exact' }).eq('status', 'active'),
-        supabase.from('platform_settings').select('*').eq('id', 1).single(),
+        supabase.from('platform_settings').select('*').order('id'),
         supabase.from('legacy_access_requests').select('*, requester:profiles!requester_id(*), target:profiles!user_id(*)').eq('status', 'pending')
       ]) as any[];
 
@@ -136,7 +139,13 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
       setFlaggedPosts(flaggedData || []);
       setActivityLogs(activityData || []);
       setLegacyRequests(legacyData || []);
-      if (settingsData) setPlatformSettings(settingsData);
+      
+      if (settingsData && settingsData.length > 0) {
+        setPlatforms(settingsData);
+        const current = settingsData.find((p: any) => p.slug === selectedPlatformSlug) || settingsData[0];
+        setPlatformSettings(current);
+        if (current.slug !== selectedPlatformSlug) setSelectedPlatformSlug(current.slug);
+      }
       
       fetchUsers();
       fetchAnnouncements();
@@ -236,12 +245,16 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
       base_delivery_fee: platformSettings.base_delivery_fee,
       stripe_connected: platformSettings.stripe_connected,
       is_refunds_enabled: platformSettings.is_refunds_enabled,
-      refund_window_days: platformSettings.refund_window_days
-    }).eq('id', 1);
+      refund_window_days: platformSettings.refund_window_days,
+      platform_public_key: platformSettings.platform_public_key
+    }).eq('slug', selectedPlatformSlug);
     
     setIsSavingSettings(false);
-    if (error) alert('Error saving settings');
-    else alert('Settings saved successfully!');
+    if (error) alert('Error saving settings: ' + error.message);
+    else {
+      alert('Settings saved successfully!');
+      fetchAllData();
+    }
   };
 
   const handleModeration = async (postId: string, status: string) => {
@@ -703,7 +716,23 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
             {activeTab === 'settings' && (
               <div className="admin-card">
                 <div className="card-header">
-                  <h3>Global Parameters</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <h3 style={{ margin: 0 }}>Infrastructure Config</h3>
+                    <select 
+                      value={selectedPlatformSlug} 
+                      onChange={(e) => {
+                        const slug = e.target.value;
+                        setSelectedPlatformSlug(slug);
+                        const platform = platforms.find(p => p.slug === slug);
+                        if (platform) setPlatformSettings(platform);
+                      }}
+                      style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--admin-border)', color: '#fff', fontWeight: 700 }}
+                    >
+                      {platforms.map(p => (
+                        <option key={p.slug} value={p.slug}>{p.platform_name || p.slug}</option>
+                      ))}
+                    </select>
+                  </div>
                   <button 
                     className="icon-btn" 
                     onClick={saveSettings}
@@ -765,6 +794,23 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                         onChange={(e) => setPlatformSettings({...platformSettings, refund_window_days: parseInt(e.target.value)})}
                       />
                     </div>
+                  </div>
+
+                  <div className="stat-card">
+                    <h4 style={{ margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: 8 }}><Shield size={20} color="var(--admin-accent)" /> Stripe Configuration</h4>
+                    <div className="input-group">
+                      <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: 8 }}>Platform Public Key (pk_...)</label>
+                      <input 
+                        type="text" 
+                        placeholder="pk_test_..."
+                        style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--admin-border)', color: '#fff', fontSize: '0.8rem' }}
+                        value={platformSettings.platform_public_key || ''}
+                        onChange={(e) => setPlatformSettings({...platformSettings, platform_public_key: e.target.value})}
+                      />
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 12 }}>
+                      Secret keys and webhook secrets must be updated in the Supabase Vault/Environment Variables.
+                    </p>
                   </div>
                 </div>
               </div>

@@ -1,8 +1,33 @@
 import { supabase } from './supabase';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Initialize Stripe (Replace with your actual public key)
-const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
+/**
+ * SETX Multi-Platform Stripe Initialization
+ * Dynamically loads the correct Stripe public key based on the platform slug.
+ */
+const getPlatformSlug = () => {
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname.includes('setx.io')) return 'setxio';
+  }
+  return 'setx360';
+};
+
+let stripePromiseCache: Promise<any> | null = null;
+
+export const getStripe = async () => {
+  if (stripePromiseCache) return stripePromiseCache;
+  
+  const slug = getPlatformSlug();
+  const { data: settings } = await supabase
+    .from('platform_settings')
+    .select('platform_public_key')
+    .eq('slug', slug)
+    .single();
+    
+  const key = settings?.platform_public_key || 'pk_test_TYooMQauvdEDq54NiTphI7jx';
+  stripePromiseCache = loadStripe(key);
+  return stripePromiseCache;
+};
 
 
 export type FintechTransactionType = 'payment' | 'deposit' | 'withdrawal' | 'refund' | 'fee';
@@ -62,13 +87,13 @@ export const processTransfer = async (params: TransferParams) => {
     if (error) throw error;
     
     if (data && data.success) {
-      return { success: true, transactionGroupId: data.transaction_group_id, newBalance: data.sender_new_balance };
+      return { success: true as const, transactionGroupId: data.transaction_group_id as string, newBalance: data.sender_new_balance as number };
     } else {
-      return { success: false, error: data?.error || 'Unknown transfer error' };
+      return { success: false as const, error: (data?.error || 'Unknown transfer error') as string };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Transfer Error:', error);
-    return { success: false, error };
+    return { success: false as const, error: error.message || 'Transfer failed' };
   }
 };
 
@@ -123,14 +148,15 @@ export const processStripeSplitPayment = async (
   driverStripeAccountId?: string
 ) => {
   try {
-    // We await the promise to ensure the SDK loads, even though this is a stub.
-    const stripe = await stripePromise;
+    // 1. Initialize Dynamic Stripe
+    const stripe = await getStripe();
+    const slug = getPlatformSlug();
 
-    // 1. Fetch Dynamic Platform Settings
+    // 2. Fetch Dynamic Platform Settings
     const { data: settings, error: settingsError } = await supabase
       .from('platform_settings')
       .select('*')
-      .eq('id', 1)
+      .eq('slug', slug)
       .single();
 
     if (settingsError || !settings) {
@@ -187,7 +213,8 @@ export const processRefund = async (orderId: string, amount?: number) => {
     if (orderError || !order) throw new Error('Order not found');
 
     // 2. Check refund window (Priority: Store Policy -> Platform Policy)
-    const { data: settings } = await supabase.from('platform_settings').select('*').single();
+    const slug = getPlatformSlug();
+    const { data: settings } = await supabase.from('platform_settings').select('*').eq('slug', slug).single();
     const { data: store } = await supabase.from('stores').select('is_refunds_enabled, refund_window_days').eq('id', order.store_id).single();
 
     const isRefundsEnabled = store?.is_refunds_enabled ?? settings?.is_refunds_enabled ?? true;

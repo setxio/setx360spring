@@ -11,7 +11,8 @@ import {
   Plus,
   Loader2,
   PieChart,
-  Bell
+  Bell,
+  Monitor
 } from 'lucide-react';
 import { AdManager } from './AdManager';
 import { supabase } from '../lib/supabase';
@@ -109,6 +110,32 @@ export const MasterBusinessDashboard: React.FC<MasterBusinessDashboardProps> = (
     setStoreStats(detailedStats);
     setIsLoading(false);
   };
+  
+  const handleManagePos = async (store: any) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const response = await fetch('https://okulcpbrikcumiomrzuh.supabase.co/functions/v1/sso-generate-partner-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ tenant_id: store.csm_tenant_id })
+      });
+      
+      const data = await response.json();
+      if (data.url) {
+        window.open(data.url, '_blank');
+      } else {
+        alert('Failed to generate SSO link: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('SSO Error:', err);
+      alert('Failed to connect to SSO bridge.');
+    }
+  };
 
   if (isLoading) return <div className="vendor-dashboard-loading"><Loader2 className="animate-spin" size={48} /><p>Calculating Portfolio Analytics...</p></div>;
 
@@ -178,6 +205,24 @@ export const MasterBusinessDashboard: React.FC<MasterBusinessDashboardProps> = (
                       <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{store.category}</span>
                     </div>
                     <ChevronRight size={16} opacity={0.5} />
+                  </div>
+                  <div className="store-card-actions" style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
+                    <button 
+                      className="mini-btn-primary" 
+                      onClick={(e) => { e.stopPropagation(); onSelectStore(store); }}
+                      style={{ flex: 1, padding: '8px', fontSize: '0.75rem' }}
+                    >
+                      Storefront
+                    </button>
+                    {store.csm_tenant_id && (
+                      <button 
+                        className="mini-btn-secondary" 
+                        onClick={(e) => { e.stopPropagation(); handleManagePos(store); }}
+                        style={{ flex: 1, padding: '8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                      >
+                        <Monitor size={14} /> POS
+                      </button>
+                    )}
                   </div>
                   <div className="mini-stats" style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 12 }}>
                     <div style={{ textAlign: 'center' }}><span style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700 }}>{store.orderCount}</span><p style={{ margin: 0, fontSize: '0.6rem', opacity: 0.5 }}>Orders</p></div>

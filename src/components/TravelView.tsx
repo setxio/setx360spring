@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './TravelView.css';
-import travelHotel from '../assets/travel_hotel.png';
+const travelHotel = '/travel_hotel.png';
 
 interface Destination {
   id: string;

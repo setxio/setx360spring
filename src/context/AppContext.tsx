@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
-export type Env = 'discover' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs';
+export type Env = 'discover' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
@@ -67,7 +67,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (envParam) return envParam as Env;
       if (isSetxIO) return 'market';
     }
-    return (localStorage.getItem('ecity_env') as Env) || 'market';
+    return (localStorage.getItem('ecity_env') as Env) || 'me';
   });
 
   const [theme, setThemeState] = useState<Theme>(() => {
@@ -216,7 +216,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setEnv('labs');
         setActiveTab(0);
       } else {
-        setEnv('market');
+        setEnv('me');
         setActiveTab(0);
       }
     }

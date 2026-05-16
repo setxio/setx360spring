@@ -339,23 +339,27 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
     const { data: postData, error: postError } = await query;
 
-    // 2. Fetch Active Ads — prefer category-targeted, high quality score
-    // Map feed categories to ad target_category values
-    const categoryMap: Record<string, string> = {
-      'Shopping': 'selling', 'Services': 'buying_intent', 'Hiring': 'job_posting',
-      'Events': 'event_sharing', 'News': 'community_news', 'AI Picks': 'community_news',
-    };
-    const targetCat = categoryMap[activeCategory];
+    // 2. Fetch Active Ads from Regional Ad Engine
+    const { data: activeAds } = await supabase
+      .from('platform_ads')
+      .select(`
+        *,
+        store:stores(name, logo_url),
+        content_post:posts!content_id(*),
+        content_product:products!content_id(*)
+      `)
+      .eq('status', 'active')
+      .order('budget', { ascending: false });
 
-    let adsQuery = supabase.from('ads').select('*').eq('status', 'active').order('quality_score', { ascending: false });
-    if (targetCat) {
-      // Prefer targeted ads for this category
-      const { data: targetedAds } = await adsQuery.eq('target_category', targetCat).limit(5);
-      const { data: fallbackAds } = await supabase.from('ads').select('*').eq('status','active').neq('target_category', targetCat).order('quality_score', { ascending: false }).limit(5);
-      setAds([...(targetedAds || []), ...(fallbackAds || [])]);
-    } else {
-      const { data: adData } = await adsQuery;
-      setAds(adData || []);
+    if (activeAds) {
+      const resolvedAds = activeAds.map(ad => ({
+        ...ad,
+        title: ad.content_post?.title || ad.content_product?.name || ad.store?.name,
+        content: ad.content_post?.content || ad.content_product?.description || "Check out our latest offerings!",
+        image_url: ad.content_post?.media_urls?.[0] || ad.content_product?.image_url || ad.store?.logo_url,
+        target_url: ad.content_product ? `/?product=${ad.content_id}` : `/?post=${ad.content_id}`
+      }));
+      setAds(resolvedAds);
     }
 
     // 3. Fetch trending topics for user's notch

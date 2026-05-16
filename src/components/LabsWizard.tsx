@@ -13,8 +13,7 @@ import {
   Check,
   Loader2,
   MapPin,
-  Mail,
-  Shield
+  Mail
 } from 'lucide-react';
 import './LabsWizard.css';
 import './SetxIoSignup.css';
@@ -57,40 +56,61 @@ export const LabsWizard: React.FC<LabsWizardProps> = ({ onBack }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // 1. Sign up on the current database (setx.io)
+      // 1. Sign up on the current database
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          data: {
-            name: formData.name,
-            zip_code: formData.zipCode,
-            role: 'business'
-          }
+          data: isSetxIO
+            ? { full_name: formData.name, role: 'Owner' }
+            : { name: formData.name, zip_code: formData.zipCode, role: 'business' }
         }
       });
 
       if (authError) throw authError;
       if (!authData.user) throw new Error('No user created');
 
-      // 2. Create the store/site on the current database
-      const { error: storeError } = await supabase
-        .from('stores')
-        .insert({
-          owner_id: authData.user.id,
-          name: formData.businessName,
-          category: formData.category,
-          slug: formData.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-          zip_code: formData.zipCode,
-          status: 'Live',
-          subscription_tier: formData.plan
-        });
-
-      if (storeError) throw storeError;
-
       if (isSetxIO) {
+        // 2a. setx.io path — insert into `sites` table with correct columns
+        const subdomain = formData.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const { data: siteData, error: siteError } = await supabase
+          .from('sites')
+          .insert({
+            name: formData.businessName,
+            subdomain,
+            industry: formData.category.toLowerCase(),
+            zip_code: formData.zipCode,
+            subscription_plan: formData.plan === 'free' ? 'Free' : formData.plan.charAt(0).toUpperCase() + formData.plan.slice(1),
+          })
+          .select('id')
+          .single();
+
+        if (siteError) throw siteError;
+
+        // Link the profile to the site
+        if (siteData) {
+          await supabase
+            .from('profiles')
+            .update({ site_id: siteData.id })
+            .eq('id', authData.user.id);
+        }
+
         setStep(5);
       } else {
+        // 2b. SETX 360 path — insert into `stores` table
+        const { error: storeError } = await supabase
+          .from('stores')
+          .insert({
+            owner_id: authData.user.id,
+            name: formData.businessName,
+            category: formData.category,
+            slug: formData.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+            zip_code: formData.zipCode,
+            status: 'Live',
+            subscription_tier: formData.plan
+          });
+
+        if (storeError) throw storeError;
         nextStep();
       }
     } catch (err: any) {

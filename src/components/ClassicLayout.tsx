@@ -374,6 +374,15 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   };
 
   // Nav Items
+  const meNav = [
+    { icon: <LayoutGrid size={24} />, label: 'One' },
+    { icon: <BarChart3 size={24} />, label: 'Stats' },
+    { icon: <Package size={24} />, label: 'Orders' },
+    { icon: <WalletIcon size={24} />, label: 'Wallet' },
+    { icon: <Bookmark size={24} />, label: 'Saved' },
+    { icon: <Bell size={24} />, label: 'Alerts' },
+    { icon: <Settings size={24} />, label: 'System' },
+  ];
   const discoverNav = [
     { icon: <Compass size={24} />, label: 'Discover' },
     { icon: <TrendingUp size={24} />, label: 'Trending' },
@@ -392,7 +401,6 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     { icon: <Bookmark size={24} />, label: 'Saved' },
     { icon: <Bell size={24} />, label: 'Alerts' },
     { icon: <User size={24} />, label: 'Profile' },
-    { icon: <Settings size={24} />, label: 'System' },
   ];
   const marketNav = [
     { icon: <Store size={24} />, label: 'Home' },
@@ -540,6 +548,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   ];
 
   const getNavItems = () => {
+    if (env === 'me') return meNav;
     if (env === 'discover') return discoverNav;
     if (env === 'social') return socialNav;
     if (env === 'market') return marketNav;
@@ -570,6 +579,14 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
 
   const currentNav = getNavItems();
 
+  const getHeaderLogo = () => {
+    if (theme.startsWith('io-')) return '/logo-io.png';
+    if (theme.startsWith('neo')) return '/logo-neo.png';
+    if (theme.startsWith('twilight')) return '/logo-twilight.png';
+    if (theme.startsWith('efutura')) return '/logo-efutura.png';
+    return theme.includes('light') ? '/logo-setx-blue.png' : '/logo-setx-transparent.png';
+  };
+
   return (
     <div 
       className="app-container"
@@ -583,11 +600,12 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 0', minHeight: '52px' }}>
             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
               <h1 className="logo-text" onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'baseline', gap: '2px', color: theme.includes('light') ? '#000' : '#fff' }}>
-                {scope === 'city' ? (user?.community || 'City') : 'SETX'}
+                {env === 'me' ? 'Verify Me' : (scope === 'city' ? (user?.community || 'City') : 'SETX')}
                 <span style={{ 
                   fontSize: '1.2rem', 
                   fontWeight: 700, 
                   color: theme.startsWith('io-') ? '#7000f4' : (
+                    env === 'me'       ? 'var(--primary)' :
                     env === 'discover' ? '#06b6d4' : 
                     env === 'social'   ? '#3b82f6' : 
                     env === 'events'   ? '#facc15' : 
@@ -606,7 +624,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             </div>
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <div onClick={() => setIsTevisOpen(!isTevisOpen)} style={{ position: 'relative', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: isTevisOpen ? `0 0 35px 5px var(--primary)` : (theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none'), transform: isTevisOpen ? 'scale(1.1)' : 'scale(1)', transition: 'all 0.4s ease' }}>
-                <img src={theme.startsWith('io-') ? "/logo-io.png" : (theme.includes('light') ? "/logo-setx-blue.png" : "/logo-setx-transparent.png")} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
+                <img src={getHeaderLogo()} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
               </div>
             </div>
             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
@@ -708,15 +726,16 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
               <div className="sw-btn spacer" aria-hidden="true" />
-              {['discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs'].map(id => {
-                const item = id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
-                             id === 'social'   ? { id: 'social',   icon: <Rss size={18} />, label: 'Social' } :
-                             id === 'market'   ? { id: 'market',   icon: <Store size={18} />, label: 'Market' } :
+              {['me', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs'].map(id => {
+                const item = id === 'me'       ? { id: 'me',       icon: <User size={18} />,   label: 'Me' } :
+                             id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
+                             id === 'social'   ? { id: 'social',   icon: <Rss size={18} />,   label: 'Social' } :
+                             id === 'market'   ? { id: 'market',   icon: <Store size={18} />,   label: 'Market' } :
                              id === 'events'   ? { id: 'events',   icon: <Calendar size={18} />, label: 'Events' } :
                              id === 'news'     ? { id: 'news',     icon: <Newspaper size={18} />, label: 'News' } :
                              id === 'faith'    ? { id: 'faith',    icon: <Church size={18} />, label: 'Faith' } :
-                             id === 'eats'     ? { id: 'eats',     icon: <Zap size={18} />, label: 'Eats' } :
-                             id === 'services' ? { id: 'services', icon: <Plus size={18} />, label: 'Services' } :
+                             id === 'eats'     ? { id: 'eats',     icon: <Zap size={18} />,     label: 'Eats' } :
+                             id === 'services' ? { id: 'services', icon: <Plus size={18} />,    label: 'Services' } :
                              { id: 'jobs',     icon: <Award size={18} />, label: 'Jobs' };
                 return (
                   <button key={item.id} className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} onClick={() => handleEnvClick(item.id as Env)}>

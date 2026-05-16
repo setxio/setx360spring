@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette, Check, LayoutGrid, Monitor, Smartphone, Sparkles } from 'lucide-react';
+import { Palette, Check, LayoutGrid, Monitor, Smartphone, Sparkles, Zap, Sunset } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import type { Theme } from '../context/AppContext';
 import './ThemeCustomizer.css';
@@ -12,6 +12,16 @@ export const ThemeCustomizer: React.FC = () => {
     { id: 'io-dark',           label: 'IO Dark',         icon: <Sparkles size={16} /> },
     { id: 'setx-dark',         label: 'Civic Classic',   icon: <LayoutGrid size={16} /> },
     { id: 'setx-light',        label: 'Civic Light',     icon: <LayoutGrid size={16} /> },
+    { id: 'neo-light',         label: 'NEO Light',       icon: <Zap size={16} /> },
+    { id: 'neo-dark',          label: 'NEO Dark',        icon: <Zap size={16} /> },
+    { id: 'neo-ii-light',      label: 'NEO II Light',    icon: <Sparkles size={16} /> },
+    { id: 'neo-ii-dark',       label: 'NEO II Dark',     icon: <Sparkles size={16} /> },
+    { id: 'twilight-light',    label: 'Twilight Light',  icon: <Sunset size={16} /> },
+    { id: 'twilight-dark',     label: 'Twilight Dark',   icon: <Sunset size={16} /> },
+    { id: 'twilight-ii-light', label: 'Twilight II Light', icon: <Sunset size={16} /> },
+    { id: 'twilight-ii-dark',  label: 'Twilight II Dark',  icon: <Sunset size={16} /> },
+    { id: 'efutura-light',     label: 'Efutura Light',   icon: <Sparkles size={16} /> },
+    { id: 'efutura-dark',      label: 'Efutura Dark',    icon: <Sparkles size={16} /> },
   ];
 
   return (

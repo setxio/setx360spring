@@ -71,6 +71,28 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
 
     const { data, error } = await query.limit(12);
     let fetchedProducts = data || [];
+
+    // 2. Fetch Active Product Ads
+    const { data: activeAds } = await supabase
+      .from('platform_ads')
+      .select(`
+        *,
+        content_product:products!content_id(*, stores(*))
+      `)
+      .eq('content_type', 'product')
+      .eq('status', 'active')
+      .order('budget', { ascending: false });
+
+    if (activeAds) {
+        const adProducts = activeAds
+            .filter(ad => ad.content_product)
+            .map(ad => ({
+                ...ad.content_product,
+                is_sponsored: true
+            }));
+        // Prepend sponsored products to the feed
+        fetchedProducts = [...adProducts, ...fetchedProducts];
+    }
     
     // Escalation Logic for Products
     let currentEscalation: string | null = null;
@@ -220,7 +242,13 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
               className="product-premium-card" 
               onClick={() => setSelectedProduct(product)}
             >
-              {product.priority > 0 && <div className="product-badge">Featured</div>}
+              {product.is_sponsored ? (
+                <div className="product-badge" style={{ background: 'var(--primary)', color: 'white' }}>
+                    <Zap size={10} fill="currentColor" /> Sponsored
+                </div>
+              ) : product.priority > 0 && (
+                <div className="product-badge">Featured</div>
+              )}
               <div className="product-image-container">
                 <img 
                   src={product.image_urls?.[0] || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=500&h=500&fit=crop'} 

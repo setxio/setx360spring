@@ -17,7 +17,7 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { SETX_COUNTY_LIST } from '../utils/geo';
 import './AutoView.css';
-import luxuryTruck from '../assets/luxury_truck.png';
+const luxuryTruck = '/luxury_truck.png';
 
 interface Vehicle {
   id: string;
