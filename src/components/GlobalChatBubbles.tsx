@@ -328,14 +328,34 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   // Ensure expanded bubble stays within viewport on window resize
   useEffect(() => {
     const handleResize = () => {
-      if (!expandedChatId || !containerRef.current) return;
+      if (!containerRef.current) return;
       const el = containerRef.current;
-      const rect = el.getBoundingClientRect();
-      if (rect.left + 320 > window.innerWidth) {
-        if (window.innerWidth >= 768) {
-          const maxLeft = window.innerWidth - 340;
+      
+      if (expandedChatId) {
+        // Chat is expanded
+        if (window.innerWidth < 768) {
+          el.style.left = '20px';
+          el.style.right = 'auto';
+        } else {
+          const rect = el.getBoundingClientRect();
+          if (rect.left + 320 > window.innerWidth) {
+            const maxLeft = window.innerWidth - 340;
+            el.style.left = `${Math.max(20, maxLeft)}px`;
+            el.style.right = 'auto';
+          }
+        }
+      } else {
+        // Chat is collapsed — ensure bubble head stays on screen
+        const rect = el.getBoundingClientRect();
+        if (rect.left + 48 > window.innerWidth) {
+          const maxLeft = window.innerWidth - 68; // 20px buffer from right
           el.style.left = `${Math.max(20, maxLeft)}px`;
           el.style.right = 'auto';
+        }
+        if (rect.top + 48 > window.innerHeight) {
+          const maxTop = window.innerHeight - 68;
+          el.style.top = `${Math.max(20, maxTop)}px`;
+          el.style.bottom = 'auto';
         }
       }
     };
@@ -446,16 +466,22 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
       // Expanding — clamp position to fit inside viewport
       if (el) {
         const rect = el.getBoundingClientRect();
-        const isChatWiderThanRemaining = rect.left + 320 > window.innerWidth;
+        // Calculate required width: 320px on desktop, (window.innerWidth - 40) on mobile
+        const chatWidth = window.innerWidth < 768 ? window.innerWidth - 40 : 320;
+        const isChatWiderThanRemaining = rect.left + chatWidth > window.innerWidth;
+        
         if (isChatWiderThanRemaining) {
-          savedPosition.current = {
-            left: el.style.left,
-            top: el.style.top,
-            right: el.style.right,
-            bottom: el.style.bottom,
-          };
+          // Only save position if we haven't already saved it
+          if (!savedPosition.current) {
+            savedPosition.current = {
+              left: el.style.left,
+              top: el.style.top,
+              right: el.style.right,
+              bottom: el.style.bottom,
+            };
+          }
           if (window.innerWidth < 768) {
-            el.style.left = '8px';
+            el.style.left = '20px';
             el.style.right = 'auto';
           } else {
             const maxLeft = window.innerWidth - 340;
