@@ -167,7 +167,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveTab(0);
   };
 
-  const handleAuth = useCallback(async (supabaseUser: any) => {
+  const handleAuth = useCallback(async (supabaseUser: any, isSignInEvent: boolean = false) => {
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
@@ -206,9 +206,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setUser(userData);
     
-    // Auto-switch env if just logged in
+    // Auto-switch env if just logged in or if no environment is set
     const currentEnv = localStorage.getItem('ecity_env');
-    if (currentEnv === 'discover' || !currentEnv || isSetxIO) {
+    const isNewSignIn = isSignInEvent || !currentEnv;
+
+    if (isNewSignIn) {
       if (userData.email === 'setxplatform@gmail.com' || userData.role === 'admin') {
         setEnv('admin');
         setActiveTab(0);
@@ -216,7 +218,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setEnv('labs');
         setActiveTab(0);
       } else {
-        setEnv('me');
+        setEnv('discover');
         setActiveTab(0);
       }
     }
@@ -226,15 +228,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        await handleAuth(session.user);
+        await handleAuth(session.user, false);
       }
       setIsLoading(false);
     };
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        handleAuth(session.user);
+        handleAuth(session.user, event === 'SIGNED_IN');
       } else {
         setUser(null);
         setEnv('market');

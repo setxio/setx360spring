@@ -29,6 +29,7 @@ interface GlobalChatBubblesProps {
 export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) => {
   const [sessions, setSessions] = useState<Record<string, ChatSession>>({});
   const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
+  const [dismissedBubbles, setDismissedBubbles] = useState<Record<string, string>>({});
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
@@ -89,22 +90,41 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
   }, []);
 
   // ── Dismissed bubbles persistence ──
-  const DISMISSED_KEY = 'setx360_dismissed_bubbles';
-  const getDismissedSet = (): Set<string> => {
+  const addDismissed = async (profileId: string) => {
+    const now = new Date().toISOString();
+    let updated: Record<string, string> = {};
+    
+    setDismissedBubbles(prev => {
+      updated = { ...prev, [profileId]: now };
+      return updated;
+    });
+    
     try {
-      const raw = localStorage.getItem(DISMISSED_KEY);
-      return raw ? new Set(JSON.parse(raw)) : new Set();
-    } catch { return new Set(); }
+      localStorage.setItem(`setx360_dismissed_map_${user.id}`, JSON.stringify(updated));
+      await supabase.from('profiles').update({ dismissed_bubbles: updated }).eq('id', user.id);
+    } catch (err) {
+      console.error('Error persisting dismissed bubbles:', err);
+    }
   };
-  const addDismissed = (profileId: string) => {
-    const set = getDismissedSet();
-    set.add(profileId);
-    localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
-  };
-  const removeDismissed = (profileId: string) => {
-    const set = getDismissedSet();
-    set.delete(profileId);
-    localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
+
+  const removeDismissed = async (profileId: string) => {
+    let updated: Record<string, string> | null = null;
+    
+    setDismissedBubbles(prev => {
+      if (!prev[profileId]) return prev;
+      updated = { ...prev };
+      delete updated[profileId];
+      return updated;
+    });
+
+    if (updated) {
+      try {
+        localStorage.setItem(`setx360_dismissed_map_${user.id}`, JSON.stringify(updated));
+        await supabase.from('profiles').update({ dismissed_bubbles: updated }).eq('id', user.id);
+      } catch (err) {
+        console.error('Error removing dismissed bubble:', err);
+      }
+    }
   };
 
   useEffect(() => {
@@ -112,6 +132,35 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
     // ── Load existing conversations on mount so bubbles appear immediately ──
     const loadRecentConversations = async () => {
+      // 1. Fetch dismissed map from DB / localStorage
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('dismissed_bubbles')
+        .eq('id', user.id)
+        .single();
+      
+      let dbDismissed: Record<string, string> = {};
+      try {
+        const raw = localStorage.getItem(`setx360_dismissed_map_${user.id}`);
+        if (raw) dbDismissed = JSON.parse(raw);
+      } catch {}
+
+      if (profileData?.dismissed_bubbles) {
+        const fromDb = typeof profileData.dismissed_bubbles === 'string' 
+          ? JSON.parse(profileData.dismissed_bubbles) 
+          : profileData.dismissed_bubbles;
+        
+        // Merge taking the newest timestamp for each dismissed profile
+        for (const [k, v] of Object.entries(fromDb)) {
+          if (typeof v === 'string') {
+            if (!dbDismissed[k] || new Date(v).getTime() > new Date(dbDismissed[k]).getTime()) {
+              dbDismissed[k] = v;
+            }
+          }
+        }
+      }
+      setDismissedBubbles(dbDismissed);
+
       // Fetch the most recent message with each unique conversation partner
       const { data: sentMessages } = await supabase
         .from('messages')
@@ -144,22 +193,34 @@ export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) =>
 
       if (partners.length === 0) return;
 
-      // Filter out dismissed bubbles
-      const dismissed = getDismissedSet();
-      const activeParters = partners.filter(id => !dismissed.has(id));
-      if (activeParters.length === 0) return;
+      // Filter out dismissed bubbles if the latest message is older than or equal to dismissal time
+      const activePartners = partners.filter(id => {
+        const dismissalTime = dbDismissed[id];
+        if (!dismissalTime) return true; // Never dismissed
+        
+        // Find newest message in this convo
+        const newestMsg = allMsgs.find(m => 
+          (m.sender_id === user.id && m.receiver_id === id) || 
+          (m.sender_id === id && m.receiver_id === user.id)
+        );
+        if (!newestMsg) return false;
+        
+        return new Date(newestMsg.created_at).getTime() > new Date(dismissalTime).getTime();
+      });
+
+      if (activePartners.length === 0) return;
 
       // Fetch profiles for those partners
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, name, avatar_url')
-        .in('id', activeParters);
+        .in('id', activePartners);
 
       const profileMap: Record<string, any> = {};
       profiles?.forEach(p => { profileMap[p.id] = p; });
 
       const newSessions: Record<string, ChatSession> = {};
-      for (const partnerId of activeParters) {
+      for (const partnerId of activePartners) {
         const profile = profileMap[partnerId];
         if (!profile) continue;
         // Get messages for this conversation
