@@ -4,52 +4,16 @@ import type { Database } from './database';
 export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 export type StaffClearanceRow = Database['public']['Tables']['staff_clearance']['Row'];
 
-// Runtime user object: ProfileRow fields + auth metadata + clearances
-// We pick the fields we actually use and add a few auth-only fields
-export type User = Pick<ProfileRow,
-  | 'id'
-  | 'email'
-  | 'name'
-  | 'first_name'
-  | 'last_name'
-  | 'role'
-  | 'avatar_url'
-  | 'banner_url'
-  | 'bio'
-  | 'website'
-  | 'phone'
-  | 'location'
-  | 'community'
-  | 'county'
-  | 'state'
-  | 'country'
-  | 'birth_month'
-  | 'birth_day'
-  | 'birth_year'
-  | 'handle'
-  | 'is_verified'
-  | 'is_verified_resident'
-  | 'is_public'
-  | 'show_online_status'
-  | 'allow_dms'
-  | 'occupation'
-  | 'company'
-  | 'position'
-  | 'denomination'
-  | 'jurisdiction'
-  | 'zip'
-  | 'status'
-  | 'store_type'
-  | 'business_category'
-  | 'driver_mode_active'
-  | 'driver_rating'
-  | 'xrpl_destination_tag'
-  | 'verification_requested'
-  | 'cover_url'
-> & {
-  // Extra runtime fields not in profiles table
+// Runtime user object — a partial view of the profiles row plus auth metadata.
+// All profile fields are optional (fetched progressively), only auth essentials are required.
+export type User = {
+  // Always present (from Supabase auth)
+  id: string;
+  email: string;
+  name: string;
   clearances: StaffClearanceRow[];
-  // full_name used by CorporateView (derived, not stored)
+} & Partial<Omit<ProfileRow, 'id' | 'email' | 'name'>> & {
+  // Extra runtime fields not stored in profiles
   full_name?: string;
 };
 

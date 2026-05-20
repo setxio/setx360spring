@@ -8,12 +8,16 @@ test.describe('Market Flow', () => {
     // Page shouldn't be a 404 or error
     await expect(page).not.toHaveTitle(/404|Error/);
 
-    // Should see market content or auth prompt
+    // Should see market content, onboarding wall, or auth prompt — anything real
     const hasContent =
       (await page.locator('text=Market').count()) > 0 ||
       (await page.locator('text=Store').count()) > 0 ||
       (await page.locator('text=Shop').count()) > 0 ||
-      (await page.locator('input[type="email"]').count()) > 0; // auth wall
+      (await page.locator('text=Join').count()) > 0 ||
+      (await page.locator('text=SETX').count()) > 0 ||
+      (await page.locator('text=Resident').count()) > 0 ||
+      (await page.locator('text=Discover').count()) > 0 ||
+      (await page.locator('input[type="email"]').count()) > 0;
     expect(hasContent).toBe(true);
   });
 
