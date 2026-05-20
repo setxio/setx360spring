@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Bell, 
   Heart, 
@@ -19,6 +19,9 @@ import {
   AtSign
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useNotifications, useMarkAllRead } from '../hooks/useNotifications';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../lib/queryKeys';
 import './NotificationsView.css';
 
 interface Notification {
@@ -36,83 +39,45 @@ interface Notification {
 }
 
 export const NotificationsView: React.FC<{ user: any }> = ({ user }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'mentions' | 'social'>('all');
+  const queryClient = useQueryClient();
 
+  const { data: notifications = [], isLoading } = useNotifications(user?.id);
+  const markAllRead = useMarkAllRead();
+
+  // Keep real-time subscription — pushes new notifications into cache
   useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      
-      // Subscribe to real-time notifications
-      const channel = supabase
-        .channel(`notifications-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `recipient_id=eq.${user.id}`
-          },
-          (payload) => {
-            handleNewNotification(payload.new as Notification);
-          }
-        )
-        .subscribe();
+    if (!user) return;
+    const channel = supabase
+      .channel(`notifications-${user.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${user.id}`
+      }, async (payload) => {
+        const notif = payload.new as any;
+        const { data: sender } = await supabase
+          .from('profiles').select('name, avatar_url').eq('id', notif.sender_id).single();
+        queryClient.setQueryData(
+          queryKeys.notifications.list(user.id),
+          (old: any[]) => [{ ...notif, sender }, ...(old ?? [])]
+        );
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id]);
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user]);
-
-  const fetchNotifications = async () => {
-    setIsLoading(true);
-    const { data, error } = await supabase
-      .from('notifications')
-      .select(`
-        *,
-        sender:profiles!sender_id (
-          name,
-          avatar_url
-        )
-      `)
-      .eq('recipient_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (!error && data) {
-      setNotifications(data);
-    }
-    setIsLoading(false);
-  };
-
-  const handleNewNotification = async (notif: Notification) => {
-    // Fetch sender info for the new notification
-    const { data: sender } = await supabase
-      .from('profiles')
-      .select('name, avatar_url')
-      .eq('id', notif.sender_id)
-      .single();
-
-    const fullNotif = { ...notif, sender };
-    setNotifications(prev => [fullNotif, ...prev]);
-  };
-
-  const markAllAsRead = async () => {
-    const { error } = await supabase.rpc('mark_all_notifications_as_read', { user_id_val: user.id });
-    if (!error) {
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    }
-  };
+  const markAllAsRead = () => markAllRead.mutate(user.id);
 
   const deleteNotification = async (id: string) => {
-    const { error } = await supabase.from('notifications').delete().eq('id', id);
-    if (!error) {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }
+    await supabase.from('notifications').delete().eq('id', id);
+    queryClient.setQueryData(
+      queryKeys.notifications.list(user.id),
+      (old: any[]) => old?.filter(n => n.id !== id)
+    );
   };
+
 
   const getIcon = (type: string) => {
     switch (type) {

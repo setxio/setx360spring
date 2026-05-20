@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { Plus, Loader2, MapPin, TrendingUp, Rss } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../lib/queryKeys';
 import { FeedFilters } from './FeedFilters';
 import { RepostModal } from './RepostModal';
 import { CreatePostModal } from './CreatePostModal';
@@ -39,21 +41,11 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   const [activeType, setActiveType] = useState('all');
   const [isPosting, setIsPosting] = useState(false);
   const [isPromoting, setIsPromoting] = useState(false);
-  const [posts, setPosts] = useState<any[]>([]);
-   const [ads, setAds] = useState<any[]>([]);
-   const [repostTarget, setRepostTarget] = useState<any>(null);
-   const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [repostTarget, setRepostTarget] = useState<any>(null);
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [userPollVotes, setUserPollVotes] = useState<Record<string, number>>({});
   const [userBookmarks, setUserBookmarks] = useState<Set<string>>(new Set());
-  const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
-  const [hasActiveAlert, setHasActiveAlert] = useState(false);
 
-
-  useEffect(() => {
-    fetchContent();
-  }, [activeCategory, activeType, scope, filterGroupId]);
 
   const calculateAge = (m: number, d: number, y: number) => {
     if (!m || !d || !y) return 0;
@@ -247,14 +239,21 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         .order('upvote_count', { ascending: false });
       
       if (incidentData) {
-        setPosts(incidentData.map(inc => ({
-          ...inc,
-          content: inc.description,
-          type: 'civic',
-          metadata: { civic_type: inc.type, civic_status: inc.status }
-        })));
-        setIsLoading(false);
-        return; // Exit early since we've already set the posts
+        return {
+          posts: incidentData.map((inc: any) => ({
+            ...inc,
+            content: inc.description,
+            type: 'civic',
+            metadata: { civic_type: inc.type, civic_status: inc.status }
+          })),
+          ads: [],
+          trending: [],
+          escalatedScope: null,
+          hasActiveAlert: false,
+          userVotes: {},
+          userPollVotes: {},
+          userBookmarks: [],
+        };
       }
     }
     else if (activeCategory === 'Shopping') {
@@ -310,7 +309,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     }
     
     const { data: activeAlerts } = await alertQuery.limit(1);
-    setHasActiveAlert(!!(activeAlerts && activeAlerts.length > 0));
+    const hasActiveAlert = !!(activeAlerts && activeAlerts.length > 0);
 
     // 1b. APPLY HIERARCHICAL GEOGRAPHIC SCOPE FILTERING (Trickle-Down Logic)
     console.log(`SocialFeed Logic Version: 4.1 (Hierarchical Trickle-Down: ${scope}, Theme: ${theme})`);
@@ -351,26 +350,27 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       .eq('status', 'active')
       .order('budget', { ascending: false });
 
+    let resolvedAds: any[] = [];
     if (activeAds) {
-      const resolvedAds = activeAds.map(ad => ({
+      resolvedAds = activeAds.map(ad => ({
         ...ad,
         title: ad.content_post?.title || ad.content_product?.name || ad.store?.name,
         content: ad.content_post?.content || ad.content_product?.description || "Check out our latest offerings!",
         image_url: ad.content_post?.media_urls?.[0] || ad.content_product?.image_url || ad.store?.logo_url,
         target_url: ad.content_product ? `/?product=${ad.content_id}` : `/?post=${ad.content_id}`
       }));
-      setAds(resolvedAds);
     }
 
     // 3. Fetch trending topics for user's notch
+    let trending: any[] = [];
     if (user?.community) {
-      const { data: trending } = await supabase
+      const { data: trendData } = await supabase
         .from('trending_topics')
         .select('*')
         .eq('community', user.community)
         .order('score', { ascending: false })
         .limit(4);
-      setTrendingTopics(trending || []);
+      trending = trendData || [];
     }
 
     if (postError) {
@@ -467,7 +467,6 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         }
       }
 
-      setEscalatedScope(currentEscalation);
 
       // Final Step: Sort by Influence Weight for Hot/Everybody categories
       if (user && (activeCategory === 'Hot' || activeCategory === 'Everybody')) {
@@ -490,52 +489,69 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
         });
       }
 
-      setPosts(filteredPosts);
 
       // 4. Fetch User Context (Poll Votes & Post Votes)
+      let userVotesMap: Record<string, number> = {};
+      let userPollVotesMap: Record<string, number> = {};
+      let userBookmarksList: string[] = [];
+
       if (user && filteredPosts.length > 0) {
         const pIds = filteredPosts.map(p => p.id);
         
-        // Fetch Poll Votes
         const { data: pVotes } = await supabase
-          .from('poll_votes')
-          .select('post_id, option_index')
-          .eq('profile_id', user.id)
-          .in('post_id', pIds);
-        
-        if (pVotes) {
-          const pollMap: Record<string, number> = {};
-          pVotes.forEach(v => pollMap[v.post_id] = v.option_index);
-          setUserPollVotes(pollMap);
-        }
+          .from('poll_votes').select('post_id, option_index')
+          .eq('profile_id', user.id).in('post_id', pIds);
+        if (pVotes) pVotes.forEach(v => userPollVotesMap[v.post_id] = v.option_index);
 
-        // Fetch Post Votes (Up/Down)
         const { data: votes } = await supabase
-          .from('post_votes')
-          .select('post_id, vote_type')
-          .eq('user_id', user.id)
-          .in('post_id', pIds);
-          
-        if (votes) {
-          const voteMap: Record<string, number> = {};
-          votes.forEach(v => voteMap[v.post_id] = v.vote_type);
-          setUserVotes(voteMap);
-        }
+          .from('post_votes').select('post_id, vote_type')
+          .eq('user_id', user.id).in('post_id', pIds);
+        if (votes) votes.forEach(v => userVotesMap[v.post_id] = v.vote_type);
 
-        // Fetch Bookmarks
         const { data: bookmarks } = await supabase
-          .from('bookmarks')
-          .select('post_id')
-          .eq('profile_id', user.id)
-          .in('post_id', pIds);
-        
-        if (bookmarks) {
-          setUserBookmarks(new Set(bookmarks.map(b => b.post_id)));
-        }
+          .from('bookmarks').select('post_id')
+          .eq('profile_id', user.id).in('post_id', pIds);
+        if (bookmarks) userBookmarksList = bookmarks.map(b => b.post_id);
       }
-    }
-    setIsLoading(false);
-  };
+
+      if (postError) {
+        console.error('Error fetching posts:', postError);
+        if (postError.message.includes('column') || postError.message.includes('profiles')) {
+          console.warn('Database schema mismatch detected.');
+        }
+        throw postError;
+      }
+
+      return {
+        posts: filteredPosts,
+        ads: resolvedAds,
+        trending,
+        escalatedScope: currentEscalation,
+        hasActiveAlert,
+        userVotes: userVotesMap,
+        userPollVotes: userPollVotesMap,
+        userBookmarks: userBookmarksList,
+      };
+    } // close else block (postError check)
+  }; // close fetchContent
+
+  const { data: feedData, isLoading, refetch: refetchFeed } = useQuery({
+    queryKey: [...queryKeys.feed.list({ category: activeCategory, type: activeType, scope }), filterGroupId, filterUserId, user?.id],
+    queryFn: fetchContent,
+  });
+
+  const posts: any[] = feedData?.posts ?? [];
+  const ads: any[] = feedData?.ads ?? [];
+  const trendingTopics: any[] = feedData?.trending ?? [];
+  const escalatedScope: string | null = feedData?.escalatedScope ?? null;
+  const hasActiveAlert: boolean = feedData?.hasActiveAlert ?? false;
+
+  // Sync per-user interaction state from cached query result
+  React.useEffect(() => {
+    if (feedData?.userVotes) setUserVotes(feedData.userVotes);
+    if (feedData?.userPollVotes) setUserPollVotes(feedData.userPollVotes);
+    if (feedData?.userBookmarks) setUserBookmarks(new Set(feedData.userBookmarks));
+  }, [feedData]);
 
   // handleLike is removed in favor of VoteButtons component logic
 
@@ -562,7 +578,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     });
     document.body.appendChild(toastEl);
     setTimeout(() => toastEl.remove(), 2500);
-    fetchContent();
+    refetchFeed();
   };
 
   const handleDelete = async (postId: string) => {

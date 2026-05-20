@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ArrowRight, Plus, Star, Filter, ShoppingBag, Zap, Award, MapPin, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { queryKeys } from '../lib/queryKeys';
 import { ProductDetailsModal } from './ProductDetailsModal';
 import './MarketHome.css';
 
@@ -22,20 +24,10 @@ const CATEGORIES = [
 
 export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national', onNavigateToStore }) => {
   const { theme } = useApp();
-  const [products, setProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
 
-  useEffect(() => {
-    fetchProducts();
-  }, [scope, activeCategory]);
-
   const fetchProducts = async () => {
-    setIsLoading(true);
-
-    // Use !inner joins only when we need geographic filtering
     const needsGeoFilter = user && scope !== 'national';
     const storeJoin = needsGeoFilter
       ? 'stores!inner ( *, seller:profiles!owner_id!inner ( community, county, state, country ) )'
@@ -46,16 +38,8 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
       .select(`*, ${storeJoin}`)
       .order('avg_rating', { ascending: false });
 
-    // Category filter logic (mocked for now as we don't have a category column in DB, 
-    // but in a real app we'd filter here)
-    if (activeCategory !== 'all') {
-      // query = query.eq('category', activeCategory);
-    }
-
-    // Apply geo filter based on active notch
     if (needsGeoFilter) {
       const isSETX = theme.startsWith('setx-');
-
       if (scope === 'city' && user.community) {
         query = query.eq('stores.seller.community', user.community);
       } else if (scope === 'county') {
@@ -72,65 +56,52 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     const { data, error } = await query.limit(12);
     let fetchedProducts = data || [];
 
-    // 2. Fetch Active Product Ads
     const { data: activeAds } = await supabase
       .from('platform_ads')
-      .select(`
-        *,
-        content_product:products!content_id(*, stores(*))
-      `)
-      .eq('content_type', 'product')
-      .eq('status', 'active')
+      .select('*, content_product:products!content_id(*, stores(*))')
+      .eq('content_type', 'product').eq('status', 'active')
       .order('budget', { ascending: false });
 
     if (activeAds) {
-        const adProducts = activeAds
-            .filter(ad => ad.content_product)
-            .map(ad => ({
-                ...ad.content_product,
-                is_sponsored: true
-            }));
-        // Prepend sponsored products to the feed
-        fetchedProducts = [...adProducts, ...fetchedProducts];
+      const adProducts = activeAds.filter(ad => ad.content_product).map(ad => ({ ...ad.content_product, is_sponsored: true }));
+      fetchedProducts = [...adProducts, ...fetchedProducts];
     }
-    
-    // Escalation Logic for Products
-    let currentEscalation: string | null = null;
+
+    // Geo escalation: if < 3 results, widen scope
+    let escalation: string | null = null;
     if (needsGeoFilter && fetchedProducts.length < 3) {
       const isSETX = theme.startsWith('setx-');
-      const escalationMap: Record<string, { nextScope: string; filterKey: string; filterValue: string; label: string }> = {
-        city: { nextScope: 'county', filterKey: 'stores.seller.county', filterValue: user.county, label: `${user.county || 'your'} County` },
+      const escalationMap: Record<string, { filterKey: string; filterValue: string; label: string }> = {
+        city: { filterKey: 'stores.seller.county', filterValue: user.county, label: `${user.county || 'your'} County` },
         ...(!isSETX ? {
-          county: { nextScope: 'state', filterKey: 'stores.seller.state', filterValue: user.state, label: user.state || 'your state' },
-          state: { nextScope: 'national', filterKey: '', filterValue: '', label: 'nationwide' },
+          county: { filterKey: 'stores.seller.state', filterValue: user.state, label: user.state || 'your state' },
         } : {}),
       };
-      
       const esc = escalationMap[scope];
-      if (esc && esc.filterValue) {
-        let escQuery = supabase.from('products').select(`*, stores!inner ( *, seller:profiles!owner_id!inner ( community, county, state, country ) )`).order('avg_rating', { ascending: false }).limit(12);
-        if (esc.nextScope !== 'national') {
-          escQuery = escQuery.eq(esc.filterKey, esc.filterValue);
-        }
-        const { data: escData } = await escQuery;
-        if (escData && escData.length > 0) {
+      if (esc?.filterValue) {
+        const { data: escData } = await supabase.from('products')
+          .select('*, stores!inner ( *, seller:profiles!owner_id!inner ( community, county, state, country ) )')
+          .eq(esc.filterKey, esc.filterValue).order('avg_rating', { ascending: false }).limit(12);
+        if (escData?.length) {
           const existingIds = new Set(fetchedProducts.map((p: any) => p.id));
-          const newProducts = escData.filter((p: any) => !existingIds.has(p.id));
-          fetchedProducts = [...fetchedProducts, ...newProducts];
-          currentEscalation = esc.label;
+          fetchedProducts = [...fetchedProducts, ...escData.filter((p: any) => !existingIds.has(p.id))];
+          escalation = esc.label;
         }
       }
     }
-    
-    setEscalatedScope(currentEscalation);
 
-    if (error) {
-      console.error('Error fetching products:', error);
-    } else {
-      setProducts(fetchedProducts);
-    }
-    setIsLoading(false);
+    if (error) throw error;
+    return { products: fetchedProducts, escalatedScope: escalation };
   };
+
+  const { data, isLoading } = useQuery({
+    queryKey: [...queryKeys.stores.list(scope), activeCategory],
+    queryFn: fetchProducts,
+  });
+
+  const products = data?.products ?? [];
+  const escalatedScope = data?.escalatedScope ?? null;
+
 
   const renderSkeletons = () => (
     <div className="product-premium-grid">
