@@ -1,8 +1,9 @@
-import type { User } from '../types/user';
+﻿import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ArrowRight, Plus, Star, Filter, ShoppingBag, Zap, Award, MapPin, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import Image from 'next/image';
 import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/queryKeys';
 import { ProductDetailsModal } from './ProductDetailsModal';
@@ -123,10 +124,14 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     <div className="market-home">
       {/* Premium Hero */}
       <div className="market-hero">
-        <img 
+        <Image 
           src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200" 
           alt="Market Hero" 
+          fill
+          style={{ objectFit: "cover" }}
           className="market-hero-img"
+          sizes="100vw"
+          priority
         />
         <div className="market-hero-content">
           <h2 className="fade-in">Experience Local <br/> Craftsmanship</h2>

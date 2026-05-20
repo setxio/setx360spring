@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   Search, 
   MapPin, 
@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import Image from 'next/image';
 import { useApp } from '../context/AppContext';
 import { SETX_COUNTY_LIST } from '../utils/geo';
 import './EatsView.css';
@@ -241,7 +242,7 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
           {restaurants.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase())).map(restaurant => (
             <div key={restaurant.id} className="restaurant-card">
               <div className="restaurant-image-wrapper">
-                <img src={restaurant.image} alt={restaurant.name} loading="lazy" />
+                <div style={{ position: "relative", width: "100%", height: "100%" }}><Image src={restaurant.image} alt={restaurant.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 640px) 100vw, 300px" unoptimized={!restaurant.image?.includes("supabase.co")} /></div>
                 {restaurant.isPromo && (
                   <div className="promo-badge">
                     <Zap size={10} fill="currentColor" /> Featured
@@ -283,7 +284,7 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
         <div className="fast-picks-scroll">
            {RESTAURANTS.slice().reverse().map(restaurant => (
              <div key={restaurant.id + '-pick'} className="fast-pick-card">
-                <img src={restaurant.image} alt="" />
+                <div style={{ position: "relative", width: "100%", height: "100%" }}><Image src={restaurant.image} alt={restaurant.name} fill style={{ objectFit: "cover" }} sizes="150px" unoptimized={!restaurant.image?.includes("supabase.co")} /></div>
                 <div className="fast-pick-info">
                   <span className="fast-pick-name">{restaurant.name}</span>
                   <span className="fast-pick-time">{restaurant.time}</span>
@@ -303,7 +304,7 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
       <div className="restaurant-grid full">
         {[...restaurants, ...restaurants].map((res, i) => (
           <div key={`${res.id}-${i}`} className="restaurant-card horizontal glass">
-             <img src={res.image} alt="" />
+             <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0, borderRadius: 12, overflow: "hidden" }}><Image src={res.image} alt={res.name} fill style={{ objectFit: "cover" }} sizes="80px" unoptimized /></div>
              <div className="res-info">
                <h3>{res.name}</h3>
                <p>{res.tags.join(', ')}</p>
