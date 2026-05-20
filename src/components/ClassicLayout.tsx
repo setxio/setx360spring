@@ -714,12 +714,18 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       {!isSetxIO && user && (
         <div className="env-switcher-footer auto-hide-target">
           <div className="switcher-wrapper glass">
+            {user?.role === 'admin' && (
+              <button
+                className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`}
+                onClick={() => handleEnvClick('admin')}
+                style={{ minWidth: '110px', width: '110px', borderRight: '1px solid var(--border)', borderRadius: '30px 0 0 30px', flexShrink: 0 }}
+              >
+                <ShieldCheck size={18} /> Admin Control
+              </button>
+            )}
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
               <div className="sw-btn spacer" aria-hidden="true" />
-              {user?.role === 'admin' && (
-                <button className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`} onClick={() => handleEnvClick('admin')}><ShieldCheck size={18} /> Admin Control</button>
-              )}
               {['me', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs'].map(id => {
                 const item = id === 'me'       ? { id: 'me',       icon: <User size={18} />,   label: 'Me' } :
                              id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :

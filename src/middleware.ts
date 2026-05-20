@@ -19,7 +19,7 @@ export default async function middleware(req: NextRequest) {
   const hostname = req.headers.get('host');
 
   // Define allowed core domains for the Super App
-  const coreDomains = ['setx360.org', 'www.setx360.org', 'localhost:3000', 'localhost:5173'];
+  const coreDomains = ['setx360.com', 'www.setx360.com', 'setx360.org', 'www.setx360.org', 'localhost:3000', 'localhost:5173'];
   const isCoreDomain = hostname && coreDomains.some((d) => hostname.includes(d));
 
   // If it's a core domain, allow the request to proceed normally to the main app layout
