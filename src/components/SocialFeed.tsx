@@ -60,7 +60,6 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   };
 
   const fetchContent = async () => {
-    setIsLoading(true);
 
     // Fetch follow weights for the current user to personalize the feed
     let currentFollowWeights: Record<string, number> = {};
@@ -536,7 +535,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   }; // close fetchContent
 
   const { data: feedData, isLoading, refetch: refetchFeed } = useQuery({
-    queryKey: [...queryKeys.feed.list({ category: activeCategory, type: activeType, scope }), filterGroupId, filterUserId, user?.id],
+    queryKey: queryKeys.posts.list(scope, activeCategory),
     queryFn: fetchContent,
   });
 
@@ -589,7 +588,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       console.error("Failed to delete post:", error);
       alert("Failed to delete post.");
     } else {
-      setPosts(posts.filter(p => p.id !== postId));
+      refetchFeed();
     }
   };
 
@@ -633,15 +632,10 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       return alert("Failed to cast vote.");
     }
 
-    // Update local state
+    // Update optimistic local state
     setUserPollVotes(prev => ({ ...prev, [post.id]: optionIndex }));
-    setPosts(posts.map(p => {
-      if (p.id === post.id) return { ...p, poll_data: newPollData };
-      if (p.original_post_id === post.id && p.original_post) {
-        return { ...p, original_post: { ...p.original_post, poll_data: newPollData } };
-      }
-      return p;
-    }));
+    // Refetch to get updated poll counts from DB
+    refetchFeed();
   };
 
   const handleToggleBookmark = async (postId: string) => {
