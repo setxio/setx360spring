@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import type { User, StaffClearance } from '../types/user';
 
 export type Env = 'discover' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me';
 export type Theme =
@@ -19,7 +20,7 @@ import { getSeasonalTheme, applyCustomThemeVariables, clearCustomThemeVariables 
 export type Scope = 'national' | 'state' | 'county' | 'city';
 
 interface AppContextType {
-  user: any;
+  user: User | null;
   env: Env;
   theme: Theme;
   scope: Scope;
@@ -35,7 +36,7 @@ interface AppContextType {
   setActiveTab: (tab: number) => void;
   toggleTheme: () => void;
   logout: () => Promise<void>;
-  updateUser: (data: any) => void;
+  updateUser: (data: Partial<User>) => void;
   refreshUser: () => Promise<void>;
   isSetxDomain: boolean;
   isSetxIO: boolean;
@@ -103,7 +104,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [scope, setScopeState] = useState<Scope>(() => {
     return (localStorage.getItem('ecity_scope') as Scope) || 'county';
   });
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -183,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .eq('id', supabaseUser.id)
       .single();
 
-    const userData = {
+    const userData: User = {
       id: supabaseUser.id,
       name: profile?.name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || supabaseUser.user_metadata?.name || supabaseUser.email.split('@')[0],
       first_name: profile?.first_name || supabaseUser.user_metadata?.first_name,
@@ -200,7 +201,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       birth_month: profile?.birth_month || supabaseUser.user_metadata?.birth_month,
       birth_day: profile?.birth_day || supabaseUser.user_metadata?.birth_day,
       birth_year: profile?.birth_year || supabaseUser.user_metadata?.birth_year,
-      clearances: [] as any[]
+      clearances: [] as StaffClearance[]
     };
 
     // Fetch staff clearances
@@ -368,7 +369,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveTab,
     toggleTheme,
     logout,
-    updateUser: (data: any) => setUser((prev: any) => ({ ...prev, ...data })),
+    updateUser: (data: Partial<User>) => setUser((prev: User | null) => prev ? { ...prev, ...data } : prev),
     refreshUser: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {

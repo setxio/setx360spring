@@ -75,6 +75,12 @@ import { VerificationModal } from './VerificationModal';
 import { TevisChat } from './TevisChat';
 import { GlobalChatBubbles } from './GlobalChatBubbles';
 import { OnboardingOverlay } from './OnboardingOverlay';
+import {
+  meNav, discoverNav, socialNav, marketNav, eatsNav, ridesNav,
+  servicesNav, eventsNav, walletNav, careNav, homesNav, autoNav,
+  travelNav, jobsNav, mediaNav, artNav, faithNav, sportsNav,
+  newsNav, civicsNav, vendorNav, civicNav, adminNav, switcherItems
+} from '../config/navConfig';
 
 // Props for the layout
 interface ClassicLayoutProps {
@@ -376,179 +382,6 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     return <Clock size={14} style={{ opacity: 0.5 }} />;
   };
 
-  // Nav Items
-  const meNav = [
-    { icon: <LayoutGrid size={24} />, label: 'One' },
-    { icon: <BarChart3 size={24} />, label: 'Stats' },
-    { icon: <Package size={24} />, label: 'Orders' },
-    { icon: <WalletIcon size={24} />, label: 'Wallet' },
-    { icon: <Bookmark size={24} />, label: 'Saved' },
-    { icon: <Bell size={24} />, label: 'Alerts' },
-    { icon: <Settings size={24} />, label: 'System' },
-  ];
-  const discoverNav = [
-    { icon: <Compass size={24} />, label: 'Discover' },
-    { icon: <TrendingUp size={24} />, label: 'Trending' },
-    { icon: <Zap size={24} />, label: 'Hot Deals' },
-    { icon: <Sparkles size={24} />, label: 'New' },
-    { icon: <Map size={24} />, label: 'Radar' },
-    { icon: <User size={24} />, label: 'My Vibes' },
-    { icon: <Bot size={24} color="var(--primary)" />, label: 'Tevis' },
-  ];
-  const socialNav = [
-    { icon: <Rss size={24} />, label: 'Feed' },
-    { icon: <ShoppingBag size={24} />, label: 'Classifieds' },
-    { icon: <Users size={24} />, label: 'Directory' },
-    { icon: <LayoutGrid size={24} />, label: 'Groups' },
-    { icon: <MessageSquare size={24} />, label: 'Messages' },
-    { icon: <Bookmark size={24} />, label: 'Saved' },
-    { icon: <Bell size={24} />, label: 'Alerts' },
-    { icon: <User size={24} />, label: 'Profile' },
-  ];
-  const marketNav = [
-    { icon: <Store size={24} />, label: 'Home' },
-    { icon: <SearchIcon size={24} />, label: 'Search' },
-    { icon: <LayoutGrid size={24} />, label: 'Stores' },
-    { icon: <ShoppingCart size={24} />, label: 'Cart' },
-    { icon: <Heart size={24} />, label: 'Wishlist' },
-    { icon: <UserCircle size={24} />, label: 'Account' },
-  ];
-  const eatsNav = [
-    { icon: <Utensils size={24} />, label: 'Home' },
-    { icon: <SearchIcon size={24} />, label: 'Explore' },
-    { icon: <ShoppingBag size={24} />, label: 'Orders' },
-    { icon: <Clock size={24} />, label: 'History' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const ridesNav = [
-    { icon: <Car size={24} />, label: 'Rides' },
-    { icon: <MapPin size={24} />, label: 'Pickup' },
-    { icon: <Calendar size={24} />, label: 'Reserve' },
-    { icon: <Clock size={24} />, label: 'Activity' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const servicesNav = [
-    { icon: <Wrench size={24} />, label: 'Home' },
-    { icon: <Briefcase size={24} />, label: 'Pros' },
-    { icon: <Calendar size={24} />, label: 'Schedule' },
-    { icon: <Clock size={24} />, label: 'Bookings' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const eventsNav = [
-    { icon: <Ticket size={24} />, label: 'Home' },
-    { icon: <SearchIcon size={24} />, label: 'Explore' },
-    { icon: <QrCode size={24} />, label: 'Passes' },
-    { icon: <Calendar size={24} />, label: 'Calendar' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const walletNav = [
-    { icon: <WalletIcon size={24} />, label: 'Home' },
-    { icon: <ArrowRightLeft size={24} />, label: 'Pay' },
-    { icon: <Sparkles size={24} />, label: 'Rewards' },
-    { icon: <CreditCard size={24} />, label: 'Cards' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const careNav = [
-    { icon: <HeartPulse size={24} />, label: 'Home' },
-    { icon: <Bell size={24} />, label: 'Alerts' },
-    { icon: <Map size={24} />, label: 'Hotspot' },
-    { icon: <HistoryIcon size={24} />, label: 'Log' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const homesNav = [
-    { icon: <Building size={24} />, label: 'Home' },
-    { icon: <SearchIcon size={24} />, label: 'Search' },
-    { icon: <Heart size={24} />, label: 'Saved' },
-    { icon: <DollarSign size={24} />, label: 'Finance' },
-    { icon: <User size={24} />, label: 'Agent' },
-  ];
-  const autoNav = [
-    { icon: <CarFront size={24} />, label: 'Home' },
-    { icon: <LayoutGrid size={24} />, label: 'Stock' },
-    { icon: <Landmark size={24} />, label: 'Finance' },
-    { icon: <Wrench size={24} />, label: 'Service' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const travelNav = [
-    { icon: <Plane size={24} />, label: 'Home' },
-    { icon: <Compass size={24} />, label: 'Explore' },
-    { icon: <ShoppingBag size={24} />, label: 'Bookings' },
-    { icon: <Map size={24} />, label: 'Guide' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const jobsNav = [
-    { icon: <Briefcase size={24} />, label: 'Jobs' },
-    { icon: <SearchIcon size={24} />, label: 'Search' },
-    { icon: <FileText size={24} />, label: 'Applied' },
-    { icon: <MessageCircle size={24} />, label: 'Messages' },
-    { icon: <User size={24} />, label: 'Profile' },
-  ];
-  const mediaNav = [
-    { icon: <Film size={24} />, label: 'Shorts' },
-    { icon: <Play size={24} />, label: 'Videos' },
-    { icon: <Music size={24} />, label: 'Music' },
-  ];
-  const artNav = [
-    { icon: <LayoutGrid size={24} />, label: 'Gallery' },
-    { icon: <SearchIcon size={24} />, label: 'Explore' },
-    { icon: <Palette size={24} />, label: 'Artists' },
-    { icon: <Calendar size={24} />, label: 'Exhibitions' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const faithNav = [
-    { icon: <Home size={24} />, label: 'Sanctuary' },
-    { icon: <Users size={24} />, label: 'Fellowship' },
-    { icon: <Sparkles size={24} />, label: 'Daily Word' },
-    { icon: <Calendar size={24} />, label: 'Services' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const sportsNav = [
-    { icon: <Trophy size={24} />, label: 'Scores' },
-    { icon: <Activity size={24} />, label: 'Leagues' },
-    { icon: <Calendar size={24} />, label: 'Schedule' },
-    { icon: <Users size={24} />, label: 'Teams' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const newsNav = [
-    { icon: <CloudSun size={24} />, label: 'Weather' },
-    { icon: <Newspaper size={24} />, label: 'News' },
-    { icon: <Zap size={24} />, label: 'Alerts' },
-    { icon: <Map size={24} />, label: 'Radar' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const civicsNav = [
-    { icon: <Landmark size={24} />, label: 'Home' },
-    { icon: <AlertTriangle size={24} />, label: 'Report 311' },
-    { icon: <HistoryIcon size={24} />, label: 'My Reports' },
-    { icon: <WalletIcon size={24} />, label: 'Utilities' },
-    { icon: <User size={24} />, label: 'Account' },
-  ];
-  const vendorNav = [
-    { icon: <Package size={24} />, label: 'Products' },
-    { icon: <ShoppingBag size={24} />, label: 'Orders' },
-    { icon: <DollarSign size={24} />, label: 'Finance' },
-    { icon: <Settings size={24} />, label: 'Settings' },
-    { icon: <Monitor size={24} />, label: 'Overview' },
-    { icon: <Megaphone size={24} />, label: 'Ads' },
-    { icon: <Store size={24} />, label: 'Store Front' },
-    { icon: <Users size={24} />, label: 'Team' },
-  ];
-  const civicNav = [
-    { icon: <Users size={24} />, label: 'Directory' },
-    { icon: <AlertTriangle size={24} />, label: 'Alerts' },
-    { icon: <Megaphone size={24} />, label: 'Sponsorships' },
-    { icon: <Settings size={24} />, label: 'Settings' },
-    { icon: <Monitor size={24} />, label: 'Overview' },
-    { icon: <HistoryIcon size={24} />, label: 'Tickets' },
-    { icon: <WalletIcon size={24} />, label: 'Utilities' },
-    { icon: <Users size={24} />, label: 'Team' },
-  ];
-  const adminNav = [
-    { icon: <Users size={24} />, label: 'Verify' },
-    { icon: <BarChart3 size={24} />, label: 'Stats' },
-    { icon: <Settings size={24} />, label: 'Config' },
-    { icon: <ShieldCheck size={24} />, label: 'Dash' },
-  ];
 
   const getNavItems = () => {
     if (env === 'me') return meNav;
@@ -726,23 +559,11 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
               <div className="sw-btn spacer" aria-hidden="true" />
-              {['me', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs'].map(id => {
-                const item = id === 'me'       ? { id: 'me',       icon: <User size={18} />,   label: 'Me' } :
-                             id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
-                             id === 'social'   ? { id: 'social',   icon: <Rss size={18} />,   label: 'Social' } :
-                             id === 'market'   ? { id: 'market',   icon: <Store size={18} />,   label: 'Market' } :
-                             id === 'events'   ? { id: 'events',   icon: <Calendar size={18} />, label: 'Events' } :
-                             id === 'news'     ? { id: 'news',     icon: <Newspaper size={18} />, label: 'News' } :
-                             id === 'faith'    ? { id: 'faith',    icon: <Church size={18} />, label: 'Faith' } :
-                             id === 'eats'     ? { id: 'eats',     icon: <Zap size={18} />,     label: 'Eats' } :
-                             id === 'services' ? { id: 'services', icon: <Plus size={18} />,    label: 'Services' } :
-                             { id: 'jobs',     icon: <Award size={18} />, label: 'Jobs' };
-                return (
-                  <button key={item.id} className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} onClick={() => handleEnvClick(item.id as Env)}>
-                    {item.icon} {item.label}
-                  </button>
-                );
-              })}
+              {switcherItems.map(item => (
+                <button key={item.id} className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} onClick={() => handleEnvClick(item.id as Env)}>
+                  {item.icon} {item.label}
+                </button>
+              ))}
               {((user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role)) || (user?.clearances && user.clearances.length > 0)) && user.role !== 'admin' && (
                 <button className={`sw-btn dashboard ${env === 'dashboard' ? 'active' : ''}`} onClick={() => handleEnvClick('dashboard')}><Store size={18} /> Dashboard</button>
               )}

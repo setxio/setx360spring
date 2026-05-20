@@ -1,8 +1,7 @@
 import React, { useState, useEffect, lazy } from 'react';
-import { 
-  Loader2
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import './App.css';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Always-needed lightweight components (static imports)
 import { ClassicLayout } from './components/ClassicLayout';
