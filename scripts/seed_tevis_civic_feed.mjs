@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // Configuration
 const supabaseUrl = 'https://okulcpbrikcumiomrzuh.supabase.co';
 // Strip newline from the service key just in case
-const supabaseKey = 'sb_secret_vmbCXxxcHG5MtUmy5d_CDA_jDuHsHmp'.trim();
+const supabaseKey = 'REDACTED_SERVICE_KEY'.trim();
 
 const TEVIS_BOT_ID = 'bc1216fe-057f-4fed-8555-8c0e66ed29d3';
 
