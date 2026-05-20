@@ -49,6 +49,7 @@ export interface User {
   birth_year?: number;
   clearances: StaffClearance[];
   // optional profile extras
+  full_name?: string;
   bio?: string;
   website?: string;
   phone?: string;
