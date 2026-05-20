@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import { 
   CheckCircle, 
   Loader2,
@@ -53,6 +54,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
   
   const [activeTab, setActiveTab] = useState<AdminTab>((propTab !== undefined && tabMap[propTab]) ? tabMap[propTab] : 'overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { success, error: toastError, info } = useToast();
 
   useEffect(() => {
     if (propTab !== undefined && tabMap[propTab]) {
@@ -188,11 +190,11 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
 
     const { error } = await supabase.from('profiles').update(updates).eq('id', editingFeeUser.id);
     if (!error) {
-      alert('Custom fees updated successfully');
+      success('Custom fees updated successfully');
       setEditingFeeUser(null);
       fetchUsers();
     } else {
-      alert('Error updating custom fees');
+      toastError('Error updating custom fees');
     }
   };
 
@@ -258,9 +260,9 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
     }).eq('slug', selectedPlatformSlug);
     
     setIsSavingSettings(false);
-    if (error) alert('Error saving settings: ' + error.message);
+    if (error) toastError('Error saving settings: ' + error.message);
     else {
-      alert('Settings saved successfully!');
+      success('Settings saved successfully!');
       fetchAllData();
     }
   };
@@ -280,10 +282,10 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
     });
     
     if (!error) {
-      alert('Strike issued. Automated penalty logic triggered.');
+      success('Strike issued. Automated penalty logic triggered.');
       fetchAllData();
     } else {
-      alert('Error issuing strike: ' + error.message);
+      toastError('Error issuing strike: ' + error.message);
     }
   };
 
@@ -301,7 +303,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
       .eq('id', requestId);
     
     if (!error) {
-      alert(approve ? `Request approved. PIN: ${pin}` : 'Request rejected.');
+      info(approve ? `Request approved. PIN: ${pin}` : 'Request rejected.');
       fetchAllData();
     }
   };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import { Search, UserPlus, Users, Unlock, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { GroupCreationModal } from './GroupCreationModal';
@@ -14,6 +15,7 @@ export const UserDirectory: React.FC<{
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+  const { info } = useToast();
 
   useEffect(() => {
     fetchInitialData();
@@ -54,7 +56,7 @@ export const UserDirectory: React.FC<{
   };
 
   const handleFollow = async (targetId: string) => {
-    if (!currentUser) return alert('Please sign in to follow users.');
+    if (!currentUser) return info('Please sign in to follow users.');
     
     const isFollowing = followingMap[targetId];
     
@@ -186,6 +188,7 @@ export const GroupDirectory: React.FC<{
   const [isCreating, setIsCreating] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [joinedGroupsMap, setJoinedGroupsMap] = useState<Record<string, boolean>>({});
+  const { info } = useToast();
 
   useEffect(() => {
     fetchInitialData();
@@ -219,7 +222,7 @@ export const GroupDirectory: React.FC<{
   };
 
   const handleJoinGroup = async (groupId: string) => {
-    if (!user) return alert('Please sign in to join groups.');
+    if (!user) return info('Please sign in to join groups.');
     
     const hasJoined = joinedGroupsMap[groupId];
     
