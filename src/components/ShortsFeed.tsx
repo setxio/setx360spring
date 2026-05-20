@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Music, UserPlus, MoreVertical, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -48,7 +49,7 @@ const SAMPLE_SHORTS: ShortVideo[] = [
   }
 ];
 
-export const ShortsFeed: React.FC<{ user: any; scope: string }> = ({ user, scope = 'city' }) => {
+export const ShortsFeed: React.FC<{ user: User; scope: string }> = ({ user, scope = 'city' }) => {
   const { theme } = useApp();
   const isSETX = theme.startsWith('setx-');
   const [activeVideo, setActiveVideo] = useState(0);

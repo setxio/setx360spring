@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getGradientAvatar } from '../utils/avatar';
@@ -26,7 +27,7 @@ import './ProfilePage.css';
 import { isProfessional as checkProfessional, isVendor as checkVendor, isOfficial as checkOfficial } from '../utils/roles';
 
 interface ProfilePageProps {
-  user: any;
+  user: User;
   profileId?: string;
   onNavigate: (tab: number) => void;
   onNavigateToPost?: (postId: string, commentId?: string) => void;

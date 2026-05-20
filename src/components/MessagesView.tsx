@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
@@ -7,7 +8,7 @@ import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Pl
 import './MessagesView.css';
 
 interface MessagesViewProps {
-  user: any;
+  user: User;
 }
 
 interface MessageData {

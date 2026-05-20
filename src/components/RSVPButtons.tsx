@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { Check, Star, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -5,7 +6,7 @@ import './RSVPButtons.css';
 
 interface RSVPButtonsProps {
   postId: string;
-  user: any;
+  user: User;
 }
 
 export const RSVPButtons: React.FC<RSVPButtonsProps> = ({ postId, user }) => {

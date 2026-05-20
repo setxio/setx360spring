@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   AlertTriangle, 
@@ -21,7 +22,7 @@ import { StaffManagement } from './StaffManagement';
 import './VendorDashboard.css'; // Reusing layout styles
 
 interface CivicDashboardProps {
-  user: any;
+  user: User;
   activeTab?: number;
 }
 

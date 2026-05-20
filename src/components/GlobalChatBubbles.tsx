@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
@@ -23,7 +24,7 @@ interface ChatSession {
 }
 
 interface GlobalChatBubblesProps {
-  user: any;
+  user: User;
 }
 
 export const GlobalChatBubbles: React.FC<GlobalChatBubblesProps> = ({ user }) => {

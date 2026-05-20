@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useEffect, useState } from 'react';
 import { 
   Bell, 
@@ -38,7 +39,7 @@ interface Notification {
   } | null;
 }
 
-export const NotificationsView: React.FC<{ user: any }> = ({ user }) => {
+export const NotificationsView: React.FC<{ user: User }> = ({ user }) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'mentions' | 'social'>('all');
   const queryClient = useQueryClient();
 

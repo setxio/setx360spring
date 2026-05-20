@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
@@ -9,7 +10,7 @@ import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 
 interface QuickMessageModalProps {
-  user: any;
+  user: User;
   recipientId: string;
   recipientName: string;
   recipientAvatar?: string;

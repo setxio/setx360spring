@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   Briefcase, 
@@ -19,7 +20,7 @@ import { BusinessCrmView } from './BusinessCrmView';
 import './VendorDashboard.css';
 
 interface ServicesDashboardProps {
-  user: any;
+  user: User;
   currentStore: any;
   stores: any[];
   onStoreChange: (store: any) => void;

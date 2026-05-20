@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { X, Repeat } from 'lucide-react';
 import { Avatar } from './Avatar';
@@ -6,7 +7,7 @@ import { supabase } from '../lib/supabase';
 
 interface RepostModalProps {
   post: any;
-  user: any;
+  user: User;
   onClose: () => void;
   onSuccess: () => void;
 }

@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ArrowRight, Plus, Star, Filter, ShoppingBag, Zap, Award, MapPin, ChevronRight } from 'lucide-react';
@@ -8,7 +9,7 @@ import { ProductDetailsModal } from './ProductDetailsModal';
 import './MarketHome.css';
 
 interface MarketHomeProps {
-  user: any;
+  user: User;
   scope?: 'national' | 'state' | 'county' | 'city';
   onNavigateToStore?: (id: string) => void;
 }

@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   Bot, 
@@ -15,7 +16,7 @@ import {
 import './TevisDiscoverView.css';
 
 interface TevisDiscoverViewProps {
-  user: any;
+  user: User;
 }
 
 export const TevisDiscoverView: React.FC<TevisDiscoverViewProps> = () => {

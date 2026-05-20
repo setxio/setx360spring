@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   Package, 
@@ -10,7 +11,7 @@ import { supabase } from '../lib/supabase';
 import './MarketAccount.css';
 
 interface MarketAccountProps {
-  user: any;
+  user: User;
 }
 
 export const MarketAccount: React.FC<MarketAccountProps> = ({ user }) => {

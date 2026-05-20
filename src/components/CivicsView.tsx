@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   Landmark, 
@@ -25,7 +26,7 @@ import { payUtilityBill } from '../lib/payments';
 import './CivicsView.css';
 
 interface CivicsViewProps {
-  user: any;
+  user: User;
   scope: string;
   activeTab: number;
 }

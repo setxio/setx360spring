@@ -15,7 +15,11 @@ export type User = {
 } & Partial<Omit<ProfileRow, 'id' | 'email' | 'name'>> & {
   // Extra runtime fields not stored in profiles
   full_name?: string;
+  // Messaging preferences (real DB columns not yet in generated types)
+  enable_read_receipts?: boolean;
+  enable_typing_indicators?: boolean;
 };
+
 
 // Convenience type aliases
 export type UserRole = NonNullable<ProfileRow['role']>;

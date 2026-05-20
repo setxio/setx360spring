@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { 
   Church, 
@@ -19,7 +20,7 @@ import { formatText } from '../utils/textFormatting';
 import './VendorDashboard.css'; // Reusing layout styles
 
 interface MinistryDashboardProps {
-  user: any;
+  user: User;
   activeTab?: number;
 }
 

@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
@@ -26,7 +27,7 @@ import { StaffManagement } from './StaffManagement';
 import './VendorDashboard.css';
 
 interface MasterBusinessDashboardProps {
-  user: any;
+  user: User;
   stores: any[];
   onSelectStore: (store: any) => void;
 }

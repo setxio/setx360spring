@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useEffect, useState } from 'react';
 import { X, Heart, Star, MapPin, Clock, Phone, MessageSquare, Map } from 'lucide-react';
 import { QuickMessageModal } from './QuickMessageModal';
@@ -7,7 +8,7 @@ import './ProductDetailsModal.css';
 
 interface ProductDetailsModalProps {
   product: any;
-  user: any;
+  user: User;
   onClose: () => void;
 }
 

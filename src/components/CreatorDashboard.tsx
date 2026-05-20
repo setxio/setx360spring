@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { 
   Palette, 
@@ -14,7 +15,7 @@ import { AdManager } from './AdManager';
 import './VendorDashboard.css'; // Reusing layout styles
 
 interface CreatorDashboardProps {
-  user: any;
+  user: User;
   activeTab?: number;
 }
 

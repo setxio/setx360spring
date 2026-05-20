@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -19,7 +20,7 @@ import { supabase } from '../lib/supabase';
 import './DriverDashboard.css';
 
 interface DriverDashboardProps {
-    user: any;
+    user: User;
 }
 
 export const DriverDashboard: React.FC<DriverDashboardProps> = ({ user }) => {

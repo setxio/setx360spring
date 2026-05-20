@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   Megaphone, 
@@ -16,7 +17,7 @@ import { AdCreationModal } from './AdCreationModal';
 import './AdManager.css';
 
 interface AdManagerProps {
-  user: any;
+  user: User;
 }
 
 export const AdManager: React.FC<AdManagerProps> = ({ user }) => {

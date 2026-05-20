@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,7 +7,7 @@ import './VoteButtons.css';
 
 interface VoteButtonsProps {
   post: any;
-  user: any;
+  user: User;
 }
 
 export const VoteButtons: React.FC<VoteButtonsProps> = ({ post, user }) => {

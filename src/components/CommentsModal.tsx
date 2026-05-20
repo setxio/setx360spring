@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { X, Send, Loader2 } from 'lucide-react';
 import { Avatar } from './Avatar';
@@ -7,7 +8,7 @@ import './CommentsModal.css';
 
 interface CommentsModalProps {
   postId: string;
-  user: any;
+  user: User;
   onClose: () => void;
   onCommentAdded: () => void;
 }

@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Shield, Share2, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -7,7 +8,7 @@ import './GroupDetailView.css';
 
 interface GroupDetailViewProps {
   groupId: string;
-  user: any;
+  user: User;
   onBack: () => void;
   onNavigateToPost: (postId: string, commentId?: string) => void;
   onNavigateToProfile: (profileId: string) => void;

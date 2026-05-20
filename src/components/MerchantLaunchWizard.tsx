@@ -1,10 +1,11 @@
 "use client";
 
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Store, Globe, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
 
-export const MerchantLaunchWizard = ({ user }: { user: any }) => {
+export const MerchantLaunchWizard = ({ user }: { user: User }) => {
   const [step, setStep] = useState(1);
   const [businessName, setBusinessName] = useState('');
   const [slug, setSlug] = useState('');

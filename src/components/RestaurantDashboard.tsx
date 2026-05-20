@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   Utensils, 
@@ -21,7 +22,7 @@ import { BusinessCrmView } from './BusinessCrmView';
 import './VendorDashboard.css'; // Reusing styles for consistency
 
 interface RestaurantDashboardProps {
-  user: any;
+  user: User;
   currentStore: any;
   stores: any[];
   onStoreChange: (store: any) => void;

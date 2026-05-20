@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { Play, SkipBack, SkipForward, Repeat, Shuffle, ListMusic, Mic2, Volume2, Heart } from 'lucide-react';
 import './MusicView.css';
@@ -17,7 +18,7 @@ const TOP_SONGS = [
   { id: 's5', title: 'Neon Nightscape', artist: 'Vibe Logic', duration: '5:02' }
 ];
 
-export const MusicView: React.FC<{ user: any; scope: string }> = () => {
+export const MusicView: React.FC<{ user: User; scope: string }> = () => {
   const [currentSong, setCurrentSong] = useState(TOP_SONGS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
 

@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { 
   Store, 
@@ -14,7 +15,7 @@ import { supabase } from '../lib/supabase';
 import './StoreSetupWizard.css';
 
 interface StoreSetupWizardProps {
-  user: any;
+  user: User;
   onComplete: (storeData: any) => void;
   onCancel: () => void;
 }
@@ -25,16 +26,16 @@ export const StoreSetupWizard: React.FC<StoreSetupWizardProps> = ({ user, onComp
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    name: user?.user_metadata?.company || '',
+    name: user?.company || '',
     description: '',
     type: 'physical',
-    category: user?.user_metadata?.business_category?.toLowerCase() || 'retail',
+    category: (user?.business_category?.toLowerCase()) || 'retail',
     subcategory: '',
-    location: user?.user_metadata?.location || '',
+    location: user?.location || '',
     image_url: '',
     address: '',
-    zip: user?.user_metadata?.zip || '',
-    county: user?.user_metadata?.county || '',
+    zip: user?.zip || '',
+    county: user?.county || '',
     showAddressPublicly: true,
   });
 

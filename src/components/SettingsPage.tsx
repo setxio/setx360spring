@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
@@ -18,7 +19,7 @@ import { PushNotificationManager } from './PushNotificationManager';
 import { type Theme } from '../context/AppContext';
 
 interface SettingsPageProps {
-  user: any;
+  user: User;
   theme: Theme;
   toggleTheme: () => void;
   setTheme: (t: Theme) => void;

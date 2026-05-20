@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React from 'react';
 import { ShortsFeed } from './ShortsFeed';
 import { VideosView } from './VideosView';
@@ -6,7 +7,7 @@ import './MediaView.css';
 
 interface MediaViewProps {
   activeTab: number;
-  user: any;
+  user: User;
   scope: string;
 }
 

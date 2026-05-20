@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle, 
@@ -13,7 +14,7 @@ import {
 import { supabase } from '../lib/supabase';
 import './AdminDashboard.css'; // Reuse existing styles for now
 
-export const Overview: React.FC<{ user: any }> = ({ user }) => {
+export const Overview: React.FC<{ user: User }> = ({ user }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,

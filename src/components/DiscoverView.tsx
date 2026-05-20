@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Zap, Sparkles, Heart, MessageSquare, MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -30,7 +31,7 @@ interface MarketListing {
 
 const CAROUSEL_LIMIT = 10;
 
-export const DiscoverView: React.FC<{ user: any; scope?: 'national' | 'state' | 'county' | 'city' }> = ({ user, scope = 'national' }) => {
+export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' | 'county' | 'city' }> = ({ user, scope = 'national' }) => {
   const { theme } = useApp();
   const [topPosts, setTopPosts] = useState<Post[]>([]);
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);

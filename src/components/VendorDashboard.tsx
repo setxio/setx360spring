@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, 
@@ -32,7 +33,7 @@ import { BusinessCrmView } from './BusinessCrmView';
 import './VendorDashboard.css';
 
 interface VendorDashboardProps {
-  user: any;
+  user: User;
   initialStoreId?: string | null;
 }
 

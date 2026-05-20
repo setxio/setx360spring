@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { X, Camera, Image as ImageIcon, Save, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -5,7 +6,7 @@ import './GroupCreationModal.css';
 
 interface GroupCreationModalProps {
   onClose: () => void;
-  user: any;
+  user: User;
 }
 
 export const GroupCreationModal: React.FC<GroupCreationModalProps> = ({ onClose, user }) => {

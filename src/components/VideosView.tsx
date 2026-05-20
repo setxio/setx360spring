@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState } from 'react';
 import { Search, MoreVertical, Play, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -50,7 +51,7 @@ const SAMPLE_VIDEOS = [
   }
 ];
 
-export const VideosView: React.FC<{ user: any; scope: string }> = ({ user, scope = 'city' }) => {
+export const VideosView: React.FC<{ user: User; scope: string }> = ({ user, scope = 'city' }) => {
   const { theme } = useApp();
   const isSETX = theme.startsWith('setx-');
   const [activeCategory, setActiveCategory] = useState('All');

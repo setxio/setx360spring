@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { Search, Loader2, Star, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -5,7 +6,7 @@ import { ProductDetailsModal } from './ProductDetailsModal';
 import { useApp } from '../context/AppContext';
 
 interface ProductSearchProps {
-  user: any;
+  user: User;
   scope?: 'national' | 'state' | 'county' | 'city';
   onNavigateToStore?: (id: string) => void;
 }
