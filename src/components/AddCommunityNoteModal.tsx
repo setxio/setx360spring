@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../context/ToastContext';
 import { X, Info, Send, Loader2 } from 'lucide-react';
 import { proposeCommunityNote } from '../lib/communityNotes';
 import './AddCommunityNoteModal.css';
@@ -13,6 +14,7 @@ interface AddCommunityNoteModalProps {
 export const AddCommunityNoteModal: React.FC<AddCommunityNoteModalProps> = ({ postId, userId, onClose, onSuccess }) => {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { error: toastError } = useToast();
 
   const handleSubmit = async () => {
     if (!content.trim() || isSubmitting) return;
@@ -24,7 +26,7 @@ export const AddCommunityNoteModal: React.FC<AddCommunityNoteModalProps> = ({ po
       onSuccess();
       onClose();
     } else {
-      alert("Failed to propose note: " + error.message);
+      toastError("Failed to propose note: " + error.message);
     }
     setIsSubmitting(false);
   };

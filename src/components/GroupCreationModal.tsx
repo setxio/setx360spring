@@ -1,4 +1,5 @@
 import type { User } from '../types/user';
+import { useToast } from '../context/ToastContext';
 import React, { useState } from 'react';
 import { X, Camera, Image as ImageIcon, Save, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -11,6 +12,7 @@ interface GroupCreationModalProps {
 
 export const GroupCreationModal: React.FC<GroupCreationModalProps> = ({ onClose, user }) => {
   const [loading, setLoading] = useState(false);
+  const { info, error: toastError } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -42,7 +44,7 @@ export const GroupCreationModal: React.FC<GroupCreationModalProps> = ({ onClose,
     setLoading(true);
 
     if (!user) {
-      alert('You must be signed in to create a group.');
+      info('You must be signed in to create a group.');
       setLoading(false);
       return;
     }
@@ -96,7 +98,7 @@ export const GroupCreationModal: React.FC<GroupCreationModalProps> = ({ onClose,
       onClose();
     } catch (error) {
       console.error('Error creating group:', error);
-      alert('Failed to create group. Please try again.');
+      toastError('Failed to create group. Please try again.');
     } finally {
       setLoading(false);
     }

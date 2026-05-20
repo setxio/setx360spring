@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import { 
   Bookmark, 
   Search, 
@@ -32,6 +33,7 @@ export const SavedView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { error: toastError } = useToast();
 
   const LABELS = ['all', 'Work', 'Personal', 'Local', 'Events', 'Faith'];
 
@@ -96,7 +98,7 @@ export const SavedView: React.FC = () => {
       .eq('id', bookmarkId);
     
     if (error) {
-      alert("Failed to remove bookmark.");
+      toastError("Failed to remove bookmark.");
     } else {
       setSavedItems(prev => prev.filter(item => item.id !== bookmarkId));
     }

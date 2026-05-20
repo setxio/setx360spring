@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import { X, Image, Video, BarChart2, Loader2, ChevronDown, Plus } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
@@ -23,6 +24,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 }) => {
   const [postContent, setPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { info, warning, error: toastError } = useToast();
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [location] = useState(user?.community || '');
@@ -101,7 +103,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   const handlePost = async () => {
     setIsSubmitting(true);
-    if (!user) { alert("You must be logged in to post."); setIsSubmitting(false); return; }
+    if (!user) { info("You must be logged in to post."); setIsSubmitting(false); return; }
 
     try {
       const mediaUrls: string[] = [];
@@ -133,17 +135,17 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
       // Role-based validation
       if (targetFeed === 'News' && !['admin', 'media', 'v_media'].includes(user.role)) {
-        alert("News posts are restricted to verified Media accounts.");
+        warning("News posts are restricted to verified Media accounts.");
         setIsSubmitting(false);
         return;
       }
       if (targetFeed === 'Official' && !['admin', 'official', 'v_official'].includes(user.role)) {
-        alert("Official posts are restricted to verified Official accounts.");
+        warning("Official posts are restricted to verified Official accounts.");
         setIsSubmitting(false);
         return;
       }
       if (targetFeed === 'Groups' && userGroups.length === 0) {
-        alert("You must be a member of a group to post in the Groups feed.");
+        info("You must be a member of a group to post in the Groups feed.");
         setIsSubmitting(false);
         return;
       }
@@ -172,7 +174,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         errorMsg = "Profile relationship error: " + errorMsg + "\nPlease ensure the 'profiles' table schema is up to date.";
       }
       
-      alert(`Posting Error: ${errorMsg}\n\nPlease check the browser console for more details.`);
+      toastError(`Posting Error: ${errorMsg}`);
     } finally {
       setIsSubmitting(false);
     }

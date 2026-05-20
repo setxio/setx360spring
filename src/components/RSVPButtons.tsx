@@ -1,4 +1,5 @@
 import type { User } from '../types/user';
+import { useToast } from '../context/ToastContext';
 import React, { useState, useEffect } from 'react';
 import { Check, Star, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -13,6 +14,7 @@ export const RSVPButtons: React.FC<RSVPButtonsProps> = ({ postId, user }) => {
   const [status, setStatus] = useState<'going' | 'interested' | null>(null);
   const [counts, setCounts] = useState({ going: 0, interested: 0 });
   const [isLoading, setIsLoading] = useState(false);
+  const { info } = useToast();
 
   useEffect(() => {
     fetchRSVPStatus();
@@ -59,7 +61,7 @@ export const RSVPButtons: React.FC<RSVPButtonsProps> = ({ postId, user }) => {
   };
 
   const handleRSVP = async (newStatus: 'going' | 'interested') => {
-    if (!user) return alert('Please sign in to RSVP.');
+    if (!user) return info('Please sign in to RSVP.');
     setIsLoading(true);
 
     try {
