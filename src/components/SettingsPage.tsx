@@ -29,7 +29,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
   const [preferences, setPreferences] = useState({
     is_public: true,
     allow_dms: true,
-    enable_online_status: true,
+    show_online_status: true,
     enable_typing_indicators: true,
     enable_read_receipts: true,
     blur_nsfw: true,
@@ -51,7 +51,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     const fetchPreferences = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('is_public, allow_dms, enable_online_status, enable_typing_indicators, enable_read_receipts, blur_nsfw, show_following, show_followers')
+        .select('is_public, allow_dms, show_online_status, enable_typing_indicators, enable_read_receipts, blur_nsfw, show_following, show_followers')
         .eq('id', user.id)
         .single();
       
@@ -59,7 +59,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
         setPreferences({
           is_public: data.is_public === false ? false : true,
           allow_dms: data.allow_dms === false ? false : true,
-          enable_online_status: data.enable_online_status === false ? false : true,
+          show_online_status: data.show_online_status === false ? false : true,
           enable_typing_indicators: data.enable_typing_indicators === false ? false : true,
           enable_read_receipts: data.enable_read_receipts === false ? false : true,
           blur_nsfw: data.blur_nsfw === false ? false : true,
@@ -115,7 +115,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     fetchPendingRequests();
   }, [user.id]);
 
-  const handleToggle = async (key: 'is_public' | 'allow_dms' | 'enable_online_status' | 'enable_typing_indicators' | 'enable_read_receipts' | 'blur_nsfw' | 'show_following' | 'show_followers') => {
+  const handleToggle = async (key: 'is_public' | 'allow_dms' | 'show_online_status' | 'enable_typing_indicators' | 'enable_read_receipts' | 'blur_nsfw' | 'show_following' | 'show_followers') => {
     setIsUpdating(true);
     const newValue = !preferences[key];
     setPreferences(prev => ({ ...prev, [key]: newValue }));
@@ -327,8 +327,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
             <div className="pref-item">
               <span>Show Online Status</span>
               <div 
-                className={`toggle-switch ${preferences.enable_online_status ? 'active' : ''}`}
-                onClick={() => !isUpdating && handleToggle('enable_online_status')}
+                className={`toggle-switch ${preferences.show_online_status ? 'active' : ''}`}
+                onClick={() => !isUpdating && handleToggle('show_online_status')}
               ></div>
             </div>
             <div className="pref-item">
