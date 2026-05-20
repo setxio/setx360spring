@@ -815,6 +815,8 @@ export const SignUpFlow: React.FC = () => {
                 />
                 <label htmlFor="tos-agree">
                   I agree to the <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Terms of Service</span>, <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Privacy Policy</span>, and <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Copyright Guidelines</span>.
+                  <br /><br />
+                  <strong style={{ color: 'var(--text)' }}>Conduct-Inferred Consent:</strong> By creating an account, claiming your digital identity tag, or participating in the SETX 360 pre-formation platform, you explicitly grant mutual consent to join the SETX 360 Decentralized Unincorporated Nonprofit Association (DUNA). This membership is conditionally structured to automatically activate upon the official enactment of Chapter 253 of the Texas Business Organizations Code (HB 4518). You agree that your participation constitutes conduct inferring consent to be a foundational voting member on Day 1 of the DUNA's legal recognition.
                 </label>
               </div>
 

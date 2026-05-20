@@ -66,7 +66,9 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
     pendingVerifications: 0,
     flaggedPosts: 0,
     userGrowth: '+12%',
-    salesGrowth: '+8.4%'
+    salesGrowth: '+8.4%',
+    dunaFoundationalMembers: 0,
+    dunaIsReady: false
   });
 
   // State for various lists
@@ -120,7 +122,8 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
         supabase.from('platform_activity').select('*, profiles(*)').order('created_at', { ascending: false }).limit(20),
         supabase.from('ads').select('id', { count: 'exact' }).eq('status', 'active'),
         supabase.from('platform_settings').select('*').order('id'),
-        supabase.from('legacy_access_requests').select('*, requester:profiles!requester_id(*), target:profiles!user_id(*)').eq('status', 'pending')
+        supabase.from('legacy_access_requests').select('*, requester:profiles!requester_id(*), target:profiles!user_id(*)').eq('status', 'pending'),
+        supabase.from('duna_filing_readiness').select('*').single()
       ]) as any[];
 
       const userCount = results[0].data;
@@ -131,6 +134,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
       const adData = results[5].data;
       const settingsData = results[6].data;
       const legacyData = results[7].data;
+      const dunaData = results[8].data;
 
       const totalSales = storeData?.reduce((acc: number, curr: any) => acc + (parseFloat(curr.total_sales) || 0), 0) || 0;
 
@@ -156,7 +160,9 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
         totalSales,
         pendingVerifications: verifData?.length || 0,
         flaggedPosts: flaggedData?.length || 0,
-        activeAds: adData?.length || 0
+        activeAds: adData?.length || 0,
+        dunaFoundationalMembers: dunaData?.total_foundational_members || 0,
+        dunaIsReady: dunaData?.is_legally_ready_to_file || false
       }));
 
     } catch (error) {
@@ -300,6 +306,23 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
 
   const renderOverview = () => (
     <div className="overview-tab">
+      <div className="duna-readiness-widget admin-card" style={{ marginBottom: 24, background: stats.dunaIsReady ? 'rgba(16, 185, 129, 0.05)' : 'rgba(245, 158, 11, 0.05)', border: `1px solid ${stats.dunaIsReady ? '#10b981' : '#f59e0b'}` }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {stats.dunaIsReady ? <CheckCircle size={28} color="#10b981" /> : <ShieldAlert size={28} color="#f59e0b" />}
+            <div>
+              <h3 style={{ margin: 0, color: stats.dunaIsReady ? '#10b981' : '#f59e0b' }}>DUNA Day 1 Readiness (HB 4518)</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Cryptographically tracking conduct-inferred consent for the 100-member threshold.</p>
+            </div>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: stats.dunaIsReady ? '#10b981' : '#fff' }}>
+            {stats.dunaFoundationalMembers} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ 100</span>
+          </div>
+        </div>
+        <div style={{ height: 12, background: 'rgba(255,255,255,0.1)', borderRadius: 6, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min((stats.dunaFoundationalMembers / 100) * 100, 100)}%`, background: stats.dunaIsReady ? '#10b981' : '#f59e0b', transition: 'width 1s ease-out' }} />
+        </div>
+      </div>
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon"><Users size={24} /></div>

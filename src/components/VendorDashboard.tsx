@@ -13,7 +13,10 @@ import {
   Users,
   CreditCard,
   RefreshCw,
-  Layout
+  Layout,
+  CreditCard as BankCard,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import { AdManager } from './AdManager';
 import { supabase } from '../lib/supabase';
@@ -44,12 +47,18 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
   const [isShowingWizard, setIsShowingWizard] = useState(false);
   const [isMasterMode, setIsMasterMode] = useState(false);
   
-  // tabMap must match vendorNav order in App.tsx: products,orders,withdrawals,settings,overview,ads,storefront,team,crm
-  const tabMap = ['products', 'orders', 'withdrawals', 'settings', 'overview', 'ads', 'storefront', 'team', 'crm'];
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'withdrawals' | 'settings' | 'ads' | 'storefront' | 'team' | 'crm'>((propTab !== undefined && tabMap[propTab]) ? tabMap[propTab] as any : 'overview');
+  // tabMap includes billing at index 9
+  const tabMap = ['products', 'orders', 'withdrawals', 'settings', 'overview', 'ads', 'storefront', 'team', 'crm', 'billing'];
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'withdrawals' | 'settings' | 'ads' | 'storefront' | 'team' | 'crm' | 'billing'>((propTab !== undefined && tabMap[propTab]) ? tabMap[propTab] as any : 'overview');
   const [showProductModal, setShowProductModal] = useState(false);
   const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', stock_quantity: 10 });
   const [savingProduct, setSavingProduct] = useState(false);
+
+  // SaaS Subscription State ($49/month Standalone Hosting)
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [billingError, setBillingError] = useState('');
+  const [billingSuccess, setBillingSuccess] = useState('');
+  const [tenantProfile, setTenantProfile] = useState<any>(null);
 
   useEffect(() => {
     if (propTab !== undefined && tabMap[propTab]) {
@@ -62,15 +71,25 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
   useEffect(() => {
     if (user) {
       fetchVendorData();
+      fetchTenantProfile();
     }
   }, [user]);
 
   useEffect(() => {
-    // Auto-enter master mode if user has multiple stores and no specific store was pre-selected
     if (stores.length > 1 && !currentStore) {
       setIsMasterMode(true);
     }
   }, [stores]);
+
+  const fetchTenantProfile = async () => {
+    const { data } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('owner_id', user?.id)
+      .single();
+    
+    if (data) setTenantProfile(data);
+  };
 
   const fetchVendorData = async () => {
     setIsLoading(true);
@@ -86,20 +105,12 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
     if (storeData && storeData.length > 0) {
       setStores(storeData);
       
-      // If we have an initialStoreId, prioritize it
       let activeStore = null;
-      if (initialStoreId) {
-        activeStore = storeData.find((s: any) => s.id === initialStoreId);
-      }
-      
-      if (!activeStore) {
-        activeStore = currentStore ? storeData.find((s: any) => s.id === currentStore.id) || storeData[0] : storeData[0];
-      }
+      if (initialStoreId) activeStore = storeData.find((s: any) => s.id === initialStoreId);
+      if (!activeStore) activeStore = currentStore ? storeData.find((s: any) => s.id === currentStore.id) || storeData[0] : storeData[0];
       
       setCurrentStore(activeStore);
-      if (initialStoreId && activeStore) {
-        setIsMasterMode(false); // Force individual mode if a specific store is requested
-      }
+      if (initialStoreId && activeStore) setIsMasterMode(false);
 
       const { data: productData } = await supabase.from('products').select('*').eq('store_id', activeStore.id).order('created_at', { ascending: false });
       const { data: orderData } = await supabase.from('orders').select('*, profiles:customer_id(*)').eq('store_id', activeStore.id).order('created_at', { ascending: false });
@@ -171,6 +182,36 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
     }
   };
 
+  // SaaS Subscription Handler ($49/month Standalone Hosting & Inventory)
+  const handleSubscribeSaaS = async () => {
+    setBillingError('');
+    setBillingSuccess('');
+    setIsSubscribing(true);
+
+    try {
+      const tenantSlug = tenantProfile?.slug || currentStore?.slug || `store-${currentStore?.id?.slice(0,6)}`;
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/billing/subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ tenant_slug: tenantSlug })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to initialize SaaS subscription checkout');
+
+      window.location.href = data.url;
+    } catch (err: any) {
+      console.error('SaaS subscription error:', err);
+      setBillingError(err.message);
+      setIsSubscribing(false);
+    }
+  };
+
   if (isLoading) return <div className="vendor-dashboard-loading"><Loader2 className="animate-spin" size={48} /><p>Opening Merchant Center...</p></div>;
 
   if (!currentStore) return (
@@ -195,37 +236,15 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
   );
 
   if (isMasterMode && stores.length > 1) {
-    return (
-      <MasterBusinessDashboard 
-        user={user} 
-        stores={stores} 
-        onSelectStore={(s) => { setIsMasterMode(false); setCurrentStore(s); fetchVendorData(); }} 
-      />
-    );
+    return <MasterBusinessDashboard user={user} stores={stores} onSelectStore={(s) => { setIsMasterMode(false); setCurrentStore(s); fetchVendorData(); }} />;
   }
 
   if (currentStore?.category === 'Food & Drink') {
-    return (
-      <RestaurantDashboard 
-        user={user} 
-        currentStore={currentStore} 
-        stores={stores} 
-        onStoreChange={(s) => { setCurrentStore(s); fetchVendorData(); }} 
-        onNavigateToStore={onNavigateToStore}
-      />
-    );
+    return <RestaurantDashboard user={user} currentStore={currentStore} stores={stores} onStoreChange={(s) => { setCurrentStore(s); fetchVendorData(); }} onNavigateToStore={onNavigateToStore} />;
   }
 
   if (currentStore?.category === 'Services') {
-    return (
-      <ServicesDashboard 
-        user={user} 
-        currentStore={currentStore} 
-        stores={stores} 
-        onStoreChange={(s) => { setCurrentStore(s); fetchVendorData(); }} 
-        onNavigateToStore={onNavigateToStore}
-      />
-    );
+    return <ServicesDashboard user={user} currentStore={currentStore} stores={stores} onStoreChange={(s) => { setCurrentStore(s); fetchVendorData(); }} onNavigateToStore={onNavigateToStore} />;
   }
 
   return (
@@ -236,9 +255,8 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
           <select 
             value={isMasterMode ? 'master' : currentStore?.id} 
             onChange={(e) => { 
-              if (e.target.value === 'master') {
-                setIsMasterMode(true);
-              } else {
+              if (e.target.value === 'master') setIsMasterMode(true);
+              else {
                 const selected = stores.find(s => s.id === e.target.value); 
                 setIsMasterMode(false);
                 setCurrentStore(selected); 
@@ -294,6 +312,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
         <button className={`vendor-tab-link ${activeTab === 'storefront' ? 'active' : ''}`} onClick={() => setActiveTab('storefront')}><Layout size={18} /> Store Front</button>
         <button className={`vendor-tab-link ${activeTab === 'team' ? 'active' : ''}`} onClick={() => setActiveTab('team')}><Users size={18} /> Team</button>
         <button className={`vendor-tab-link ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Settings size={18} /> Settings</button>
+        <button className={`vendor-tab-link ${activeTab === 'billing' ? 'active' : ''}`} onClick={() => setActiveTab('billing')} style={{ background: activeTab === 'billing' ? 'var(--primary)' : 'rgba(99,102,241,0.15)', color: activeTab === 'billing' ? '#fff' : '#6366f1', fontWeight: 800 }}><BankCard size={18} /> SaaS Billing</button>
       </nav>
 
       <main className="vendor-content">
@@ -369,7 +388,6 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
               </div>
             )}
 
-            {/* Quick Add Product Modal */}
             {showProductModal && (
               <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowProductModal(false)}>
                 <div style={{ background: 'var(--surface,#1a1a2e)', borderRadius: 20, padding: 32, width: '90%', maxWidth: 480, border: '1px solid rgba(255,255,255,0.1)' }} onClick={e => e.stopPropagation()}>
@@ -444,11 +462,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
                       </td>
                       <td>
                         {order.status === 'completed' && (
-                          <button 
-                            className="mini-btn" 
-                            style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: 4 }}
-                            onClick={() => handleRefund(order.id)}
-                          >
+                          <button className="mini-btn" style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: 4 }} onClick={() => handleRefund(order.id)}>
                             <RefreshCw size={14} /> Refund
                           </button>
                         )}
@@ -498,31 +512,65 @@ export const VendorDashboard: React.FC<VendorDashboardProps & { activeTab?: numb
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Allow yourself and your staff to issue refunds for orders.</div>
                   </div>
                   <label className="toggle-switch">
-                    <input 
-                      type="checkbox" 
-                      checked={currentStore.is_refunds_enabled} 
-                      onChange={(e) => setCurrentStore({...currentStore, is_refunds_enabled: e.target.checked})} 
-                    />
+                    <input type="checkbox" checked={currentStore.is_refunds_enabled} onChange={(e) => setCurrentStore({...currentStore, is_refunds_enabled: e.target.checked})} />
                     <span className="slider"></span>
                   </label>
                 </div>
 
                 <div className="input-group">
                   <label style={{ display: 'block', marginBottom: 8, fontWeight: 700 }}>Refund Window (Days)</label>
-                  <input 
-                    type="number" 
-                    className="glass-input"
-                    style={{ width: '120px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, color: '#fff' }}
-                    value={currentStore.refund_window_days}
-                    onChange={(e) => setCurrentStore({...currentStore, refund_window_days: parseInt(e.target.value)})}
-                  />
+                  <input type="number" className="glass-input" style={{ width: '120px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, color: '#fff' }} value={currentStore.refund_window_days} onChange={(e) => setCurrentStore({...currentStore, refund_window_days: parseInt(e.target.value)})} />
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Maximum days after purchase that a refund can be issued.</div>
                 </div>
               </div>
             </div>
 
-            <div className="premium-card" style={{ marginTop: 24, padding: 0 }}>
-              <StoreIntegrations store={currentStore} onUpdate={fetchVendorData} />
+            <div className="premium-card" style={{ marginTop: 24, padding: 0 }}><StoreIntegrations store={currentStore} onUpdate={fetchVendorData} /></div>
+          </div>
+        )}
+
+        {/* SaaS Billing Tab ($49/month Standalone Hosting & Inventory Subscription) */}
+        {activeTab === 'billing' && (
+          <div className="vendor-billing fade-in">
+            <div className="premium-card glass" style={{ padding: 32, border: '2px solid #6366f1', background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(26,26,46,0.5) 100%)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <BankCard size={24} color="#6366f1" />
+                    <span style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem', color: '#6366f1' }}>SETX.io LLC Commercial SaaS</span>
+                  </div>
+                  <h2 style={{ fontSize: '2rem', fontWeight: 900, margin: '0 0 8px 0', color: '#fff' }}>Enterprise Storefront Hosting & Inventory Dashboard</h2>
+                  <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.5 }}>
+                    Deploy your standalone storefront to Vercel Edge Middleware (`{tenantProfile?.slug || currentStore?.slug || 'boutique'}.setx.io`) with automated inventory sync, custom domain mapping, and 1% Stripe Connect processing.
+                  </p>
+                </div>
+
+                <div className="premium-card" style={{ background: 'rgba(255,255,255,0.05)', padding: '24px 32px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', minWidth: 240 }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>RECURRING INVESTMENT</div>
+                  <h3 style={{ fontSize: '2.5rem', fontWeight: 900, margin: '0 0 16px 0', color: '#fff' }}>$49<span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 500 }}> / month</span></h3>
+                  <button 
+                    className="primary-btn" 
+                    style={{ width: '100%', padding: '14px 24px', fontWeight: 800, background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                    onClick={handleSubscribeSaaS}
+                    disabled={isSubscribing}
+                  >
+                    {isSubscribing ? <Loader2 className="animate-spin" size={20} /> : <BankCard size={20} />}
+                    Subscribe Now
+                  </button>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 12 }}>Cancel anytime. Billed via Stripe.</div>
+                </div>
+              </div>
+
+              {billingError && (
+                <div style={{ marginTop: 24, padding: 16, background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: 12, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <XCircle size={20} /> <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>{billingError}</span>
+                </div>
+              )}
+              {billingSuccess && (
+                <div style={{ marginTop: 24, padding: 16, background: 'rgba(16,185,129,0.15)', border: '1px solid #10b981', borderRadius: 12, color: '#10b981', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <CheckCircle2 size={20} /> <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>{billingSuccess}</span>
+                </div>
+              )}
             </div>
           </div>
         )}

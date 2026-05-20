@@ -24,7 +24,9 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-leaflet": "^5.0.0",
-    "serialize-javascript": "^7.0.5"
+    "serialize-javascript": "^7.0.5",
+    "stripe": "^22.1.1",
+    "xrpl": "^4.6.0"
   },
   "devDependencies": {
     "@types/node": "^24.12.2",

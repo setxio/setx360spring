@@ -331,15 +331,11 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       let minDistance = Infinity;
       const isAdmin = user?.role === 'admin';
       const envs: Env[] = [];
-      if (isAdmin) {
-        envs.push('admin');
-      }
+      if (isAdmin) envs.push('admin');
       envs.push('me', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs');
       const hasDashboardRole = user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role);
       const hasClearances = user?.clearances && user.clearances.length > 0;
-      if ((hasDashboardRole || hasClearances) && !isAdmin) {
-        envs.push('dashboard');
-      }
+      if ((hasDashboardRole || hasClearances) && !isAdmin) envs.push('dashboard');
       validChildren.forEach((child, i) => {
         const childCenter = child.offsetLeft + child.offsetWidth / 2;
         const distance = Math.abs(containerCenter - childCenter);
