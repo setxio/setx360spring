@@ -1,4 +1,5 @@
 import type { User } from '../types/user';
+import { useToast } from '../context/ToastContext';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getGradientAvatar } from '../utils/avatar';
@@ -240,6 +241,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const { info, error: toastError } = useToast();
   const [activeTab, setActiveTab] = useState('Posts');
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -335,10 +337,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     });
     
     if (!error) {
-      alert(type === 'cooldown' ? 'User placed in 7-day cool-down.' : 'User blocked permanently.');
-      onNavigate(0); // Go home after blocking
+      info(type === 'cooldown' ? 'User placed in 7-day cool-down.' : 'User blocked permanently.');
+      onNavigate(0);
     } else {
-      alert('Error blocking user: ' + error.message);
+      toastError('Error blocking user: ' + error.message);
     }
     setShowBlockMenu(false);
   };
@@ -369,7 +371,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
     if (uploadError) {
       console.error(uploadError);
-      alert('Error uploading image');
+      toastError('Error uploading image');
       setUploading(false);
       return;
     }

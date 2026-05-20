@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 import { 
   User, 
@@ -30,6 +31,7 @@ interface EditProfilePageProps {
 
 export const EditProfilePage: React.FC<EditProfilePageProps> = ({ user, onUpdate }) => {
   const [loading, setLoading] = useState(false);
+  const { error: toastError } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
@@ -225,7 +227,7 @@ export const EditProfilePage: React.FC<EditProfilePageProps> = ({ user, onUpdate
 
     if (uploadError) {
       console.error(uploadError);
-      alert('Error uploading image');
+      toastError('Error uploading image');
       if (bucket === 'avatars') setUploadingAvatar(false);
       else setUploadingBanner(false);
       return;

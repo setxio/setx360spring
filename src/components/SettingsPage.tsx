@@ -1,4 +1,5 @@
 import type { User } from '../types/user';
+import { useToast } from '../context/ToastContext';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
@@ -27,6 +28,7 @@ interface SettingsPageProps {
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const { success, error: toastError, info } = useToast();
   const [preferences, setPreferences] = useState({
     is_public: true,
     allow_dms: true,
@@ -179,11 +181,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
       .insert({ user_id: targetId, requester_id: user.id });
     
     if (!error) {
-      alert('Access request submitted to platform admins.');
+      success('Access request submitted to platform admins.');
       const { data } = await supabase.from('legacy_access_requests').select('*').eq('requester_id', user.id);
       if (data) setPendingRequests(data);
     } else {
-      alert('Error submitting request: ' + error.message);
+      toastError('Error submitting request: ' + error.message);
     }
     setIsUpdating(false);
   };
@@ -211,7 +213,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
       .order('created_at', { ascending: true });
 
     if (error) {
-      alert('Error fetching transcript: ' + error.message);
+      toastError('Error fetching transcript: ' + error.message);
     } else if (messages && messages.length > 0) {
       const blob = new Blob([JSON.stringify(messages, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -221,9 +223,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      alert('Transcript downloaded successfully.');
+      success('Transcript downloaded successfully.');
     } else {
-      alert('No messages found for this conversation.');
+      info('No messages found for this conversation.');
     }
     setIsUpdating(false);
   };
@@ -264,10 +266,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
       link.click();
       document.body.removeChild(link);
       
-      alert('Data export completed successfully.');
+      success('Data export completed successfully.');
     } catch (err) {
       console.error(err);
-      alert('Failed to export data.');
+      toastError('Failed to export data.');
     }
     setIsUpdating(false);
   };
