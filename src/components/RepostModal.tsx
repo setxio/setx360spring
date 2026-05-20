@@ -1,4 +1,5 @@
 import type { User } from '../types/user';
+import { useToast } from '../context/ToastContext';
 import React, { useState } from 'react';
 import { X, Repeat } from 'lucide-react';
 import { Avatar } from './Avatar';
@@ -15,6 +16,7 @@ interface RepostModalProps {
 export const RepostModal: React.FC<RepostModalProps> = ({ post, user, onClose, onSuccess }) => {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { error: toastError } = useToast();
 
   const handleRepost = async (withMessage: boolean) => {
     if (!user) return;
@@ -31,7 +33,7 @@ export const RepostModal: React.FC<RepostModalProps> = ({ post, user, onClose, o
 
     if (error) {
       console.error("Repost failed", error);
-      alert("Failed to repost.");
+      toastError("Failed to repost.");
     } else {
       onSuccess();
     }

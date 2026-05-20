@@ -1,4 +1,5 @@
 import type { User } from '../types/user';
+import { useToast } from '../context/ToastContext';
 import React, { useState, useEffect } from 'react';
 import { X, Send, Loader2 } from 'lucide-react';
 import { Avatar } from './Avatar';
@@ -95,6 +96,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
   const [replyTo, setReplyTo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { info, error: toastError } = useToast();
 
   useEffect(() => {
     fetchComments();
@@ -151,7 +153,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
   const handlePostComment = async () => {
     if (!newComment.trim()) return;
     if (!user) {
-      alert("You need to be logged in to comment.");
+      info("You need to be logged in to comment.");
       return;
     }
 
@@ -169,7 +171,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({ postId, user, onCl
 
     if (error) {
       console.error('Error posting comment:', error);
-      alert("Failed to post comment. Please try again.");
+      toastError("Failed to post comment. Please try again.");
     } else {
       setNewComment('');
       setReplyTo(null);

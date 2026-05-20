@@ -1,4 +1,5 @@
 import type { User } from '../types/user';
+import { useToast } from '../context/ToastContext';
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Shield, Share2, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -26,6 +27,7 @@ export const GroupDetailView: React.FC<GroupDetailViewProps> = ({
   const [isMember, setIsMember] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const { success, info } = useToast();
 
   useEffect(() => {
     fetchGroupData();
@@ -66,7 +68,7 @@ export const GroupDetailView: React.FC<GroupDetailViewProps> = ({
   };
 
   const handleJoin = async () => {
-    if (!user) return alert('Please sign in to join groups.');
+    if (!user) return info('Please sign in to join groups.');
 
     if (isMember) {
       if (!window.confirm('Are you sure you want to leave this group?')) return;
@@ -102,7 +104,7 @@ export const GroupDetailView: React.FC<GroupDetailViewProps> = ({
       } catch (err) {}
     } else {
       navigator.clipboard.writeText(url);
-      alert('Link copied to clipboard!');
+      success('Link copied to clipboard!');
     }
   };
 
