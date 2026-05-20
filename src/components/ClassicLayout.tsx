@@ -330,9 +330,16 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       let closestEnv: Env | null = null;
       let minDistance = Infinity;
       const isAdmin = user?.role === 'admin';
-      const envs: Env[] = ['discover', 'social', 'market', 'events', 'news', 'faith'];
+      const envs: Env[] = [];
+      if (isAdmin) {
+        envs.push('admin');
+      }
+      envs.push('me', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs');
       const hasDashboardRole = user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role);
-      if (hasDashboardRole && !isAdmin) envs.push('dashboard');
+      const hasClearances = user?.clearances && user.clearances.length > 0;
+      if ((hasDashboardRole || hasClearances) && !isAdmin) {
+        envs.push('dashboard');
+      }
       validChildren.forEach((child, i) => {
         const childCenter = child.offsetLeft + child.offsetWidth / 2;
         const distance = Math.abs(containerCenter - childCenter);
@@ -714,6 +721,9 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
               <div className="sw-btn spacer" aria-hidden="true" />
+              {user?.role === 'admin' && (
+                <button className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`} onClick={() => handleEnvClick('admin')}><ShieldCheck size={18} /> Admin Control</button>
+              )}
               {['me', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs'].map(id => {
                 const item = id === 'me'       ? { id: 'me',       icon: <User size={18} />,   label: 'Me' } :
                              id === 'discover' ? { id: 'discover', icon: <Compass size={18} />, label: 'Discover' } :
@@ -733,9 +743,6 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
               })}
               {((user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role)) || (user?.clearances && user.clearances.length > 0)) && user.role !== 'admin' && (
                 <button className={`sw-btn dashboard ${env === 'dashboard' ? 'active' : ''}`} onClick={() => handleEnvClick('dashboard')}><Store size={18} /> Dashboard</button>
-              )}
-              {user?.role === 'admin' && (
-                <button className={`sw-btn admin ${env === 'admin' ? 'active' : ''}`} onClick={() => handleEnvClick('admin')}><ShieldCheck size={18} /> Admin Control</button>
               )}
               <div className="sw-btn spacer" aria-hidden="true" />
             </div>
