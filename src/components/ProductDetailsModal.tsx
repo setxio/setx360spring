@@ -6,6 +6,9 @@ import { ProductReviewSystem } from './ProductReviewSystem';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
+import { OrderTrackingMap } from './OrderTrackingMap';
+import { supabase } from '../lib/supabase';
 import './ProductDetailsModal.css';
 
 interface ProductDetailsModalProps {
@@ -18,8 +21,11 @@ interface ProductDetailsModalProps {
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, user, onClose, onNavigateToStore }) => {
   const [activeThumb, setActiveThumb] = useState(0);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showTrackingMap, setShowTrackingMap] = useState(false);
+  const [isProcessing1Click, setIsProcessing1Click] = useState(false);
   const { addToCart, addToWishlist } = useCart();
   const { setEnv, setActiveTab } = useApp();
+  const { success, error: toastError } = useToast();
   
   // Prevent scroll on body when modal is open
   useEffect(() => {
@@ -43,6 +49,28 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
     { label: 'Weight', value: product.weight || '1.2 lbs' },
     { label: 'Origin', value: 'Southeast Texas, USA' }
   ];
+
+  const handle1ClickBuy = async () => {
+    setIsProcessing1Click(true);
+    // Simulate payment processing / wallet deduction
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setIsProcessing1Click(false);
+    
+    success(`Successfully paid $${product.price} from your SETX Wallet.`);
+    
+    // Create mock order in db just for record if we want
+    try {
+      await supabase.from('orders').insert([{
+        user_id: user?.id,
+        store_id: product.store_id || product.stores?.id,
+        total_amount: product.price,
+        status: 'preparing'
+      }]);
+    } catch(e) {}
+
+    // Show the tracking map
+    setShowTrackingMap(true);
+  };
 
   return (
     <AnimatePresence>
@@ -153,7 +181,14 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
 
                 <div className="buy-box-actions">
                   <button className="amazon-btn btn-yellow" onClick={() => addToCart(product, 1)}>Add to Cart</button>
-                  <button className="amazon-btn btn-orange" onClick={() => { addToCart(product, 1); setEnv('market'); setActiveTab(3); onClose(); }}>Buy Now</button>
+                  <button 
+                    className="amazon-btn btn-orange" 
+                    onClick={handle1ClickBuy}
+                    disabled={isProcessing1Click}
+                    style={{ position: 'relative', overflow: 'hidden' }}
+                  >
+                    {isProcessing1Click ? 'Processing...' : '1-Click Buy (Local)'}
+                  </button>
                 </div>
 
                 <div className="seller-info-amazon">
@@ -369,6 +404,15 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
             recipientName={product.stores?.name}
             recipientAvatar={product.stores?.image_url}
             onClose={() => setShowMessageModal(false)}
+          />
+        )}
+
+        {showTrackingMap && (
+          <OrderTrackingMap
+            orderId={`ORD-${Math.floor(Math.random()*1000000)}`}
+            productName={product.name}
+            storeName={product.stores?.name || 'Local Store'}
+            onClose={() => setShowTrackingMap(false)}
           />
         )}
       </div>

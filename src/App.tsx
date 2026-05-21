@@ -66,6 +66,7 @@ const MePortal         = lazy(() => import('./components/MePortal').then(m => ({
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
 
 const ProductDetailsModal = lazy(() => import('./components/ProductDetailsModal').then(m => ({ default: m.ProductDetailsModal })));
+const LocalActionAgent    = lazy(() => import('./components/LocalActionAgent').then(m => ({ default: m.LocalActionAgent })));
 
 import { useApp } from './context/AppContext';
 import { supabase } from './lib/supabase';
@@ -456,6 +457,7 @@ const App: React.FC = () => {
             }}
           />
         )}
+        {user && <LocalActionAgent />}
       </React.Suspense>
     );
   }
@@ -489,6 +491,7 @@ const App: React.FC = () => {
           }}
         />
       )}
+      {user && <React.Suspense fallback={null}><LocalActionAgent /></React.Suspense>}
     </React.Suspense>
   );
 };
