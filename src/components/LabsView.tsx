@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../context/ToastContext';
 import { 
   Globe, 
   Puzzle, 
@@ -30,6 +31,7 @@ interface LabsViewProps {
 
 export const LabsView: React.FC<LabsViewProps> = ({ setActiveStoreId }) => {
   const { user, setEnv } = useApp();
+  const { success } = useToast();
   const [activeTab, setActiveTab] = useState<'portfolio' | 'audit' | 'integrations' | 'domains' | 'store' | 'settings'>('portfolio');
   const [isCreatingSite, setIsCreatingSite] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
@@ -322,7 +324,7 @@ export const LabsView: React.FC<LabsViewProps> = ({ setActiveStoreId }) => {
                 <footer className="modal-footer">
                   <button className="secondary-labs-btn" onClick={() => setIsCreatingSite(false)}>Cancel</button>
                   <button className="primary-labs-btn" disabled={!newSiteSlug} onClick={() => {
-                    alert(`Venture Initialized: ${newSiteName}. This has been added to your Master Portfolio.`);
+                    success(`Venture Initialized: ${newSiteName}. This has been added to your Master Portfolio.`);
                     setIsCreatingSite(false);
                   }}>Initialize Venture <ArrowRight size={16} /></button>
                 </footer>

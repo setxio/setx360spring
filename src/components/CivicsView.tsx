@@ -1,5 +1,6 @@
 import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import { 
   Landmark, 
   AlertTriangle, 
@@ -33,6 +34,7 @@ interface CivicsViewProps {
 
 export const CivicsView: React.FC<CivicsViewProps> = ({ user, activeTab }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { success, error: toastError, warning, info } = useToast();
 
   // 311 Report State
   const [issueType, setIssueType] = useState('pothole');
@@ -146,13 +148,13 @@ export const CivicsView: React.FC<CivicsViewProps> = ({ user, activeTab }) => {
   };
 
   const handleSubmitIssue = async () => {
-    if (!issueDescription || !issueLocation) { alert("Please provide a description and location."); return; }
+    if (!issueDescription || !issueLocation) { warning("Please provide a description and location."); return; }
     setIsSubmittingIssue(true);
     const { error } = await supabase.from('civic_incidents').insert([{ reporter_id: user?.id, type: issueType, description: issueDescription, location: issueLocation, status: 'open', priority: 'medium', community: user?.community, county: user?.county, state: user?.state }]);
     setIsSubmittingIssue(false);
-    if (error) alert('Failed to submit report. Please ensure database tables exist.');
+    if (error) toastError('Failed to submit report. Please ensure database tables exist.');
     else {
-      alert('Report submitted successfully! City staff notified.');
+      success('Report submitted successfully! City staff notified.');
       setIssueDescription(''); setIssueLocation('');
       if (activeTab === 2) fetchMyReports();
     }
@@ -163,7 +165,7 @@ export const CivicsView: React.FC<CivicsViewProps> = ({ user, activeTab }) => {
     const result = await payUtilityBill(user.id, 142.50, '#8492-1102');
     setIsProcessingPayment(false);
     if (result.success) setPaymentSuccess(true);
-    else alert('Payment failed. Please try again.');
+    else toastError('Payment failed. Please try again.');
   };
 
   const handleCastVote = async (proposalId: string, support: boolean) => {
@@ -225,7 +227,7 @@ export const CivicsView: React.FC<CivicsViewProps> = ({ user, activeTab }) => {
           <div className="civics-grid">
             <div className="civics-action-card premium-card"><div className="icon-wrapper alert"><AlertTriangle size={24} /></div><div className="card-content"><h3>Report 311 Issue</h3><p>Potholes, graffiti, streetlights</p></div><ChevronRight size={20} className="text-secondary" /></div>
             <div className="civics-action-card premium-card"><div className="icon-wrapper wallet"><Wallet size={24} /></div><div className="card-content"><h3>Pay Utilities</h3><p>Water, Trash, Sewer bills</p></div><ChevronRight size={20} className="text-secondary" /></div>
-            <div className="civics-action-card premium-card" onClick={() => alert('Navigate to Proposals tab')}><div className="icon-wrapper info" style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981' }}><Vote size={24} /></div><div className="card-content"><h3>Civic Proposals</h3><p>2 Active Ballots</p></div><ChevronRight size={20} className="text-secondary" /></div>
+            <div className="civics-action-card premium-card" onClick={() => info('Navigate to Proposals tab')}><div className="icon-wrapper info" style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981' }}><Vote size={24} /></div><div className="card-content"><h3>Civic Proposals</h3><p>2 Active Ballots</p></div><ChevronRight size={20} className="text-secondary" /></div>
           </div>
         </div>
       )}

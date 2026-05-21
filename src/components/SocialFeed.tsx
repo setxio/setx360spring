@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { Plus, Loader2, MapPin, TrendingUp, Rss } from 'lucide-react';
@@ -43,6 +44,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   const [isPromoting, setIsPromoting] = useState(false);
   const [repostTarget, setRepostTarget] = useState<any>(null);
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
+  const { success, error: toastError, info, warning } = useToast();
   const [userPollVotes, setUserPollVotes] = useState<Record<string, number>>({});
   const [userBookmarks, setUserBookmarks] = useState<Set<string>>(new Set());
 
@@ -378,9 +380,9 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       // Handle missing columns or schema mismatches gracefully
       if (postError.message.includes('column') || postError.message.includes('profiles')) {
         console.warn('Database schema mismatch detected. This usually means the "is_public" or "allow_dms" columns are missing from the profiles table.');
-        alert(`Feed error: ${postError.message}\n\nPlease ensure all database migrations have been applied.`);
+        toastError(`Feed error: ${postError.message}`);
       } else {
-        alert("Failed to load feed. Please check your connection and try again.");
+        toastError("Failed to load feed. Please check your connection and try again.");
       }
     } else {
       // Apply county weighting: user's home county floats to top
@@ -556,10 +558,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
 
   const handleRepost = (originalPost: any) => {
-    if (!user) {
-      alert("Please log in to repost.");
-      return;
-    }
+    if (!user) return info("Please log in to repost.");
     setRepostTarget(originalPost);
   };
 
@@ -586,7 +585,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     const { error } = await supabase.from('posts').delete().eq('id', postId);
     if (error) {
       console.error("Failed to delete post:", error);
-      alert("Failed to delete post.");
+      toastError("Failed to delete post.");
     } else {
       refetchFeed();
     }
@@ -611,7 +610,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
       // Fallback: Copy to clipboard
       try {
         await navigator.clipboard.writeText(shareData.url);
-        alert("Link copied to clipboard!");
+        success("Link copied to clipboard!");
       } catch (err) {
         console.error("Failed to copy link:", err);
       }
@@ -619,7 +618,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   };
 
   const handlePollVote = async (post: any, optionIndex: number) => {
-    if (!user) return alert("Please sign in to vote.");
+    if (!user) return info("Please sign in to vote.");
     
     // Call the RPC for atomic vote handling
     const { data: newPollData, error } = await supabase.rpc('cast_poll_vote', {
@@ -629,7 +628,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
     if (error) {
       console.error("Poll vote failed", error);
-      return alert("Failed to cast vote.");
+      return toastError("Failed to cast vote.");
     }
 
     // Update optimistic local state
@@ -639,7 +638,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   };
 
   const handleToggleBookmark = async (postId: string) => {
-    if (!user) return alert("Please sign in to save posts.");
+    if (!user) return info("Please sign in to save posts.");
 
     const isBookmarked = userBookmarks.has(postId);
     

@@ -4,8 +4,9 @@ import './App.css';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Always-needed lightweight components (static imports)
-import { ClassicLayout } from './components/ClassicLayout';
-import { MinimalLayout } from './components/MinimalLayout';
+// We now lazy load layouts to keep framer-motion out of the critical bundle
+const ClassicLayout = lazy(() => import('./components/ClassicLayout').then(m => ({ default: m.ClassicLayout })));
+const MinimalLayout = lazy(() => import('./components/MinimalLayout').then(m => ({ default: m.MinimalLayout })));
 
 // Heavy page-level components (lazy loaded on demand)
 const SearchOverlay    = lazy(() => import('./components/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
@@ -399,36 +400,40 @@ const App: React.FC = () => {
   
   if (layout === 'minimal') {
     return (
-      <MinimalLayout 
-        renderView={renderView}
-        SearchOverlay={SearchOverlay}
-        setActivePostId={setActivePostId}
-        setActiveStoreId={setActiveStoreId}
-        setActiveProfileId={setActiveProfileId}
-        setActiveCommentId={setActiveCommentId}
-        updateAvailable={updateAvailable}
-        onUpdate={handleUpdate}
-      />
+      <React.Suspense fallback={<div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><Loader2 className="animate-spin" size={48} color="var(--primary)" /></div>}>
+        <MinimalLayout 
+          renderView={renderView}
+          SearchOverlay={SearchOverlay}
+          setActivePostId={setActivePostId}
+          setActiveStoreId={setActiveStoreId}
+          setActiveProfileId={setActiveProfileId}
+          setActiveCommentId={setActiveCommentId}
+          updateAvailable={updateAvailable}
+          onUpdate={handleUpdate}
+        />
+      </React.Suspense>
     );
   }
 
   return (
-    <ClassicLayout 
-      renderView={renderView}
-      SearchOverlay={SearchOverlay}
-      activePostId={activePostId}
-      setActivePostId={setActivePostId}
-      activeStoreId={activeStoreId}
-      setActiveStoreId={setActiveStoreId}
-      activeProfileId={activeProfileId}
-      setActiveProfileId={setActiveProfileId}
-      activeGroupId={activeGroupId}
-      setActiveGroupId={setActiveGroupId}
-      activeCommentId={activeCommentId}
-      setActiveCommentId={setActiveCommentId}
-      updateAvailable={updateAvailable}
-      onUpdate={handleUpdate}
-    />
+    <React.Suspense fallback={<div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><Loader2 className="animate-spin" size={48} color="var(--primary)" /></div>}>
+      <ClassicLayout 
+        renderView={renderView}
+        SearchOverlay={SearchOverlay}
+        activePostId={activePostId}
+        setActivePostId={setActivePostId}
+        activeStoreId={activeStoreId}
+        setActiveStoreId={setActiveStoreId}
+        activeProfileId={activeProfileId}
+        setActiveProfileId={setActiveProfileId}
+        activeGroupId={activeGroupId}
+        setActiveGroupId={setActiveGroupId}
+        activeCommentId={activeCommentId}
+        setActiveCommentId={setActiveCommentId}
+        updateAvailable={updateAvailable}
+        onUpdate={handleUpdate}
+      />
+    </React.Suspense>
   );
 };
 

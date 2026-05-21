@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import { X, Megaphone, Loader2, Sparkles, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './AdCreationModal.css';
@@ -17,6 +18,7 @@ export const AdCreationModal: React.FC<AdCreationModalProps> = ({ onClose }) => 
   const [lastFreeAd, setLastFreeAd] = useState<string | null>(null);
   const [adType, setAdType] = useState<'free' | 'premium'>('free');
   const [duration, setDuration] = useState<15 | 30>(15);
+  const { warning, error: toastError, success } = useToast();
 
   useEffect(() => {
     fetchCredits();
@@ -47,7 +49,7 @@ export const AdCreationModal: React.FC<AdCreationModalProps> = ({ onClose }) => 
     const isFreeEligible = credits > 0 || isMonthlyFreeEligible();
     
     if (adType === 'free' && !isFreeEligible) {
-      alert("You have used your free credits and your monthly free ad is not yet available.");
+      warning("You have used your free credits and your monthly free ad is not yet available.");
       return;
     }
 
@@ -76,7 +78,7 @@ export const AdCreationModal: React.FC<AdCreationModalProps> = ({ onClose }) => 
       ]);
 
     if (adError) {
-      alert('Error creating ad: ' + adError.message);
+      toastError('Error creating ad: ' + adError.message);
       setIsSubmitting(false);
       return;
     }
@@ -91,8 +93,8 @@ export const AdCreationModal: React.FC<AdCreationModalProps> = ({ onClose }) => 
     }
 
     setIsSubmitting(false);
+    success(adType === 'premium' ? 'Premium ad submitted! (Payment due upon approval)' : 'Ad submitted for review!');
     onClose();
-    alert(adType === 'premium' ? 'Premium ad submitted! (Payment due upon approval)' : 'Ad submitted for review!');
   };
 
   return (

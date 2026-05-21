@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useToast } from '../context/ToastContext';
 import { 
   Sparkles, 
   Send, 
@@ -21,6 +22,7 @@ export const AIAssistant: React.FC = () => {
   const [systemErrors, setSystemErrors] = useState<any[]>([]);
   const [proposedAction, setProposedAction] = useState<any | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const { success, error: toastError } = useToast();
 
   useEffect(() => {
     fetchSystemHealth();
@@ -104,12 +106,12 @@ export const AIAssistant: React.FC = () => {
         status: 'success'
       });
 
-      alert('Action applied successfully!');
+      success('Action applied successfully!');
       setProposedAction(null);
       fetchMaintenanceLogs();
     } catch (err) {
       console.error('Failed to apply action:', err);
-      alert('Failed to execute the AI logic. Check system logs.');
+      toastError('Failed to execute the AI logic. Check system logs.');
     } finally {
       setIsProcessing(false);
     }
