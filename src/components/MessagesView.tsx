@@ -1,6 +1,7 @@
 import type { User } from '../types/user';
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from './Avatar';
 import { EmptyState } from './EmptyState';
 import { useApp } from '../context/AppContext';
@@ -33,8 +34,22 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [allMessages, setAllMessages] = useState<MessageData[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const queryClient = useQueryClient();
+  const { data: allMessages = [], isLoading: loading } = useQuery({
+    queryKey: ['messages', user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data as MessageData[];
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -112,8 +127,6 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   }, [isTyping, user]);
 
   useEffect(() => {
-    fetchInitialData();
-
     // FIX: Two separate channels — Supabase only allows ONE filter per channel subscription
     const rxChannel = supabase.channel(`messages-rx-${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, (payload) => handleIncomingMessage(payload.new as MessageData))
@@ -131,14 +144,15 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   }, [user.id]);
 
   const handleIncomingMessage = (newMsg: MessageData) => {
-    setAllMessages(prev => {
-      const idx = prev.findIndex(m => m.id === newMsg.id);
+    queryClient.setQueryData(['messages', user.id], (prev: MessageData[] | undefined) => {
+      const messages = prev || [];
+      const idx = messages.findIndex(m => m.id === newMsg.id);
       if (idx > -1) {
-        const next = [...prev];
+        const next = [...messages];
         next[idx] = newMsg;
         return next;
       }
-      return [...prev, newMsg];
+      return [...messages, newMsg];
     });
     
     // Auto-mark as read if we are in this chat
@@ -166,23 +180,22 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     }
   }, [activeChatId]);
 
-  const fetchInitialData = async () => {
-    setLoading(true);
-    const { data: messagesData, error: msgError } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-      .order('created_at', { ascending: true });
-    if (!msgError && messagesData) setAllMessages(messagesData);
-    setLoading(false);
-  };
+  const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
 
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
     if (!isTyping && user.enable_typing_indicators !== false) {
       setIsTyping(true);
-      setTimeout(() => setIsTyping(false), 3000);
     }
+    // Refresh the timeout on every keystroke
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -221,7 +234,11 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
       content: text || '',
       media_url: mediaUrl
     }).select().single();
-    if (!error && data) setAllMessages(prev => [...prev, data]);
+    if (!error && data) {
+      queryClient.setQueryData(['messages', user.id], (prev: MessageData[] | undefined) => {
+        return [...(prev || []), data as MessageData];
+      });
+    }
   };
 
   const handleSendMessage = () => {
@@ -229,6 +246,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     sendMessage(messageInput);
     setMessageInput('');
     setIsTyping(false);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
   };
 
   // Rebuild conversations list whenever allMessages changes

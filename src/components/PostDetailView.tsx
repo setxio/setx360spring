@@ -168,6 +168,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTevisThinking, setIsTevisThinking] = useState(false);
+  const tevisTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchPostAndComments();
@@ -194,9 +195,10 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+        if (tevisTimerRef.current) clearTimeout(tevisTimerRef.current);
+      };
   }, [postId]);
 
   const incrementViews = async () => {
@@ -315,7 +317,8 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
       if (isSummoningTevis) {
         setIsTevisThinking(true);
         // Auto-refresh fallback after 10 seconds if realtime fails or Gemini is slow
-        setTimeout(() => setIsTevisThinking(false), 10000);
+        if (tevisTimerRef.current) clearTimeout(tevisTimerRef.current);
+        tevisTimerRef.current = setTimeout(() => setIsTevisThinking(false), 10000);
       }
       
       // Update local post count for instant feedback in the PostCard

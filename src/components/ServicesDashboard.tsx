@@ -43,7 +43,7 @@ export const ServicesDashboard: React.FC<ServicesDashboardProps> = ({ user, curr
       const { data: serviceData } = await supabase.from('products').select('*').eq('store_id', currentStore.id).order('created_at', { ascending: false });
       setProducts(serviceData || []);
       
-      const wallet = await getOrCreateWallet(currentStore.id, 'business');
+      const wallet = await getOrCreateWallet(currentStore.owner_id, 'business');
       setStoreWallet(wallet);
     }
     setIsLoading(false);
@@ -124,7 +124,7 @@ export const ServicesDashboard: React.FC<ServicesDashboardProps> = ({ user, curr
           </div>
         )}
 
-        {activeTab === 'ads' && <AdManager user={user} />}
+        {activeTab === 'ads' && <AdManager user={user} products={products} currentStore={currentStore} storeWallet={storeWallet} onWalletUpdate={fetchServicesData} />}
         {activeTab === 'team' && <StaffManagement entityId={currentStore.id} entityType="business" user={user} />}
         {activeTab === 'crm' && <BusinessCrmView />}
       </main>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AppProvider } from '../context/AppContext';
+import { CartProvider } from '../context/CartContext';
 import App from '../App';
 import { logError } from '../lib/errorLogger';
 
@@ -46,7 +47,9 @@ export default function Home() {
 
   return (
     <AppProvider>
-      <App />
+      <CartProvider>
+        <App />
+      </CartProvider>
     </AppProvider>
   );
 }

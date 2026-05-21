@@ -13,6 +13,7 @@ import { formatText } from '../utils/textFormatting';
 import { formatRelativeTime } from '../utils/dateUtils';
 import { PostStatsModal } from './PostStatsModal';
 import { LinkPreviewCard, extractPreviewUrl } from './LinkPreviewCard';
+import { ShoppableProductMini } from './ShoppableProductMini';
 import './PostCard.css';
 
 interface PostCardProps {
@@ -106,7 +107,6 @@ export const PostCard: React.FC<PostCardProps> = ({
       onClick={() => onNavigateToPost?.(contentPost.id)}
       style={{ 
         cursor: onNavigateToPost ? 'pointer' : 'default',
-        marginBottom: '16px',
         border: isEvent ? '2px solid var(--secondary)' : 'none'
       }}
     >
@@ -263,6 +263,18 @@ export const PostCard: React.FC<PostCardProps> = ({
                   className={`media-dot ${idx === activeMediaIndex ? 'active' : ''}`} 
                 />
               ))}
+            </div>
+          )}
+
+          {/* Shoppable Overlay for Phase 2 */}
+          {contentPost.linked_products && contentPost.linked_products.length > 0 && (
+            <div style={{ position: 'absolute', bottom: '24px', left: '16px', zIndex: 10 }}>
+              <ShoppableProductMini 
+                product={contentPost.linked_products[0]} 
+                onClick={(prod) => {
+                  window.dispatchEvent(new CustomEvent('NAVIGATE_TO_PRODUCT', { detail: prod }));
+                }}
+              />
             </div>
           )}
         </div>

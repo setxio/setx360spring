@@ -4,17 +4,22 @@ import { X, Heart, Star, MapPin, Clock, Phone, MessageSquare, Map } from 'lucide
 import { QuickMessageModal } from './QuickMessageModal';
 import { ProductReviewSystem } from './ProductReviewSystem';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '../context/CartContext';
+import { useApp } from '../context/AppContext';
 import './ProductDetailsModal.css';
 
 interface ProductDetailsModalProps {
   product: any;
   user: User;
   onClose: () => void;
+  onNavigateToStore?: (storeId: string) => void;
 }
 
-export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, user, onClose }) => {
+export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, user, onClose, onNavigateToStore }) => {
   const [activeThumb, setActiveThumb] = useState(0);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const { addToCart, addToWishlist } = useCart();
+  const { setEnv, setActiveTab } = useApp();
   
   // Prevent scroll on body when modal is open
   useEffect(() => {
@@ -89,7 +94,19 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                   Products › {product.category || 'Market'} › {product.subcategory || 'Specialty'}
                 </div>
                 <h1 className="product-title-premium">{product.name}</h1>
-                <div className="brand-link">Visit the {product.stores?.name || 'Local Artisan'} Store</div>
+                <div 
+                  className="brand-link" 
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                onClick={() => {
+                  const storeId = product.store_id || product.stores?.id;
+                  if (storeId) {
+                    onNavigateToStore?.(storeId);
+                    onClose();
+                  }
+                }}
+              >
+                Visit the {product.stores?.name || 'Local Artisan'} Store
+              </div>
                 
                 <div className="rating-row-amazon">
                   <div className="star-rating-summary">
@@ -135,8 +152,8 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                 <div className="stock-status">In Stock</div>
 
                 <div className="buy-box-actions">
-                  <button className="amazon-btn btn-yellow">Add to Cart</button>
-                  <button className="amazon-btn btn-orange">Buy Now</button>
+                  <button className="amazon-btn btn-yellow" onClick={() => addToCart(product, 1)}>Add to Cart</button>
+                  <button className="amazon-btn btn-orange" onClick={() => { addToCart(product, 1); setEnv('market'); setActiveTab(3); onClose(); }}>Buy Now</button>
                 </div>
 
                 <div className="seller-info-amazon">
@@ -146,7 +163,18 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                   </div>
                   <div className="seller-row">
                     <span>Sold by</span>
-                    <span>{product.stores?.name || 'Local Artisan'}</span>
+                    <span 
+                      style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--primary)' }}
+                      onClick={() => {
+                        const storeId = product.store_id || product.stores?.id;
+                        if (storeId) {
+                          onNavigateToStore?.(storeId);
+                          onClose();
+                        }
+                      }}
+                    >
+                      {product.stores?.name || 'Local Artisan'}
+                    </span>
                   </div>
                   <div className="seller-row">
                     <span>Returns</span>
@@ -158,7 +186,10 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                   </div>
                 </div>
 
-                <button style={{ marginTop: '16px', background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button 
+                  onClick={() => addToWishlist(product)}
+                  style={{ marginTop: '16px', background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
                   <Heart size={14} /> Add to List
                 </button>
               </div>
@@ -237,7 +268,30 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                     <span>Total price:</span>
                     <strong>${(product.price + 24.99 + 39.99).toFixed(2)}</strong>
                   </div>
-                  <button className="amazon-btn btn-yellow">Add all three to Cart</button>
+                  <button 
+                    className="amazon-btn btn-yellow"
+                    onClick={() => {
+                      addToCart(product, 1);
+                      addToCart({
+                        id: `related-stand-${product.id}`,
+                        name: 'Local Artisan Stand',
+                        price: 24.99,
+                        image_url: 'https://images.unsplash.com/photo-1585333127302-d29837a7b378?w=300',
+                        store_id: product.store_id || product.stores?.id,
+                        store_name: product.stores?.name || 'Local Merchant'
+                      }, 1);
+                      addToCart({
+                        id: `related-sleeve-${product.id}`,
+                        name: 'Premium Leather Sleeve',
+                        price: 39.99,
+                        image_url: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300',
+                        store_id: product.store_id || product.stores?.id,
+                        store_name: product.stores?.name || 'Local Merchant'
+                      }, 1);
+                    }}
+                  >
+                    Add all three to Cart
+                  </button>
                   <p className="bundle-disclaimer">These items are often shipped separately by different local merchants.</p>
                 </div>
               </div>

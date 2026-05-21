@@ -22,14 +22,17 @@ export const SetxPay = {
         const userWallet = await getOrCreateWallet(user.id, 'personal');
         if (!userWallet) throw new Error('User wallet not found');
 
-        // 2. Get merchant wallet
-        const { data: merchant } = await supabase
-            .from('merchants')
-            .select('id, name, wallet_id')
+        // 2. Get store and merchant wallet
+        const { data: store } = await supabase
+            .from('stores')
+            .select('id, name, owner_id')
             .eq('id', request.merchantId)
             .single();
 
-        if (!merchant) throw new Error('Merchant not found');
+        if (!store) throw new Error('Store not found');
+
+        const merchantWallet = await getOrCreateWallet(store.owner_id, 'business');
+        if (!merchantWallet) throw new Error('Merchant wallet not found');
 
         // 3. Check balance
         if (userWallet.balance < request.amount) {
@@ -43,7 +46,11 @@ export const SetxPay = {
             status: 'ready',
             request,
             userWallet,
-            merchant
+            merchant: {
+                id: store.id,
+                name: store.name,
+                wallet_id: merchantWallet.id
+            }
         };
     },
 
@@ -52,20 +59,23 @@ export const SetxPay = {
      */
     confirmPayment: async (request: PaymentRequest, userId: string) => {
         const userWallet = await getOrCreateWallet(userId, 'personal');
-        const { data: merchant } = await supabase
-            .from('merchants')
-            .select('wallet_id, name')
+        const { data: store } = await supabase
+            .from('stores')
+            .select('id, name, owner_id')
             .eq('id', request.merchantId)
             .single();
 
-        if (!userWallet || !merchant?.wallet_id) throw new Error('Payment bridge failed: Wallets not resolved');
+        if (!store) throw new Error('Store not found');
+
+        const merchantWallet = await getOrCreateWallet(store.owner_id, 'business');
+        if (!userWallet || !merchantWallet) throw new Error('Payment bridge failed: Wallets not resolved');
 
         const result = await processTransfer({
             senderWalletId: userWallet.id,
-            receiverWalletId: merchant.wallet_id,
+            receiverWalletId: merchantWallet.id,
             amount: request.amount,
             type: 'payment',
-            description: request.description || `Purchase at ${merchant.name}`
+            description: request.description || `Purchase at ${store.name}`
         });
 
         return result;

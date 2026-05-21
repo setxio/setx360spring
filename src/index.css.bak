@@ -16,8 +16,8 @@
   /* Primary Palettes */
   --social-primary: #a855f7; /* Purple */
   --social-secondary: #06b6d4; /* Cyan */
-  --market-primary: #2563eb; /* Cobalt Blue */
-  --market-secondary: #fbbf24; /* Amber Gold */
+  --market-primary: #10b981; /* Green */
+  --market-secondary: #2563eb; /* Blue */
   --discover-primary: #06b6d4; /* Cyan */
   --discover-secondary: #a855f7; /* Purple */
   --jobs-violet: #7c3aed;
@@ -429,7 +429,7 @@
   background: linear-gradient(to bottom right, var(--theme-gradient-from), var(--theme-gradient-via), var(--theme-gradient-to)) !important;
 }
 
-[data-env='market']   { --primary: #2563eb; --secondary: #fbbf24; }
+[data-env='market']   { --primary: #10b981; --secondary: #2563eb; }
 [data-env='discover'] { --primary: #06b6d4; --secondary: #a855f7; }
 [data-env='social']   { --primary: #3b82f6; --secondary: #06b6d4; }
 [data-env='events']   { --primary: #facc15; --secondary: #f97316; }

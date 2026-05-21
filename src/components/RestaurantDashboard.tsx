@@ -51,7 +51,7 @@ export const RestaurantDashboard: React.FC<RestaurantDashboardProps> = ({ user, 
       setProducts(menuData || []);
       setOrders(orderData || []);
       
-      const wallet = await getOrCreateWallet(currentStore.id, 'business');
+      const wallet = await getOrCreateWallet(currentStore.owner_id, 'business');
       setStoreWallet(wallet);
     }
     setIsLoading(false);
@@ -172,7 +172,7 @@ export const RestaurantDashboard: React.FC<RestaurantDashboardProps> = ({ user, 
           </div>
         )}
 
-        {activeTab === 'ads' && <AdManager user={user} />}
+        {activeTab === 'ads' && <AdManager user={user} products={products} currentStore={currentStore} storeWallet={storeWallet} onWalletUpdate={fetchRestaurantData} />}
         {activeTab === 'team' && <StaffManagement entityId={currentStore.id} entityType="business" user={user} />}
         {activeTab === 'crm' && <BusinessCrmView />}
       </main>

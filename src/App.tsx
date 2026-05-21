@@ -65,10 +65,14 @@ const Overview         = lazy(() => import('./components/Overview').then(m => ({
 const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
 
+const ProductDetailsModal = lazy(() => import('./components/ProductDetailsModal').then(m => ({ default: m.ProductDetailsModal })));
+
 import { useApp } from './context/AppContext';
 import { supabase } from './lib/supabase';
+import { useToast } from './context/ToastContext';
 
 const App: React.FC = () => {
+  const { info } = useToast();
   const { 
     user, env, theme, scope, activeTab, isLoading,
     setEnv, setTheme, setActiveTab, setIsSearchOpen, toggleTheme, updateUser,
@@ -176,6 +180,7 @@ const App: React.FC = () => {
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [activeProduct, setActiveProduct] = useState<any>(null);
 
   // Clear all detail views whenever the user switches environment (env-switcher footer)
   // This fixes the bug where visiting a store then switching env keeps the store view open
@@ -189,15 +194,44 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // '/' to search, but not if typing in an input
-      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+      const isCmdK = (e.metaKey || e.ctrlKey) && e.key === 'k';
+      // '/' or Cmd+K to search, but not if typing in an input
+      if ((e.key === '/' || isCmdK) && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
         setIsSearchOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setIsSearchOpen]);
+
+    const handleNavigateToProduct = (e: CustomEvent) => {
+      setActiveProduct(e.detail);
+    };
+    window.addEventListener('NAVIGATE_TO_PRODUCT', handleNavigateToProduct as EventListener);
+
+    // Global Flash Liquidation Realtime Listener
+    const flashChannel = supabase
+      .channel('public:flash_liquidations')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'flash_liquidations' },
+        async (payload) => {
+          // Fetch store name and product name for a rich toast
+          const { data: storeData } = await supabase.from('stores').select('name').eq('id', payload.new.store_id).single();
+          const { data: productData } = await supabase.from('products').select('name').eq('id', payload.new.product_id).single();
+          const storeName = storeData?.name || 'A local store';
+          const productName = productData?.name || 'an item';
+          
+          info(`⚡ FLASH SALE: ${storeName} just liquidated "${productName}" at ${payload.new.discount_percentage}% OFF! Valid for ${payload.new.duration_minutes} mins.`);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('NAVIGATE_TO_PRODUCT', handleNavigateToProduct as EventListener);
+      supabase.removeChannel(flashChannel);
+    };
+  }, [setIsSearchOpen, info]);
 
 
 
@@ -411,6 +445,17 @@ const App: React.FC = () => {
           updateAvailable={updateAvailable}
           onUpdate={handleUpdate}
         />
+        {activeProduct && user && (
+          <ProductDetailsModal 
+            product={activeProduct} 
+            user={user} 
+            onClose={() => setActiveProduct(null)} 
+            onNavigateToStore={(storeId) => {
+              setActiveStoreId(storeId);
+              setActiveProduct(null);
+            }}
+          />
+        )}
       </React.Suspense>
     );
   }
@@ -433,6 +478,17 @@ const App: React.FC = () => {
         updateAvailable={updateAvailable}
         onUpdate={handleUpdate}
       />
+      {activeProduct && user && (
+        <ProductDetailsModal 
+          product={activeProduct} 
+          user={user} 
+          onClose={() => setActiveProduct(null)} 
+          onNavigateToStore={(storeId) => {
+            setActiveStoreId(storeId);
+            setActiveProduct(null);
+          }}
+        />
+      )}
     </React.Suspense>
   );
 };

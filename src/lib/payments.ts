@@ -265,3 +265,25 @@ export const processRefund = async (orderId: string, amount?: number) => {
   }
 };
 
+/**
+ * CIRCULAR MICRO-ECONOMY: B2B Transfer Handler
+ * Allows a merchant (business wallet) to directly pay another merchant (business wallet).
+ */
+export const b2bTransfer = async (senderOwnerId: string, receiverOwnerId: string, amount: number, description: string) => {
+  const senderWallet = await getOrCreateWallet(senderOwnerId, 'business');
+  const receiverWallet = await getOrCreateWallet(receiverOwnerId, 'business');
+  
+  if (!senderWallet || !receiverWallet) {
+    return { success: false, error: 'One or both merchant wallets not found.' };
+  }
+
+  return processTransfer({
+    senderWalletId: senderWallet.id,
+    receiverWalletId: receiverWallet.id,
+    amount,
+    type: 'payment',
+    description: description || 'B2B Mesh Network Transfer'
+  });
+};
+
+
