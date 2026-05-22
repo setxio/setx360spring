@@ -26,7 +26,8 @@ import {
   TrendingUp,
   ArrowUpRight,
   Shield,
-  Book
+  Book,
+  Globe
 } from 'lucide-react';
 import { AdminDataImport } from './AdminDataImport';
 import { AIAssistant } from './AIAssistant';
@@ -446,7 +447,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
           <NavItem tab="moderation" icon={ShieldAlert} label="Content Moderation" />
           <NavItem tab="alerts" icon={Siren} label="Crisis Center" />
           <NavItem tab="intelligence" icon={Sparkles} label="AI Architect" />
-          <NavItem tab="wiki" icon={Book} label="Search Wiki" />
+          <NavItem tab="wiki" icon={Globe} label="Global Link Ingest" />
           <NavItem tab="modules" icon={Grid} label="Asset Manager" />
           <NavItem tab="activity" icon={LucideActivity} label="System Events" />
           <NavItem tab="settings" icon={LucideSettings} label="Global Config" />
