@@ -1,9 +1,10 @@
 import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Zap, Sparkles, Heart, MessageSquare, MapPin } from 'lucide-react';
+import { TrendingUp, Zap, Sparkles, Heart, MessageSquare, MapPin, Camera } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { weightByCounty, SETX_COUNTY_LIST, isSETXTheme } from '../utils/geo';
 import { useApp } from '../context/AppContext';
+import { ARDiscoveryMode } from './ARDiscoveryMode';
 import './DiscoverView.css';
 
 interface Post {
@@ -39,6 +40,7 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
   const [isLoadingMarket, setIsLoadingMarket] = useState(true);
+  const [isARModeOpen, setIsARModeOpen] = useState(false);
 
   const isSETX = isSETXTheme(theme);
 
@@ -163,6 +165,26 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
             ? `Your local pulse — Jefferson, Orange, Hardin & Jasper Counties`
             : `Discover what's trending in your community`}
         </p>
+        <button 
+          onClick={() => setIsARModeOpen(true)}
+          style={{
+            marginTop: '8px',
+            background: 'rgba(255, 255, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: 'fit-content',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '0.85rem'
+          }}
+        >
+          <Camera size={16} /> Enter AR Discovery
+        </button>
       </div>
 
       {/* Top Posts Carousel */}
@@ -312,6 +334,9 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
         )}
       </div>
 
+      {isARModeOpen && (
+        <ARDiscoveryMode onClose={() => setIsARModeOpen(false)} />
+      )}
     </div>
   );
 };
