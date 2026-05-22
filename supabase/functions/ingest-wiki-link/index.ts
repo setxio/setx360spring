@@ -51,10 +51,7 @@ serve(async (req) => {
     // Remove scripts, styles, nav, footer to keep it clean
     $('script, style, nav, footer, header, aside').remove()
     
-    const title = $('title').text().trim() || $('h1').first().text().trim() || url
-    const description = $('meta[name="description"]').attr('content')?.trim() || ''
-    
-    // Extract paragraphs
+    // Extract paragraphs first to use as fallback description
     const paragraphs: string[] = []
     $('p').each((_, el) => {
       const text = $(el).text().trim()
@@ -62,6 +59,15 @@ serve(async (req) => {
         paragraphs.push(text)
       }
     })
+
+    const title = $('title').text().trim() || $('meta[property="og:title"]').attr('content')?.trim() || $('h1').first().text().trim() || url
+    
+    let description = $('meta[name="description"]').attr('content')?.trim() || $('meta[property="og:description"]').attr('content')?.trim() || ''
+    
+    // If no description meta tag exists, use the first paragraph as a fallback
+    if (!description && paragraphs.length > 0) {
+      description = paragraphs[0].substring(0, 200) + (paragraphs[0].length > 200 ? '...' : '')
+    }
 
     // Extract links for crawler
     const discoveredLinks: string[] = []
