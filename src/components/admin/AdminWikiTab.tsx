@@ -12,6 +12,7 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [url, setUrl] = useState('');
   const [linkType, setLinkType] = useState('general');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
   const [deepCrawl, setDeepCrawl] = useState(false);
   const [maxPages, setMaxPages] = useState(50);
@@ -131,17 +132,41 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
               required
             />
           </div>
-          <select 
-            value={linkType} 
-            onChange={(e) => setLinkType(e.target.value)}
-            style={{ padding: '0 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--admin-border)', color: '#fff', fontWeight: 700 }}
-          >
-            <option value="general">General</option>
-            <option value="article">News / Article</option>
-            <option value="city">City Site</option>
-            <option value="shop">External Shop</option>
-            <option value="wiki">Wiki Page</option>
-          </select>
+          <div style={{ position: 'relative' }}>
+            <div 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              style={{ padding: '0 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--admin-border)', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%', minWidth: '160px', cursor: 'pointer' }}
+            >
+              <span style={{ textTransform: 'capitalize' }}>
+                {linkType === 'general' ? 'General' : linkType === 'article' ? 'News / Article' : linkType === 'city' ? 'City Site' : linkType === 'shop' ? 'External Shop' : 'Wiki Page'}
+              </span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 8, transition: 'transform 0.2s', transform: isDropdownOpen ? 'rotate(180deg)' : 'none' }}>
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            
+            {isDropdownOpen && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 8, width: '100%', background: '#0f172a', border: '1px solid var(--admin-border)', borderRadius: 12, overflow: 'hidden', zIndex: 50, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}>
+                {[
+                  { value: 'general', label: 'General' },
+                  { value: 'article', label: 'News / Article' },
+                  { value: 'city', label: 'City Site' },
+                  { value: 'shop', label: 'External Shop' },
+                  { value: 'wiki', label: 'Wiki Page' }
+                ].map((option) => (
+                  <div 
+                    key={option.value}
+                    onClick={() => { setLinkType(option.value); setIsDropdownOpen(false); }}
+                    style={{ padding: '12px 16px', cursor: 'pointer', background: linkType === option.value ? 'rgba(139, 92, 246, 0.2)' : 'transparent', color: linkType === option.value ? '#a78bfa' : '#fff', transition: 'background 0.2s' }}
+                    onMouseEnter={(e) => { if(linkType !== option.value) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                    onMouseLeave={(e) => { if(linkType !== option.value) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input 
