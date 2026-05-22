@@ -61,10 +61,12 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
       else if (scope === 'county') scopeValue = user?.county;
       else if (scope === 'state') scopeValue = user?.state;
 
-      const { data, error } = await supabase.rpc('global_search', { 
-        search_query: query,
-        p_scope_type: scope,
-        p_scope_value: scopeValue
+      const { data, error } = await supabase.functions.invoke('semantic-search', {
+        body: {
+          query: query,
+          scope_type: scope,
+          scope_value: scopeValue
+        }
       });
       if (error) throw error;
       setResults(data);
