@@ -141,7 +141,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
             <button className={`search-tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>Posts</button>
             <button className={`search-tab-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>Market</button>
             <button className={`search-tab-btn ${activeTab === 'profiles' ? 'active' : ''}`} onClick={() => setActiveTab('profiles')}>People</button>
-            <button className={`search-tab-btn ${activeTab === 'media' ? 'active' : ''}`} onClick={() => setActiveTab('media')}>Media</button>
+            <button className={`search-tab-btn ${activeTab === 'web' ? 'active' : ''}`} onClick={() => setActiveTab('web')}>Web</button>
           </div>
         </div>
 
@@ -213,23 +213,52 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
               )}
               
               {/* Wiki */}
-              {(activeTab === 'all' || activeTab === 'media' || activeTab === 'wiki') && results.wiki?.length > 0 && (
+              {(activeTab === 'all' || activeTab === 'web' || activeTab === 'wiki') && results.wiki?.length > 0 && (
                 <div className="results-section-block" style={{ marginTop: '32px' }}>
                   <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Globe size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Web & Media</h3>
-                  {results.wiki.map((w: any) => (
-                    <div key={w.id} className="search-result-card" onClick={() => handleResultClick('wiki', w)}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <h3 style={{ color: '#3b82f6', margin: 0 }}>{w.title}</h3>
-                        {w.url && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
-                            <ExternalLink size={10} /> External
-                          </span>
-                        )}
+                  {results.wiki.map((w: any) => {
+                    const isExternal = !!w.url;
+                    
+                    const CardContent = (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <h3 style={{ color: '#3b82f6', margin: 0, textDecoration: isExternal ? 'underline' : 'none' }}>{w.title}</h3>
+                          {isExternal && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                              <ExternalLink size={10} /> External
+                            </span>
+                          )}
+                        </div>
+                        {isExternal && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '8px' }}>{w.url}</p>}
+                        <p style={{ color: 'var(--text)', textDecoration: 'none' }}>{w.description?.substring(0, 150)}...</p>
+                      </>
+                    );
+
+                    if (isExternal) {
+                      return (
+                        <a 
+                          key={w.id} 
+                          href={w.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="search-result-card" 
+                          style={{ display: 'block', textDecoration: 'none' }}
+                        >
+                          {CardContent}
+                        </a>
+                      );
+                    }
+
+                    return (
+                      <div 
+                        key={w.id} 
+                        className="search-result-card" 
+                        onClick={() => handleResultClick('wiki', w)}
+                      >
+                        {CardContent}
                       </div>
-                      {w.url && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '8px' }}>{w.url}</p>}
-                      <p>{w.description?.substring(0, 150)}...</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
