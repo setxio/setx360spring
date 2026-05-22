@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, User, MessageSquare, Store, ShoppingBag, ArrowRight, Loader2, Map } from 'lucide-react';
+import { Search, X, User, MessageSquare, Store, ShoppingBag, ArrowRight, Loader2, Map, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
@@ -109,6 +109,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
     if (activeTab === 'all' || activeTab === 'stores') results.stores?.forEach((s: any) => items.push({ type: 'stores', data: s }));
     if (activeTab === 'all' || activeTab === 'posts') results.posts?.forEach((p: any) => items.push({ type: 'posts', data: p }));
     if (activeTab === 'all' || activeTab === 'products') results.products?.forEach((p: any) => items.push({ type: 'products', data: p }));
+    if (activeTab === 'all' || activeTab === 'wiki') results.wiki?.forEach((w: any) => items.push({ type: 'wiki', data: w }));
     return items;
   };
 
@@ -130,6 +131,9 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
         break;
       case 'products':
         onNavigate('market', 0); // Market home
+        break;
+      case 'wiki':
+        window.open(item.url || item.image_url, '_blank', 'noopener,noreferrer');
         break;
     }
   };
@@ -175,6 +179,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
               <button className={activeTab === 'stores' ? 'active' : ''} onClick={() => setActiveTab('stores')}>Shops</button>
               <button className={activeTab === 'posts' ? 'active' : ''} onClick={() => setActiveTab('posts')}>Feed</button>
               <button className={activeTab === 'products' ? 'active' : ''} onClick={() => setActiveTab('products')}>Market</button>
+              <button className={activeTab === 'wiki' ? 'active' : ''} onClick={() => setActiveTab('wiki')}>Wiki</button>
             </div>
           </div>
         </div>
@@ -322,6 +327,28 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
                         <div className="result-info">
                           <span className="result-name">{pd.name}</span>
                           <span className="result-subline">${pd.price}</span>
+                        </div>
+                        <ArrowRight size={14} className="result-arrow" />
+                      </div>
+                    );
+                  })}
+                </section>
+              )}
+
+              {/* Wiki */}
+              {(activeTab === 'all' || activeTab === 'wiki') && results.wiki?.length > 0 && (
+                <section className="results-section">
+                  <h3><Globe size={16} /> Web & Intel</h3>
+                  {results.wiki.map((w: any, idx: number) => {
+                    const globalIdx = (activeTab === 'all' ? ((results.profiles?.length || 0) + (results.stores?.length || 0) + (results.posts?.length || 0) + (results.products?.length || 0)) : 0) + idx;
+                    return (
+                      <div key={w.id} className={`result-item ${selectedIndex === globalIdx ? 'selected' : ''}`} onClick={() => handleResultClick('wiki', w)}>
+                        <div className="result-img-wrapper">
+                          <Globe size={20} />
+                        </div>
+                        <div className="result-info">
+                          <span className="result-name">{w.title}</span>
+                          <span className="result-subline">{w.description?.substring(0, 50)}...</span>
                         </div>
                         <ArrowRight size={14} className="result-arrow" />
                       </div>

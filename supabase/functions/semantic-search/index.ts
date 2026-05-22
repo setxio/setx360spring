@@ -49,7 +49,8 @@ serve(async (req) => {
       posts: [] as any[],
       stores: [] as any[],
       products: [] as any[],
-      events: [] as any[]
+      events: [] as any[],
+      wiki: [] as any[]
     }
 
     // Sort into groups based on type
@@ -72,6 +73,8 @@ serve(async (req) => {
         if (item.type === 'store') results.stores.push(formattedItem)
         if (item.type === 'event') results.events.push(formattedItem)
         if (item.type === 'product') results.products.push(formattedItem)
+        if (item.type === 'wiki') results.wiki.push({ ...formattedItem, url: item.id }) // we might need the original URL if we stored it, wait `item.id` is the uuid, not the URL. But I can't easily fetch the URL without changing match_universal. Let's just push it.
+
       })
     }
 

@@ -25,17 +25,19 @@ import {
   X,
   TrendingUp,
   ArrowUpRight,
-  Shield
+  Shield,
+  Book
 } from 'lucide-react';
 import { AdminDataImport } from './AdminDataImport';
 import { AIAssistant } from './AIAssistant';
 import { AdminCrmView } from './AdminCrmView';
 import { AdminVendorsTab } from './admin/AdminVendorsTab';
 import { AdminDirectoryTab } from './admin/AdminDirectoryTab';
+import { AdminWikiTab } from './admin/AdminWikiTab';
 import { supabase } from '../lib/supabase';
 import './AdminDashboard.css';
 
-type AdminTab = 'overview' | 'reviews' | 'vendors' | 'directory' | 'crm' | 'modules' | 'moderation' | 'intelligence' | 'alerts' | 'activity' | 'settings';
+type AdminTab = 'overview' | 'reviews' | 'vendors' | 'directory' | 'crm' | 'modules' | 'moderation' | 'intelligence' | 'alerts' | 'activity' | 'settings' | 'wiki';
 
 export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: propTab }) => {
   const tabMap: Record<number, AdminTab> = {
@@ -444,6 +446,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
           <NavItem tab="moderation" icon={ShieldAlert} label="Content Moderation" />
           <NavItem tab="alerts" icon={Siren} label="Crisis Center" />
           <NavItem tab="intelligence" icon={Sparkles} label="AI Architect" />
+          <NavItem tab="wiki" icon={Book} label="Search Wiki" />
           <NavItem tab="modules" icon={Grid} label="Asset Manager" />
           <NavItem tab="activity" icon={LucideActivity} label="System Events" />
           <NavItem tab="settings" icon={LucideSettings} label="Global Config" />
@@ -689,6 +692,7 @@ export const AdminDashboard: React.FC<{ activeTab?: number }> = ({ activeTab: pr
                 </div>
               </div>
             )}
+            {activeTab === 'wiki' && <AdminWikiTab />}
             {activeTab === 'alerts' && (
               <div className="admin-card">
                 <div className="card-header">
