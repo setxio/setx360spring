@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { SETX_COUNTY_LIST } from '../utils/geo';
 import './ServicesView.css';
 
@@ -68,16 +69,28 @@ const SERVICES = [
 ];
 
 export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user, scope = 'city' }) => {
-  const { theme } = useApp();
+  const { theme, setEnv, setActiveTab } = useApp();
+  const { toast } = useToast();
   const isSETX = theme.startsWith('setx-');
   const [searchQuery, setSearchQuery] = useState('');
   const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
 
+  // Scheduling State
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedProId, setSelectedProId] = useState<string | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
+  const [isBooking, setIsBooking] = useState(false);
+
   React.useEffect(() => {
     fetchServices();
   }, [scope, user]);
+
+  React.useEffect(() => {
+    if (activeTab === 3 && user) fetchMyBookings();
+  }, [activeTab, user]);
 
   const fetchServices = async () => {
     setIsLoading(true);
@@ -137,13 +150,81 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
         tags: [store.subcategory || 'Professional'],
         isVerified: store.is_verified || false
       }));
-      setServices(mapped.length > 0 ? mapped : SERVICES);
+      setServices(mapped.length > 0 ? mapped : []);
       setEscalatedScope(currentEscalation);
     } else {
-      setServices(SERVICES);
+      setServices([]);
       setEscalatedScope(null);
     }
     setIsLoading(false);
+  };
+
+  const fetchMyBookings = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('service_bookings')
+        .select('*, store:stores(name, address)')
+        .eq('user_id', user.id)
+        .order('booking_date', { ascending: true });
+      setMyBookings(data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleHireClick = (proId: string) => {
+    setSelectedProId(proId);
+    setActiveTab(2); // Jump to Schedule Tab
+  };
+
+  const fetchAvailableSlots = async (date: Date, proId: string) => {
+    // In a real MVP, we fetch from service_schedules and cross-reference service_bookings.
+    // For this prototype, if it's not Sunday, we assume these slots are open, minus random bookings.
+    if (date.getDay() === 0) {
+      setAvailableSlots([]);
+      return;
+    }
+    const { data: bookings } = await supabase
+      .from('service_bookings')
+      .select('booking_time')
+      .eq('store_id', proId)
+      .eq('booking_date', date.toISOString().split('T')[0]);
+    
+    const bookedTimes = new Set((bookings || []).map(b => b.booking_time));
+    const allSlots = ['09:00:00', '11:00:00', '13:30:00', '15:00:00'];
+    setAvailableSlots(allSlots.filter(s => !bookedTimes.has(s)));
+  };
+
+  const onDateSelect = (day: number) => {
+    const d = new Date();
+    d.setDate(day);
+    setSelectedDate(d);
+    if (selectedProId) {
+      fetchAvailableSlots(d, selectedProId);
+    }
+  };
+
+  const confirmBooking = async (timeString: string) => {
+    if (!user || !selectedProId || !selectedDate) return;
+    setIsBooking(true);
+    try {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      const { error } = await supabase.from('service_bookings').insert({
+        store_id: selectedProId,
+        user_id: user.id,
+        booking_date: dateStr,
+        booking_time: timeString,
+        status: 'pending'
+      });
+      if (error) throw error;
+      toast('Booking Request Sent!', 'success');
+      setActiveTab(3); // Jump to My Bookings
+    } catch (e: any) {
+      toast(e.message || 'Booking failed', 'error');
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   // Derived scope name for UI labels
@@ -229,7 +310,7 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
                   <span className="pro-price">{service.price}</span>
                   <div className="pro-actions">
                     <button className="contact-icon-btn"><MessageSquare size={18} /></button>
-                    <button className="hire-btn">Hire Now</button>
+                    <button className="hire-btn" onClick={() => handleHireClick(service.id)}>Hire Now</button>
                   </div>
                 </div>
               </div>
@@ -264,45 +345,113 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
                <p>{s.tags[0]}</p>
                <span><Star size={12} fill="#f59e0b" color="#f59e0b" /> {s.rating}</span>
              </div>
-             <button className="chat-mini-btn"><MessageSquare size={16} /></button>
+             <button className="chat-mini-btn" onClick={() => handleHireClick(s.id)}><Calendar size={16} /></button>
           </div>
         ))}
       </div>
     </div>
   );
 
-  const renderSchedule = () => (
-    <div className="services-content">
-      <div className="section-header">
-        <h2>Availability</h2>
-      </div>
-      <div className="calendar-placeholder glass">
-        <div className="cal-header">October 2026</div>
-        <div className="cal-grid">
-          {[...Array(31)].map((_, i) => (
-            <div key={i} className={`cal-day ${i === 12 ? 'active' : ''}`}>{i + 1}</div>
-          ))}
+  const renderSchedule = () => {
+    const today = new Date();
+    const currentMonth = today.toLocaleString('default', { month: 'long' });
+    const currentYear = today.getFullYear();
+    const selectedPro = services.find(s => s.id === selectedProId);
+
+    return (
+      <div className="services-content">
+        <div className="section-header">
+          <h2>Availability</h2>
         </div>
-        <p className="cal-hint">Select a date to see available pros.</p>
+        {!selectedProId ? (
+          <div className="calendar-placeholder glass" style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <p>Please select a Professional from the <strong>Home</strong> or <strong>Pros</strong> tab to view their schedule.</p>
+            <button className="b-btn primary" onClick={() => setActiveTab(1)} style={{ marginTop: 16 }}>Browse Pros</button>
+          </div>
+        ) : (
+          <div className="calendar-placeholder glass">
+            <div className="cal-header">
+              <span style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>Booking with {selectedPro?.name}</span>
+              <br/>
+              {currentMonth} {currentYear}
+            </div>
+            <div className="cal-grid">
+              {[...Array(30)].map((_, i) => {
+                const day = i + 1;
+                const isSelected = selectedDate?.getDate() === day;
+                return (
+                  <div 
+                    key={i} 
+                    className={`cal-day ${isSelected ? 'active' : ''}`}
+                    onClick={() => onDateSelect(day)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {day}
+                  </div>
+                );
+              })}
+            </div>
+            
+            {selectedDate ? (
+              <div style={{ marginTop: 24, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
+                <h4 style={{ marginBottom: 12 }}>Available Slots for {selectedDate.toLocaleDateString()}</h4>
+                {availableSlots.length === 0 ? (
+                  <p className="cal-hint">No slots available on this date.</p>
+                ) : (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {availableSlots.map(slot => (
+                      <button 
+                        key={slot} 
+                        onClick={() => confirmBooking(slot)}
+                        disabled={isBooking}
+                        style={{
+                          background: 'var(--surface)',
+                          border: '1px solid var(--primary)',
+                          color: 'var(--primary)',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontWeight: 600
+                        }}
+                      >
+                        {slot.substring(0, 5)} {parseInt(slot) >= 12 ? 'PM' : 'AM'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="cal-hint">Select a date to see available time slots.</p>
+            )}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderBookings = () => (
     <div className="services-content">
       <div className="section-header">
         <h2>My Bookings</h2>
       </div>
-      <div className="booking-card glass">
-        <div className="booking-status">CONFIRMED</div>
-        <h3>SETX Electric Pros</h3>
-        <p><Calendar size={14} /> Oct 24, 2026 • 2:00 PM</p>
-        <p><MapPin size={14} /> 123 Pine St, Groves, TX</p>
-        <div className="booking-actions">
-          <button className="b-btn secondary">Reschedule</button>
-          <button className="b-btn primary">Manage</button>
+      {myBookings.length === 0 ? (
+        <div className="calendar-placeholder glass" style={{ textAlign: 'center' }}>
+          <p>You have no upcoming bookings.</p>
         </div>
-      </div>
+      ) : (
+        myBookings.map(b => (
+          <div key={b.id} className="booking-card glass" style={{ marginBottom: 16 }}>
+            <div className="booking-status">{b.status.toUpperCase()}</div>
+            <h3>{b.store?.name || 'Local Pro'}</h3>
+            <p><Calendar size={14} /> {b.booking_date} • {b.booking_time}</p>
+            {b.store?.address && <p><MapPin size={14} /> {b.store.address}</p>}
+            <div className="booking-actions">
+              {b.status === 'pending' && <button className="b-btn secondary">Reschedule</button>}
+              <button className="b-btn primary">Manage</button>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 
@@ -311,7 +460,7 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
       <div className="be-a-pro glass">
         <h3>Are you a local pro?</h3>
         <p>List your services and grow your business in Southeast Texas.</p>
-        <button className="join-btn">Register as Pro</button>
+        <button className="join-btn" onClick={() => setEnv('dashboard')}>Register as Pro</button>
       </div>
       <div className="service-history-mini">
         <h4>Recent History</h4>
