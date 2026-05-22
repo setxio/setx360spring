@@ -73,16 +73,29 @@ serve(async (req) => {
 
       // ─── BUSINESS PROVISIONING ──────────────────────────────────────────────
       case 'provision_business': {
-        const { csmTenantId, businessName, industry, location, zipCode, logoUrl, description, ownerEmail, ownerName } = data
+        const { csmTenantId, businessName, industry, type, location, zipCode, logoUrl, description, ownerEmail, ownerName } = data
+        
+        // Normalize industry to standard consumer categories
+        let normalizedCategory = 'Retail';
+        const ind = (industry || '').toLowerCase();
+        if (ind.includes('restaurant') || ind.includes('food') || ind.includes('drink')) {
+          normalizedCategory = 'Food & Drink';
+        } else if (ind.includes('service')) {
+          normalizedCategory = 'Services';
+        }
+
+        // Store type: can be physical, online, or all. Fallback to physical.
+        const storeType = type || 'physical';
+
         const { data: store, error: storeError } = await supabaseAdmin.from('stores').insert([{
-            name: businessName, type: 'csm_partner', category: industry, location: location || zipCode, zip: zipCode, city: location,
+            name: businessName, type: storeType, category: normalizedCategory, location: location || zipCode, zip: zipCode, city: location,
             description: description || `Official ${businessName} store — powered by SETX 360.`,
             bio: description || `Welcome to ${businessName}. Find us on the SETX 360 network.`,
             logo_url: logoUrl || null, status: 'active', is_verified: false, csm_tenant_id: csmTenantId,
             website_url: `https://${businessName.toLowerCase().replace(/\s+/g, '-')}.setx.io`
           }]).select().single()
         if (storeError) throw storeError
-        const { data: profile } = await supabaseAdmin.from('profiles').insert([{ name: businessName, email: ownerEmail, role: 'merchant', city: location || 'Southeast Texas', bio: `${businessName} — ${industry}. Now on SETX 360.` }]).select().single()
+        const { data: profile } = await supabaseAdmin.from('profiles').insert([{ name: businessName, email: ownerEmail, role: 'merchant', city: location || 'Southeast Texas', bio: `${businessName} — ${normalizedCategory}. Now on SETX 360.` }]).select().single()
         return new Response(JSON.stringify({ store_id: store.id, profile_id: profile?.id }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
@@ -193,14 +206,25 @@ serve(async (req) => {
 
       // ─── CROSS-NODE SETTINGS SYNC ────────────────────────────────────────────
       case 'sync_store_settings': {
-        const { csmTenantId, name, category, description, isVacationMode, websiteUrl, logoUrl } = data
+        const { csmTenantId, name, category, type, description, isVacationMode, websiteUrl, logoUrl } = data
         if (!csmTenantId) {
           return new Response(JSON.stringify({ error: 'csmTenantId is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
         const updateFields: any = {}
         if (name !== undefined) updateFields.name = name
-        if (category !== undefined) updateFields.category = category
+        if (category !== undefined) {
+          // Normalize industry to standard consumer categories
+          let normalizedCategory = 'Retail';
+          const ind = (category || '').toLowerCase();
+          if (ind.includes('restaurant') || ind.includes('food') || ind.includes('drink')) {
+            normalizedCategory = 'Food & Drink';
+          } else if (ind.includes('service')) {
+            normalizedCategory = 'Services';
+          }
+          updateFields.category = normalizedCategory;
+        }
+        if (type !== undefined) updateFields.type = type
         if (description !== undefined) {
           updateFields.description = description
           updateFields.bio = description
