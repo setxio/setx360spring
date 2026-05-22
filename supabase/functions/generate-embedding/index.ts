@@ -19,7 +19,7 @@ serve(async (req) => {
     if (table === 'profiles') {
       textToEmbed = `${record.first_name || ''} ${record.last_name || ''} ${record.bio || ''}`
     } else if (table === 'posts') {
-      textToEmbed = `${record.title || ''} ${record.content || ''}`
+      textToEmbed = `${record.content || ''}`
     } else if (table === 'stores') {
       textToEmbed = `${record.name || ''} ${record.description || ''} ${record.bio || ''}`
     } else if (table === 'events') {

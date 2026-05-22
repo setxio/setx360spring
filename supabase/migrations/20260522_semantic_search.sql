@@ -42,13 +42,7 @@ as $$
     union all
 
     -- POSTS
-    select
-      po.id::text,
-      'post' as type,
-      po.title as title,
-      po.content as description,
-      null as image_url,
-      1 - (po.embedding <=> query_embedding) as similarity
+    select po.id::text, 'post' as type, substring(po.content from 1 for 50) || '...' as title, po.content as description, null as image_url, 1 - (po.embedding <=> query_embedding) as similarity
     from public.posts po
     where po.embedding is not null
       and 1 - (po.embedding <=> query_embedding) > match_threshold
