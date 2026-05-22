@@ -338,7 +338,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       const isAdmin = user?.role === 'admin';
       const envs: Env[] = [];
       if (isAdmin) envs.push('admin');
-      envs.push('me', 'discover', 'search', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs');
+      envs.push('me', 'search', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs');
       const hasDashboardRole = user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role);
       const hasClearances = user?.clearances && user.clearances.length > 0;
       if ((hasDashboardRole || hasClearances) && !isAdmin) envs.push('dashboard');

@@ -149,3 +149,81 @@
   color: white;
   transform: translateY(-2px);
 }
+
+[data-theme*="dark"] .quick-link-pill:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.search-zero-state {
+  margin-top: 40px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.zero-state-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zero-state-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.zero-state-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.zero-state-tag {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme*="dark"] .zero-state-tag {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.zero-state-tag:hover {
+  background: var(--bg-secondary);
+  border-color: var(--primary);
+}
+
+[data-theme*="dark"] .zero-state-tag:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.zero-state-tag.trending {
+  color: var(--primary);
+  border-color: rgba(112, 0, 244, 0.3);
+}
+
+[data-theme*="dark"] .zero-state-tag.trending {
+  background: rgba(112, 0, 244, 0.1);
+  border-color: rgba(112, 0, 244, 0.4);
+}
+
+.zero-state-tag.trending:hover {
+  background: rgba(112, 0, 244, 0.2);
+}

@@ -225,8 +225,8 @@ export interface SwitcherItem {
 
 export const switcherItems: SwitcherItem[] = [
   { id: 'me',       icon: <User size={18} />,       label: 'Me' },
-  { id: 'discover', icon: <Compass size={18} />,    label: 'Discover' },
   { id: 'search',   icon: <SearchIcon size={18} />, label: 'Search' },
+  { id: 'discover', icon: <Compass size={18} />,    label: 'Discover' },
   { id: 'social',   icon: <Rss size={18} />,        label: 'Social' },
   { id: 'market',   icon: <Store size={18} />,      label: 'Market' },
   { id: 'events',   icon: <Calendar size={18} />,   label: 'Events' },

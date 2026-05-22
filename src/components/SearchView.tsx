@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Compass, Rss, Store, Calendar, MapPin, Zap } from 'lucide-react';
+import { Search, Compass, Rss, Store, Calendar, MapPin, Zap, TrendingUp, History } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { motion } from 'framer-motion';
 import './SearchView.css';
@@ -32,6 +32,18 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
     { icon: <Rss size={16} />, label: 'Social', env: 'social' },
     { icon: <Calendar size={16} />, label: 'Events', env: 'events' },
     { icon: <Zap size={16} />, label: 'Eats', env: 'eats' }
+  ];
+
+  const trendingSearches = [
+    "Flash Sales Today",
+    "Weekend Events in Beaumont",
+    "Local Plumbers",
+    "Food Trucks Near Me"
+  ];
+
+  const recentSearches = [
+    "Used Cars",
+    "Apartments for Rent"
   ];
 
   return (
@@ -73,6 +85,26 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
               {link.icon} {link.label}
             </button>
           ))}
+        </div>
+
+        <div className="search-zero-state">
+          <div className="zero-state-section">
+            <h3 className="zero-state-title"><History size={14} /> Recent</h3>
+            <div className="zero-state-tags">
+              {recentSearches.map(s => (
+                <span key={s} className="zero-state-tag" onClick={handleSearchClick}>{s}</span>
+              ))}
+            </div>
+          </div>
+          
+          <div className="zero-state-section">
+            <h3 className="zero-state-title"><TrendingUp size={14} /> Trending in {scope === 'city' ? user?.community || 'your area' : 'SETX'}</h3>
+            <div className="zero-state-tags">
+              {trendingSearches.map(s => (
+                <span key={s} className="zero-state-tag trending" onClick={handleSearchClick}>{s}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
