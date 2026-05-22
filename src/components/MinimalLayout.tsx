@@ -378,7 +378,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
       flexDirection: 'column'
     }}>
       {/* Top Header */}
-      {!isSetxIO && (
+      {!isSetxIO && env !== 'search' && (
         <header style={{
           height: '64px',
           background: 'var(--glass-bg)',

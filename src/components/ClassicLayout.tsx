@@ -431,7 +431,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {!isSetxIO && (
+      {!isSetxIO && env !== 'search' && (
         <div className="sticky-header-group glass">
           <ThemeTopBar key={env + '-' + theme} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 0', minHeight: '52px' }}>
