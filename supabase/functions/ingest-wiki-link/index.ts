@@ -41,6 +41,32 @@ serve(async (req) => {
       }
     })
 
+    // Extract links for crawler
+    const discoveredLinks: string[] = []
+    const baseUrl = new URL(url)
+    
+    $('a').each((_, el) => {
+      const href = $(el).attr('href')
+      if (href) {
+        try {
+          // Resolve relative URLs using base domain
+          const linkUrl = new URL(href, baseUrl.origin)
+          
+          // Only keep same-domain links, exclude fragments/anchors or weird schemas
+          if (linkUrl.hostname === baseUrl.hostname && (linkUrl.protocol === 'http:' || linkUrl.protocol === 'https:')) {
+            // Remove hash fragments to avoid crawling same page multiple times
+            linkUrl.hash = ''
+            discoveredLinks.push(linkUrl.toString())
+          }
+        } catch (e) {
+          // invalid url, ignore
+        }
+      }
+    })
+
+    // Remove duplicates
+    const uniqueLinks = [...new Set(discoveredLinks)]
+
     const rawContent = paragraphs.join('\n\n')
     // Take up to 2000 chars for embedding to fit into token limits safely
     const contentToEmbed = (title + ' ' + description + ' ' + rawContent).substring(0, 2000)
@@ -89,7 +115,7 @@ serve(async (req) => {
 
     if (error) throw error
 
-    return new Response(JSON.stringify({ success: true, data: insertedData }), {
+    return new Response(JSON.stringify({ success: true, data: insertedData, links: uniqueLinks }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

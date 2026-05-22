@@ -8,11 +8,10 @@ interface Props {
 }
 
 export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
-  const [entries, setEntries] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [url, setUrl] = useState('');
   const [linkType, setLinkType] = useState('general');
   const [isIngesting, setIsIngesting] = useState(false);
+  const [deepCrawl, setDeepCrawl] = useState(false);
+  const [crawlProgress, setCrawlProgress] = useState({ current: 0, total: 0, currentUrl: '' });
   const { success, error: toastError } = useToast();
 
   useEffect(() => {
@@ -32,28 +31,58 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
     setIsLoading(false);
   };
 
+  const processQueue = async (startUrl: string, maxPages: number = 50) => {
+    let queue = [startUrl];
+    let visited = new Set<string>();
+    let processedCount = 0;
+
+    setIsIngesting(true);
+    setCrawlProgress({ current: 0, total: 1, currentUrl: startUrl });
+
+    while (queue.length > 0 && processedCount < maxPages) {
+      const currentUrl = queue.shift()!;
+      if (visited.has(currentUrl)) continue;
+      
+      visited.add(currentUrl);
+      setCrawlProgress({ current: processedCount + 1, total: visited.size + queue.length, currentUrl });
+
+      try {
+        const { data, error } = await supabase.functions.invoke('ingest-wiki-link', {
+          body: { url: currentUrl, type: linkType }
+        });
+
+        if (error) throw error;
+        
+        // Add discovered links to queue if deepCrawl is enabled
+        if (deepCrawl && data?.links) {
+          data.links.forEach((link: string) => {
+            if (!visited.has(link) && !queue.includes(link)) {
+              queue.push(link);
+            }
+          });
+        }
+        
+        processedCount++;
+        // Quick update to UI to show progress immediately
+        if (processedCount % 5 === 0) fetchEntries();
+      } catch (err: any) {
+        console.error(`Failed to ingest ${currentUrl}:`, err);
+      }
+    }
+    
+    setIsIngesting(false);
+    setCrawlProgress({ current: 0, total: 0, currentUrl: '' });
+    success(deepCrawl ? `Deep crawl complete! Processed ${processedCount} pages.` : 'Link successfully ingested!');
+    setUrl('');
+    fetchEntries();
+    if (onRefresh) onRefresh();
+  };
+
   const handleIngest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
     
-    setIsIngesting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('ingest-wiki-link', {
-        body: { url, type: linkType }
-      });
-
-      if (error) throw error;
-      
-      success('Link successfully ingested and indexed for Search!');
-      setUrl('');
-      fetchEntries();
-      if (onRefresh) onRefresh();
-    } catch (err: any) {
-      console.error(err);
-      toastError(err.message || 'Failed to ingest link');
-    } finally {
-      setIsIngesting(false);
-    }
+    await processQueue(url);
   };
 
   const handleDelete = async (id: string) => {
@@ -109,6 +138,16 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
             <option value="shop">External Shop</option>
             <option value="wiki">Wiki Page</option>
           </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12 }}>
+            <input 
+              type="checkbox" 
+              id="deepCrawl" 
+              checked={deepCrawl} 
+              onChange={(e) => setDeepCrawl(e.target.checked)} 
+              style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
+            />
+            <label htmlFor="deepCrawl" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none' }}>Deep Crawl Site</label>
+          </div>
           <button 
             type="submit" 
             disabled={isIngesting || !url}
@@ -118,11 +157,22 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
               opacity: isIngesting ? 0.7 : 1
             }}
           >
-            {isIngesting ? <><Loader2 size={18} className="animate-spin" /> Ingesting...</> : 'Ingest Link'}
+            {isIngesting ? <><Loader2 size={18} className="animate-spin" /> Crawling...</> : 'Ingest Link'}
           </button>
         </form>
+        {isIngesting && deepCrawl && (
+          <div style={{ marginTop: 16, padding: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 12, border: '1px solid var(--admin-accent)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: 8 }}>
+              <span>Scraping: <span style={{ color: 'var(--admin-accent)' }}>{crawlProgress.currentUrl}</span></span>
+              <span>{crawlProgress.current} / {Math.min(crawlProgress.total, 50)} Pages (Max 50)</span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${(crawlProgress.current / Math.min(crawlProgress.total, 50)) * 100}%`, background: 'var(--admin-accent)', transition: 'width 0.3s ease' }} />
+            </div>
+          </div>
+        )}
         <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: 12, marginBottom: 0 }}>
-          The AI will read the page, extract the text, generate a vector embedding, and surface it when citizens search for related concepts.
+          {deepCrawl ? 'The deep crawler will discover and ingest up to 50 internal pages from the same domain.' : 'The AI will read the page, extract the text, generate a vector embedding, and surface it.'}
         </p>
       </div>
 
