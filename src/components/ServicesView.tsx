@@ -460,7 +460,7 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
       <div className="be-a-pro glass">
         <h3>Are you a local pro?</h3>
         <p>List your services and grow your business in Southeast Texas.</p>
-        <button className="join-btn" onClick={() => setEnv('dashboard')}>Register as Pro</button>
+        <button className="join-btn" onClick={() => window.open('https://partner.setx.io/login', '_blank')}>Register as Pro</button>
       </div>
       <div className="service-history-mini">
         <h4>Recent History</h4>

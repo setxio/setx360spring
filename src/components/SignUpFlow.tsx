@@ -37,14 +37,6 @@ type AccountType = {
 
 const accountTypes: AccountType[] = [
   { id: 'resident', label: 'Resident', icon: <User />, description: 'Local resident of your community' },
-  { id: 'business', label: 'Business', icon: <Briefcase />, description: 'Local business owner' },
-  { id: 'chamber', label: 'Chamber of Commerce', icon: <Building2 />, description: 'Member of local Chamber' },
-  { id: 'official', label: 'City Official', icon: <Crown />, description: 'Local government representative' },
-  { id: 'artist', label: 'Artist', icon: <Palette />, description: 'Creative and local talent' },
-  { id: 'venue', label: 'Venue', icon: <Music />, description: 'Local spot, event space, or venue' },
-  { id: 'media', label: 'Media', icon: <Tv />, description: 'Official news and reporting' },
-  { id: 'non_profit', label: 'Non Profit', icon: <HeartHandshake />, description: 'Community service & outreach' },
-  { id: 'church', label: 'Church', icon: <Church />, description: 'Faith and ministry' },
   { id: 'guest', label: 'Guest', icon: <Globe />, description: 'Visiting or new to the area' },
 ];
 
@@ -448,6 +440,57 @@ export const SignUpFlow: React.FC = () => {
                     </button>
                   ))}
                 </div>
+
+                {/* Premium Glassmorphic CTA card for Business/Organization signups */}
+                <div 
+                  className="premium-card glass-partner-cta"
+                  style={{
+                    marginTop: '24px',
+                    padding: '20px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(139, 92, 246, 0.25)',
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%)',
+                    backdropFilter: 'blur(12px)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onClick={() => window.open('https://setx.io/signup', '_blank')}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(139, 92, 246, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.25)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left' }}>
+                    <div style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      borderRadius: '10px', 
+                      background: 'rgba(139, 92, 246, 0.15)', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '1.2rem',
+                      color: '#a855f7'
+                    }}>
+                      💼
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc', marginBottom: '2px' }}>
+                        Business or Organization?
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                        Looking to manage your business or organization? Register as a Partner on setx.io →
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="login-prompt" style={{ textAlign: 'center', marginTop: '24px' }}>
                   <button className="back-btn" onClick={() => setIsLoginMode(true)} style={{ margin: '0 auto', fontSize: '1rem' }}>
                     Already have an account? <span style={{ color: '#a855f7', fontWeight: 700 }}>Sign In</span>

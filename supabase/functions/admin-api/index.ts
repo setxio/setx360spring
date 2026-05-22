@@ -127,6 +127,98 @@ serve(async (req) => {
         return new Response(JSON.stringify(settings), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
+      // ─── CROSS-NODE SSO VERIFICATION ─────────────────────────────────────────
+      case 'verify_sso_token': {
+        const { token } = data
+        if (!token) {
+          return new Response(JSON.stringify({ error: 'Token is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+        
+        try {
+          const jwtSecret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+          
+          // Native Web Crypto JWT verification
+          const [headerB64, payloadB64, signatureB64] = token.split('.');
+          if (!headerB64 || !payloadB64 || !signatureB64) {
+            throw new Error('Invalid token structure');
+          }
+
+          const base64UrlDecode = (str: string) => {
+            let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            while (base64.length % 4) base64 += '=';
+            return atob(base64);
+          };
+
+          const encoder = new TextEncoder();
+          const keyData = encoder.encode(jwtSecret);
+          const key = await crypto.subtle.importKey(
+            'raw',
+            keyData,
+            { name: 'HMAC', hash: 'SHA-256' },
+            false,
+            ['verify']
+          );
+
+          const dataToVerify = encoder.encode(`${headerB64}.${payloadB64}`);
+          
+          const sigStr = base64UrlDecode(signatureB64);
+          const sigBytes = new Uint8Array(sigStr.length);
+          for (let i = 0; i < sigStr.length; i++) {
+            sigBytes[i] = sigStr.charCodeAt(i);
+          }
+
+          const isValid = await crypto.subtle.verify(
+            'HMAC',
+            key,
+            sigBytes,
+            dataToVerify
+          );
+
+          if (!isValid) {
+            return new Response(JSON.stringify({ error: 'Signature verification failed' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+          }
+
+          const payload = JSON.parse(base64UrlDecode(payloadB64));
+          
+          // Verify expiration
+          if (payload.exp && Date.now() / 1000 > payload.exp) {
+            return new Response(JSON.stringify({ error: 'Token has expired' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+          }
+
+          return new Response(JSON.stringify({ verified: true, payload }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        } catch (err) {
+          return new Response(JSON.stringify({ error: 'Verification error', message: err.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+      }
+
+      // ─── CROSS-NODE SETTINGS SYNC ────────────────────────────────────────────
+      case 'sync_store_settings': {
+        const { csmTenantId, name, category, description, isVacationMode, websiteUrl, logoUrl } = data
+        if (!csmTenantId) {
+          return new Response(JSON.stringify({ error: 'csmTenantId is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+
+        const updateFields: any = {}
+        if (name !== undefined) updateFields.name = name
+        if (category !== undefined) updateFields.category = category
+        if (description !== undefined) {
+          updateFields.description = description
+          updateFields.bio = description
+        }
+        if (isVacationMode !== undefined) updateFields.is_vacation_mode = isVacationMode
+        if (websiteUrl !== undefined) updateFields.website_url = websiteUrl
+        if (logoUrl !== undefined) updateFields.logo_url = logoUrl
+
+        const { data: updatedStore, error: updateError } = await supabaseAdmin
+          .from('stores')
+          .update(updateFields)
+          .eq('csm_tenant_id', csmTenantId)
+          .select()
+
+        if (updateError) throw updateError
+        return new Response(JSON.stringify({ success: true, updatedStore }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
       default:
         return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
