@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabase';
 import type { User, StaffClearance } from '../types/user';
 
-export type Env = 'discover' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me';
+export type Env = 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'

@@ -14,6 +14,7 @@ const RadarMapView     = lazy(() => import('./components/RadarMapView').then(m =
 const SocialFeed       = lazy(() => import('./components/SocialFeed').then(m => ({ default: m.SocialFeed })));
 const MarketHome       = lazy(() => import('./components/MarketHome').then(m => ({ default: m.MarketHome })));
 const DiscoverView     = lazy(() => import('./components/DiscoverView').then(m => ({ default: m.DiscoverView })));
+const SearchView       = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
 const StoresDirectory  = lazy(() => import('./components/StoresDirectory').then(m => ({ default: m.StoresDirectory })));
 const ProductSearch    = lazy(() => import('./components/ProductSearch').then(m => ({ default: m.ProductSearch })));
 const UserDirectory    = lazy(() => import('./components/SocialDirectories').then(m => ({ default: m.UserDirectory })));
@@ -325,6 +326,13 @@ const App: React.FC = () => {
         case 6: return <SettingsPage user={user} theme={theme} toggleTheme={toggleTheme} setTheme={setTheme} />;
         default: return <MePortal />;
       }
+    }
+
+    if (env === 'search') {
+      return <SearchView user={user} scope={scope} onNavigate={(envStr) => {
+        setEnv(envStr as any);
+        setActiveTab(0);
+      }} />;
     }
 
     if (env === 'discover') {

@@ -76,7 +76,7 @@ import { TevisChat } from './TevisChat';
 import { GlobalChatBubbles } from './GlobalChatBubbles';
 import { OnboardingOverlay } from './OnboardingOverlay';
 import {
-  meNav, discoverNav, socialNav, marketNav, eatsNav, ridesNav,
+  meNav, discoverNav, searchNav, socialNav, marketNav, eatsNav, ridesNav,
   servicesNav, eventsNav, walletNav, careNav, homesNav, autoNav,
   travelNav, jobsNav, mediaNav, artNav, faithNav, sportsNav,
   newsNav, civicsNav, vendorNav, civicNav, adminNav, switcherItems
@@ -338,7 +338,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       const isAdmin = user?.role === 'admin';
       const envs: Env[] = [];
       if (isAdmin) envs.push('admin');
-      envs.push('me', 'discover', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs');
+      envs.push('me', 'discover', 'search', 'social', 'events', 'news', 'faith', 'market', 'eats', 'services', 'jobs');
       const hasDashboardRole = user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role);
       const hasClearances = user?.clearances && user.clearances.length > 0;
       if ((hasDashboardRole || hasClearances) && !isAdmin) envs.push('dashboard');
@@ -386,6 +386,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   const getNavItems = () => {
     if (env === 'me') return meNav;
     if (env === 'discover') return discoverNav;
+    if (env === 'search') return searchNav;
     if (env === 'social') return socialNav;
     if (env === 'market') return marketNav;
     if (env === 'eats') return eatsNav;

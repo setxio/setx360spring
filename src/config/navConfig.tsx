@@ -36,6 +36,11 @@ export const discoverNav: NavItem[] = [
   { icon: <Bot size={24} color="var(--primary)" />, label: 'Tevis' },
 ];
 
+export const searchNav: NavItem[] = [
+  { icon: <Compass size={24} />, label: 'Home' },
+  { icon: <SearchIcon size={24} />, label: 'Search' },
+];
+
 export const socialNav: NavItem[] = [
   { icon: <Rss size={24} />, label: 'Feed' },
   { icon: <ShoppingBag size={24} />, label: 'Classifieds' },
@@ -221,6 +226,7 @@ export interface SwitcherItem {
 export const switcherItems: SwitcherItem[] = [
   { id: 'me',       icon: <User size={18} />,       label: 'Me' },
   { id: 'discover', icon: <Compass size={18} />,    label: 'Discover' },
+  { id: 'search',   icon: <SearchIcon size={18} />, label: 'Search' },
   { id: 'social',   icon: <Rss size={18} />,        label: 'Social' },
   { id: 'market',   icon: <Store size={18} />,      label: 'Market' },
   { id: 'events',   icon: <Calendar size={18} />,   label: 'Events' },
