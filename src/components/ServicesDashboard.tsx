@@ -12,6 +12,7 @@ import {
   Users,
   ShieldCheck
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 import { AdManager } from './AdManager';
 import { supabase } from '../lib/supabase';
 import { StaffManagement } from './StaffManagement';
@@ -32,10 +33,89 @@ export const ServicesDashboard: React.FC<ServicesDashboardProps> = ({ user, curr
   const [storeWallet, setStoreWallet] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'bookings' | 'ads' | 'team' | 'settings' | 'crm'>('overview');
+  
+  // Bookings/Schedule CSM state
+  const { toast } = useToast();
+  const [storeBookings, setStoreBookings] = useState<any[]>([]);
+  const [storeSchedules, setStoreSchedules] = useState<any[]>([]);
+  const [bookingsSubTab, setBookingsSubTab] = useState<'requests' | 'calendar' | 'schedule'>('requests');
 
   useEffect(() => {
     fetchServicesData();
+    if (currentStore) {
+      fetchBookings();
+      fetchSchedules();
+    }
   }, [currentStore]);
+
+  const fetchBookings = async () => {
+    const { data } = await supabase
+      .from('service_bookings')
+      .select('*, customer:profiles!service_bookings_user_id_fkey(name, avatar_url, phone)')
+      .eq('store_id', currentStore.id)
+      .order('booking_date', { ascending: true });
+    setStoreBookings(data || []);
+  };
+
+  const fetchSchedules = async () => {
+    const { data } = await supabase
+      .from('service_schedules')
+      .select('*')
+      .eq('store_id', currentStore.id);
+    
+    // Seed default if empty
+    if (!data || data.length === 0) {
+      const defaults = [...Array(7)].map((_, i) => ({
+        day_of_week: i,
+        start_time: '09:00',
+        end_time: '17:00',
+        is_active: i > 0 && i < 6 // Mon-Fri active
+      }));
+      setStoreSchedules(defaults);
+    } else {
+      // Ensure all 7 days exist in state
+      const map = new Map(data.map(d => [d.day_of_week, d]));
+      const complete = [...Array(7)].map((_, i) => map.get(i) || {
+        day_of_week: i,
+        start_time: '09:00',
+        end_time: '17:00',
+        is_active: false
+      });
+      setStoreSchedules(complete);
+    }
+  };
+
+  const updateBookingStatus = async (id: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('service_bookings')
+        .update({ status: newStatus })
+        .eq('id', id);
+      if (error) throw error;
+      toast(`Booking ${newStatus}`, 'success');
+      fetchBookings();
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
+  };
+
+  const saveSchedules = async () => {
+    try {
+      // upsert
+      const records = storeSchedules.map(s => ({
+        store_id: currentStore.id,
+        day_of_week: s.day_of_week,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        is_active: s.is_active
+      }));
+      const { error } = await supabase.from('service_schedules').upsert(records, { onConflict: 'store_id, day_of_week' });
+      if (error) throw error;
+      toast('Schedule updated!', 'success');
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
+  };
 
   const fetchServicesData = async () => {
     setIsLoading(true);
@@ -119,8 +199,126 @@ export const ServicesDashboard: React.FC<ServicesDashboardProps> = ({ user, curr
 
         {activeTab === 'bookings' && (
           <div className="vendor-orders">
-             <h3>Booking Requests & Messages</h3>
-             <p style={{ opacity: 0.5 }}>Service inquiries from customers will appear here.</p>
+            <div style={{ display: 'flex', gap: 16, marginBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 16 }}>
+              <button className={`sw-btn ${bookingsSubTab === 'requests' ? 'active' : ''}`} onClick={() => setBookingsSubTab('requests')}>Incoming Requests</button>
+              <button className={`sw-btn ${bookingsSubTab === 'calendar' ? 'active' : ''}`} onClick={() => setBookingsSubTab('calendar')}>Confirmed Calendar</button>
+              <button className={`sw-btn ${bookingsSubTab === 'schedule' ? 'active' : ''}`} onClick={() => setBookingsSubTab('schedule')}>Manage Hours</button>
+            </div>
+
+            {bookingsSubTab === 'requests' && (
+              <div>
+                <h3>Pending Inquiries</h3>
+                {storeBookings.filter(b => b.status === 'pending').length === 0 ? (
+                  <p style={{ opacity: 0.5, marginTop: 12 }}>No pending requests.</p>
+                ) : (
+                  <div className="product-list-grid" style={{ marginTop: 16 }}>
+                    {storeBookings.filter(b => b.status === 'pending').map(b => (
+                      <div key={b.id} className="product-admin-card premium-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <h4>{b.customer?.name || 'Customer'}</h4>
+                          <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{b.booking_date}</span>
+                        </div>
+                        <p style={{ marginTop: 8 }}>Time: {b.booking_time}</p>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                          <button onClick={() => updateBookingStatus(b.id, 'confirmed')} style={{ flex: 1, background: '#10b981', color: 'white', padding: '8px', borderRadius: '8px' }}>Accept</button>
+                          <button onClick={() => updateBookingStatus(b.id, 'cancelled')} style={{ flex: 1, background: 'rgba(255,255,255,0.1)', color: 'white', padding: '8px', borderRadius: '8px' }}>Decline</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {bookingsSubTab === 'calendar' && (
+              <div>
+                <h3>Confirmed Appointments</h3>
+                {storeBookings.filter(b => b.status === 'confirmed').length === 0 ? (
+                  <p style={{ opacity: 0.5, marginTop: 12 }}>No confirmed bookings yet.</p>
+                ) : (
+                  <div className="product-list-grid" style={{ marginTop: 16 }}>
+                    {storeBookings.filter(b => b.status === 'confirmed').map(b => (
+                      <div key={b.id} className="product-admin-card premium-card" style={{ borderLeft: '4px solid #10b981' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <h4>{b.customer?.name || 'Customer'}</h4>
+                          <span>{b.booking_date}</span>
+                        </div>
+                        <p style={{ color: 'var(--primary)', fontWeight: 600 }}>{b.booking_time}</p>
+                        <button onClick={() => updateBookingStatus(b.id, 'completed')} style={{ marginTop: 12, background: 'var(--primary)', color: 'white', padding: '6px 12px', borderRadius: '8px' }}>Mark Completed</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {bookingsSubTab === 'schedule' && (
+              <div className="premium-card" style={{ maxWidth: 600 }}>
+                <h3>Working Hours</h3>
+                <p style={{ opacity: 0.7, marginBottom: 24, fontSize: '0.9rem' }}>Define when customers can book your services.</p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((dayName, i) => {
+                    const sched = storeSchedules.find(s => s.day_of_week === i) || { is_active: false, start_time: '09:00', end_time: '17:00' };
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, width: 120 }}>
+                          <input 
+                            type="checkbox" 
+                            checked={sched.is_active} 
+                            onChange={(e) => {
+                              const copy = [...storeSchedules];
+                              const idx = copy.findIndex(s => s.day_of_week === i);
+                              if (idx >= 0) copy[idx].is_active = e.target.checked;
+                              setStoreSchedules(copy);
+                            }}
+                          />
+                          {dayName}
+                        </label>
+                        
+                        {sched.is_active ? (
+                          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                            <input 
+                              type="time" 
+                              value={sched.start_time}
+                              onChange={(e) => {
+                                const copy = [...storeSchedules];
+                                const idx = copy.findIndex(s => s.day_of_week === i);
+                                if (idx >= 0) copy[idx].start_time = e.target.value;
+                                setStoreSchedules(copy);
+                              }}
+                              style={{ background: 'var(--surface)', border: 'none', color: 'white', padding: '4px 8px', borderRadius: 4 }}
+                            />
+                            <span>to</span>
+                            <input 
+                              type="time" 
+                              value={sched.end_time}
+                              onChange={(e) => {
+                                const copy = [...storeSchedules];
+                                const idx = copy.findIndex(s => s.day_of_week === i);
+                                if (idx >= 0) copy[idx].end_time = e.target.value;
+                                setStoreSchedules(copy);
+                              }}
+                              style={{ background: 'var(--surface)', border: 'none', color: 'white', padding: '4px 8px', borderRadius: 4 }}
+                            />
+                          </div>
+                        ) : (
+                          <span style={{ opacity: 0.5 }}>Closed</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <button 
+                  onClick={saveSchedules}
+                  className="primary-btn" 
+                  style={{ marginTop: 24, width: '100%' }}
+                >
+                  Save Schedule
+                </button>
+              </div>
+            )}
           </div>
         )}
 
