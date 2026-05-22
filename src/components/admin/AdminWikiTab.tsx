@@ -11,6 +11,7 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
   const [linkType, setLinkType] = useState('general');
   const [isIngesting, setIsIngesting] = useState(false);
   const [deepCrawl, setDeepCrawl] = useState(false);
+  const [maxPages, setMaxPages] = useState(50);
   const [crawlProgress, setCrawlProgress] = useState({ current: 0, total: 0, currentUrl: '' });
   const { success, error: toastError } = useToast();
 
@@ -31,7 +32,7 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
     setIsLoading(false);
   };
 
-  const processQueue = async (startUrl: string, maxPages: number = 50) => {
+  const processQueue = async (startUrl: string) => {
     let queue = [startUrl];
     let visited = new Set<string>();
     let processedCount = 0;
@@ -138,15 +139,31 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
             <option value="shop">External Shop</option>
             <option value="wiki">Wiki Page</option>
           </select>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12 }}>
-            <input 
-              type="checkbox" 
-              id="deepCrawl" 
-              checked={deepCrawl} 
-              onChange={(e) => setDeepCrawl(e.target.checked)} 
-              style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
-            />
-            <label htmlFor="deepCrawl" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none' }}>Deep Crawl Site</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input 
+                type="checkbox" 
+                id="deepCrawl" 
+                checked={deepCrawl} 
+                onChange={(e) => setDeepCrawl(e.target.checked)} 
+                style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
+              />
+              <label htmlFor="deepCrawl" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none' }}>Deep Crawl</label>
+            </div>
+            
+            {deepCrawl && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: 16 }}>
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Max Pages:</label>
+                <input 
+                  type="number" 
+                  value={maxPages}
+                  onChange={(e) => setMaxPages(parseInt(e.target.value) || 1)}
+                  min={1}
+                  max={1000}
+                  style={{ width: 60, padding: '4px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--admin-border)', color: '#fff', fontSize: '0.85rem' }}
+                />
+              </div>
+            )}
           </div>
           <button 
             type="submit" 
@@ -164,15 +181,15 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
           <div style={{ marginTop: 16, padding: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 12, border: '1px solid var(--admin-accent)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: 8 }}>
               <span>Scraping: <span style={{ color: 'var(--admin-accent)' }}>{crawlProgress.currentUrl}</span></span>
-              <span>{crawlProgress.current} / {Math.min(crawlProgress.total, 50)} Pages (Max 50)</span>
+              <span>{crawlProgress.current} / {Math.min(crawlProgress.total, maxPages)} Pages (Max {maxPages})</span>
             </div>
             <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${(crawlProgress.current / Math.min(crawlProgress.total, 50)) * 100}%`, background: 'var(--admin-accent)', transition: 'width 0.3s ease' }} />
+              <div style={{ height: '100%', width: `${(crawlProgress.current / Math.min(crawlProgress.total, maxPages)) * 100}%`, background: 'var(--admin-accent)', transition: 'width 0.3s ease' }} />
             </div>
           </div>
         )}
         <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: 12, marginBottom: 0 }}>
-          {deepCrawl ? 'The deep crawler will discover and ingest up to 50 internal pages from the same domain.' : 'The AI will read the page, extract the text, generate a vector embedding, and surface it.'}
+          {deepCrawl ? `The deep crawler will discover and ingest up to ${maxPages} internal pages from the same domain.` : 'The AI will read the page, extract the text, generate a vector embedding, and surface it.'}
         </p>
       </div>
 
