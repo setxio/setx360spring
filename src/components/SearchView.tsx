@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Compass, Rss, Store, Calendar, Zap, TrendingUp, History, User, MessageSquare, ShoppingBag, Globe, ArrowRight, Loader2, Play, ExternalLink } from 'lucide-react';
+import { Search, Compass, Rss, Store, Calendar, Zap, TrendingUp, History, User, MessageSquare, ShoppingBag, Globe, ArrowRight, Loader2, Play, ExternalLink, Image as ImageIcon, Video } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -141,6 +141,8 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
             <button className={`search-tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>Posts</button>
             <button className={`search-tab-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>Market</button>
             <button className={`search-tab-btn ${activeTab === 'profiles' ? 'active' : ''}`} onClick={() => setActiveTab('profiles')}>People</button>
+            <button className={`search-tab-btn ${activeTab === 'images' ? 'active' : ''}`} onClick={() => setActiveTab('images')}>Images</button>
+            <button className={`search-tab-btn ${activeTab === 'videos' ? 'active' : ''}`} onClick={() => setActiveTab('videos')}>Videos</button>
             <button className={`search-tab-btn ${activeTab === 'web' ? 'active' : ''}`} onClick={() => setActiveTab('web')}>Web</button>
           </div>
         </div>
@@ -259,6 +261,50 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {/* Images */}
+              {(activeTab === 'images') && (
+                <div className="results-section-block" style={{ marginTop: '32px' }}>
+                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><ImageIcon size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Images</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
+                    {/* Gather images from profiles, stores, events, and wiki */}
+                    {[
+                      ...(results.profiles || []).map((p: any) => ({ ...p, _type: 'profiles', _img: p.avatar_url })),
+                      ...(results.stores || []).map((s: any) => ({ ...s, _type: 'stores', _img: s.image_url || s.logo_url })),
+                      ...(results.events || []).map((e: any) => ({ ...e, _type: 'events', _img: e.image_url })),
+                      ...(results.wiki || []).map((w: any) => ({ ...w, _type: 'wiki', _img: w.url?.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? w.url : w.image_url }))
+                    ].filter(i => !!i._img).map((item, idx) => (
+                      <div key={`img-${idx}`} className="search-result-card" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }} onClick={() => handleResultClick(item._type, item)}>
+                        <img src={item._img} alt={item.title || item.name} style={{ width: '100%', height: '150px', objectFit: 'cover', display: 'block' }} />
+                        <div style={{ padding: '8px', fontSize: '0.8rem', background: 'var(--bg-card)' }}>
+                          <p style={{ margin: 0, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title || item.name}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Videos */}
+              {(activeTab === 'videos') && (
+                <div className="results-section-block" style={{ marginTop: '32px' }}>
+                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Video size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Videos</h3>
+                  {/* Gather videos from wiki and posts (if they contain video links) */}
+                  {[
+                    ...(results.wiki || []).filter((w: any) => w.url?.match(/(youtube\.com|youtu\.be|vimeo\.com|\.(mp4|webm|mov))/i)).map((w: any) => ({ ...w, _type: 'wiki' })),
+                    ...(results.posts || []).filter((p: any) => p.content?.match(/(youtube\.com|youtu\.be|vimeo\.com|\.(mp4|webm|mov))/i)).map((p: any) => ({ ...p, _type: 'posts' }))
+                  ].map((v, idx) => (
+                    <div key={`vid-${idx}`} className="search-result-card" onClick={() => handleResultClick(v._type, v)}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <Play size={16} color="#ef4444" />
+                        <h3 style={{ margin: 0 }}>{v.title || 'Video Post'}</h3>
+                      </div>
+                      {v.url && <p style={{ color: '#3b82f6', fontSize: '0.8rem', marginBottom: '8px' }}>{v.url}</p>}
+                      <p>{(v.description || v.content)?.substring(0, 150)}...</p>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
