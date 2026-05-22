@@ -121,101 +121,105 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
         <h4 style={{ margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Globe size={18} /> Add New Knowledge Link
         </h4>
-        <form onSubmit={handleIngest} style={{ display: 'flex', gap: 12 }}>
-          <div className="input-wrapper" style={{ flex: 1, position: 'relative' }}>
-            <LinkIcon size={16} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+        <form onSubmit={handleIngest} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          
+          {/* Top Row: URL Input */}
+          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '0 16px', border: '1px solid var(--admin-border)', width: '100%' }}>
+            <LinkIcon size={18} color="#94a3b8" />
             <input 
               type="url" 
-              placeholder="https://example.com"
-              value={url}
+              placeholder="https://example.com" 
+              value={url} 
               onChange={(e) => setUrl(e.target.value)}
-              style={{ width: '100%', padding: '14px 14px 14px 44px', borderRadius: 12, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--admin-border)', color: '#fff', fontSize: '1rem' }}
+              style={{ flex: 1, background: 'transparent', border: 'none', padding: '16px', color: '#fff', outline: 'none', minWidth: 0 }}
               required
             />
           </div>
-          <div style={{ position: 'relative' }}>
-            <div 
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              style={{ padding: '0 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--admin-border)', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%', minWidth: '160px', cursor: 'pointer' }}
-            >
-              <span style={{ textTransform: 'capitalize' }}>
-                {linkType === 'general' ? 'General' : linkType === 'article' ? 'News / Article' : linkType === 'city' ? 'City Site' : linkType === 'shop' ? 'External Shop' : 'Wiki Page'}
-              </span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 8, transition: 'transform 0.2s', transform: isDropdownOpen ? 'rotate(180deg)' : 'none' }}>
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-            
-            {isDropdownOpen && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 8, width: '100%', background: '#0f172a', border: '1px solid var(--admin-border)', borderRadius: 12, overflow: 'hidden', zIndex: 50, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}>
-                {[
-                  { value: 'general', label: 'General' },
-                  { value: 'article', label: 'News / Article' },
-                  { value: 'city', label: 'City Site' },
-                  { value: 'shop', label: 'External Shop' },
-                  { value: 'wiki', label: 'Wiki Page' }
-                ].map((option) => (
-                  <div 
-                    key={option.value}
-                    onClick={() => { setLinkType(option.value); setIsDropdownOpen(false); }}
-                    style={{ padding: '12px 16px', cursor: 'pointer', background: linkType === option.value ? 'rgba(139, 92, 246, 0.2)' : 'transparent', color: linkType === option.value ? '#a78bfa' : '#fff', transition: 'background 0.2s' }}
-                    onMouseEnter={(e) => { if(linkType !== option.value) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                    onMouseLeave={(e) => { if(linkType !== option.value) e.currentTarget.style.background = 'transparent' }}
-                  >
-                    {option.label}
-                  </div>
-                ))}
+
+          {/* Bottom Row: Filters, Checkboxes, Button */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ position: 'relative', minWidth: '200px' }}>
+              <div 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                style={{ padding: '0 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--admin-border)', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '52px', cursor: 'pointer' }}
+              >
+                <span style={{ textTransform: 'capitalize' }}>
+                  {linkType === 'general' ? 'General' : linkType === 'article' ? 'News / Article' : linkType === 'city' ? 'City Site' : linkType === 'shop' ? 'External Shop' : 'Wiki Page'}
+                </span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 8, transition: 'transform 0.2s', transform: isDropdownOpen ? 'rotate(180deg)' : 'none' }}>
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
               </div>
-            )}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input 
-                type="checkbox" 
-                id="deepCrawl" 
-                checked={deepCrawl} 
-                onChange={(e) => setDeepCrawl(e.target.checked)} 
-                style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
-              />
-              <label htmlFor="deepCrawl" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none' }}>Deep Crawl</label>
+              
+              {isDropdownOpen && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 8, width: '100%', background: '#0f172a', border: '1px solid var(--admin-border)', borderRadius: 12, overflow: 'hidden', zIndex: 50, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}>
+                  {[
+                    { value: 'general', label: 'General' },
+                    { value: 'article', label: 'News / Article' },
+                    { value: 'city', label: 'City Site' },
+                    { value: 'shop', label: 'External Shop' },
+                    { value: 'wiki', label: 'Wiki Page' }
+                  ].map((option) => (
+                    <div 
+                      key={option.value}
+                      onClick={() => { setLinkType(option.value); setIsDropdownOpen(false); }}
+                      style={{ padding: '12px 16px', cursor: 'pointer', background: linkType === option.value ? 'rgba(139, 92, 246, 0.2)' : 'transparent', color: linkType === option.value ? '#a78bfa' : '#fff', transition: 'background 0.2s' }}
+                      onMouseEnter={(e) => { if(linkType !== option.value) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                      onMouseLeave={(e) => { if(linkType !== option.value) e.currentTarget.style.background = 'transparent' }}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            
-            {deepCrawl && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: 16 }}>
-                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Max Pages:</label>
+
+            <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: 16, padding: '0 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12, minWidth: '300px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input 
-                  type="number" 
-                  value={maxPages}
-                  onChange={(e) => setMaxPages(parseInt(e.target.value) || 1)}
-                  min={1}
-                  max={1000}
-                  style={{ width: 60, padding: '4px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--admin-border)', color: '#fff', fontSize: '0.85rem' }}
+                  type="checkbox" 
+                  id="deepCrawl" 
+                  checked={deepCrawl} 
+                  onChange={(e) => setDeepCrawl(e.target.checked)} 
+                  style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
                 />
+                <label htmlFor="deepCrawl" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none' }}>Deep Crawl</label>
               </div>
-            )}
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: 16 }}>
-              <input 
-                type="checkbox" 
-                id="skipExisting" 
-                checked={skipExisting} 
-                onChange={(e) => setSkipExisting(e.target.checked)} 
-                style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
-              />
-              <label htmlFor="skipExisting" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none' }}>Skip Existing</label>
+              
+              {deepCrawl && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: 16 }}>
+                  <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Max Pages:</label>
+                  <input 
+                    type="number" 
+                    value={maxPages}
+                    onChange={(e) => setMaxPages(parseInt(e.target.value) || 1)}
+                    min={1}
+                    max={1000}
+                    style={{ width: 60, padding: '4px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--admin-border)', color: '#fff', fontSize: '0.85rem' }}
+                  />
+                </div>
+              )}
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: 16 }}>
+                <input 
+                  type="checkbox" 
+                  id="skipExisting" 
+                  checked={skipExisting} 
+                  onChange={(e) => setSkipExisting(e.target.checked)} 
+                  style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
+                />
+                <label htmlFor="skipExisting" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>Skip Existing</label>
+              </div>
             </div>
+
+            <button 
+              type="submit" 
+              disabled={isIngesting || !url}
+              style={{ padding: '0 24px', borderRadius: 12, background: isIngesting ? 'rgba(255,255,255,0.1)' : 'var(--admin-accent)', color: '#fff', border: 'none', fontWeight: 600, cursor: isIngesting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, height: '52px', flexShrink: 0 }}
+            >
+              {isIngesting ? <><Loader2 size={18} className="spin" /> Processing...</> : 'Ingest Link'}
+            </button>
           </div>
-          <button 
-            type="submit" 
-            disabled={isIngesting || !url}
-            style={{ 
-              background: 'var(--admin-accent)', color: '#fff', padding: '0 24px', borderRadius: 12, 
-              fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, border: 'none', cursor: isIngesting ? 'not-allowed' : 'pointer',
-              opacity: isIngesting ? 0.7 : 1
-            }}
-          >
-            {isIngesting ? <><Loader2 size={18} className="animate-spin" /> Crawling...</> : 'Ingest Link'}
-          </button>
         </form>
         {isIngesting && deepCrawl && (
           <div style={{ marginTop: 16, padding: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 12, border: '1px solid var(--admin-accent)' }}>
