@@ -16,6 +16,7 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
   const [isIngesting, setIsIngesting] = useState(false);
   const [deepCrawl, setDeepCrawl] = useState(false);
   const [maxPages, setMaxPages] = useState(50);
+  const [skipExisting, setSkipExisting] = useState(true);
   const [crawlProgress, setCrawlProgress] = useState({ current: 0, total: 0, currentUrl: '' });
   const { success, error: toastError } = useToast();
 
@@ -53,7 +54,7 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
 
       try {
         const { data, error } = await supabase.functions.invoke('ingest-wiki-link', {
-          body: { url: currentUrl, type: linkType }
+          body: { url: currentUrl, type: linkType, skipExisting }
         });
 
         if (error) throw error;
@@ -192,6 +193,17 @@ export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
                 />
               </div>
             )}
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: 16 }}>
+              <input 
+                type="checkbox" 
+                id="skipExisting" 
+                checked={skipExisting} 
+                onChange={(e) => setSkipExisting(e.target.checked)} 
+                style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)' }}
+              />
+              <label htmlFor="skipExisting" style={{ fontSize: '0.85rem', cursor: 'pointer', userSelect: 'none' }}>Skip Existing</label>
+            </div>
           </div>
           <button 
             type="submit" 

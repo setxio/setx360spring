@@ -13,10 +13,32 @@ serve(async (req) => {
   }
 
   try {
-    const { url, type = 'general' } = await req.json()
+    const { url, type = 'general', skipExisting = false } = await req.json()
 
     if (!url) {
       throw new Error('Missing URL parameter')
+    }
+
+    // Initialize Supabase client early for DB checks
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Check if URL already exists
+    const { data: existingEntry } = await supabaseClient
+      .from('search_wiki_entries')
+      .select('id')
+      .eq('url', url)
+      .maybeSingle()
+
+    if (existingEntry && skipExisting) {
+      // If we are skipping existing pages to save time/costs, return immediately.
+      // We return empty links because we aren't fetching the HTML to discover new ones.
+      return new Response(JSON.stringify({ success: true, skipped: true, data: existingEntry, links: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
     }
 
     // 1. Fetch external page
@@ -71,11 +93,7 @@ serve(async (req) => {
     // Take up to 2000 chars for embedding to fit into token limits safely
     const contentToEmbed = (title + ' ' + description + ' ' + rawContent).substring(0, 2000)
 
-    // 3. Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '' // Need service key to bypass RLS for inserting wiki entries
-    )
+    // We already initialized supabaseClient above
 
     // 4. Generate Embedding
     const session = new (globalThis as any).Supabase.ai.Session('gte-small')
@@ -99,19 +117,40 @@ serve(async (req) => {
       userId = user?.id
     }
 
-    const { data: insertedData, error } = await supabaseClient
-      .from('search_wiki_entries')
-      .insert({
-        title,
-        description,
-        content: rawContent,
-        url,
-        type,
-        embedding: embeddingResult,
-        created_by: userId
-      })
-      .select()
-      .single()
+    let dbResult;
+    if (existingEntry) {
+      // Update existing entry instead of creating duplicates
+      dbResult = await supabaseClient
+        .from('search_wiki_entries')
+        .update({
+          title,
+          description,
+          content: rawContent,
+          type,
+          embedding: embeddingResult,
+          created_by: userId
+        })
+        .eq('id', existingEntry.id)
+        .select()
+        .single()
+    } else {
+      // Insert new entry
+      dbResult = await supabaseClient
+        .from('search_wiki_entries')
+        .insert({
+          title,
+          description,
+          content: rawContent,
+          url,
+          type,
+          embedding: embeddingResult,
+          created_by: userId
+        })
+        .select()
+        .single()
+    }
+
+    const { data: insertedData, error } = dbResult;
 
     if (error) throw error
 
