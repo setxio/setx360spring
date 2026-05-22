@@ -123,11 +123,74 @@ export async function ingestCensusStats(payload: CensusStatPayload) {
 
 // Example usage if executed directly
 if (require.main === module) {
-  console.log('Running Ingestion Stub...');
+  console.log('Running Ingestion Stub for SETX Figures...');
   
-  // ingestTSHAProfile({
-  //   slug: 'spindletop-lucas-gusher',
-  //   name: 'Anthony F. Lucas',
-  //   bio_summary: 'Mining engineer who drilled the Spindletop gusher in Beaumont, Texas.',
-  // });
+  // Sports Figures
+  ingestTSHAProfile({
+    slug: 'babe-didrikson-zaharias',
+    name: 'Babe Didrikson Zaharias',
+    birth_date: '1911-06-26',
+    death_date: '1956-09-27',
+    bio_summary: 'Born in Port Arthur, Texas. Widely considered one of the greatest female athletes of all time, excelling in golf, basketball, baseball and track and field.',
+    era: '1930s-1950s',
+    metadata: { profession: 'athlete', sports: ['golf', 'track and field', 'basketball'] }
+  });
+
+  ingestTSHAProfile({
+    slug: 'jamaal-charles',
+    name: 'Jamaal Charles',
+    birth_date: '1986-12-27',
+    bio_summary: 'Born in Port Arthur, Texas. Former American football running back who played in the NFL, primarily for the Kansas City Chiefs. Known for his elite speed and yards-per-carry average.',
+    era: '2000s-2010s',
+    metadata: { profession: 'athlete', sports: ['football'] }
+  });
+
+  ingestTSHAProfile({
+    slug: 'jimmy-johnson',
+    name: 'Jimmy Johnson',
+    birth_date: '1943-07-16',
+    bio_summary: 'Born in Port Arthur, Texas. Hall of Fame football coach and sports analyst. Led the Dallas Cowboys to two consecutive Super Bowl victories.',
+    era: '1980s-1990s',
+    metadata: { profession: 'coach', sports: ['football'] }
+  });
+
+  // Music Artists
+  ingestTSHAProfile({
+    slug: 'janis-joplin',
+    name: 'Janis Joplin',
+    birth_date: '1943-01-19',
+    death_date: '1970-10-04',
+    bio_summary: 'Born in Port Arthur, Texas. One of the most successful and widely known rock stars of her era, noted for her powerful mezzo-soprano vocals and "electric" stage presence.',
+    era: '1960s',
+    metadata: { profession: 'musician', genres: ['rock', 'soul', 'blues'] }
+  });
+
+  ingestTSHAProfile({
+    slug: 'george-jones',
+    name: 'George Jones',
+    birth_date: '1931-09-12',
+    death_date: '2013-04-26',
+    bio_summary: 'Born in Saratoga, Texas (Hardin County) and raised in Vidor. Internationally famous American country music singer known for his long list of hit records and distinctive voice.',
+    era: '1950s-2000s',
+    metadata: { profession: 'musician', genres: ['country'] }
+  });
+
+  ingestTSHAProfile({
+    slug: 'the-big-bopper',
+    name: 'J. P. "The Big Bopper" Richardson',
+    birth_date: '1930-10-24',
+    death_date: '1959-02-03',
+    bio_summary: 'Born in Sabine Pass, Texas. Musician, songwriter, and DJ whose rockabilly look, style, voice, and exuberant personality made him an early rock and roll star. Famous for "Chantilly Lace".',
+    era: '1950s',
+    metadata: { profession: 'musician', genres: ['rock and roll', 'rockabilly'] }
+  });
+
+  ingestTSHAProfile({
+    slug: 'tracy-byrd',
+    name: 'Tracy Byrd',
+    birth_date: '1966-12-17',
+    bio_summary: 'Born in Vidor, Texas. Country music artist who has charted more than thirty hit singles in his career, including "Holdin\' Heaven" and "Watermelon Crawl".',
+    era: '1990s-2000s',
+    metadata: { profession: 'musician', genres: ['country'] }
+  });
 }
