@@ -1,1 +1,10 @@
-{}
+{
+  "/api/checkout/route": "app/api/checkout/route.js",
+  "/api/checkout/payout/route": "app/api/checkout/payout/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/v1/vault/pay/route": "app/api/v1/vault/pay/route.js",
+  "/api/webhooks/stripe/route": "app/api/webhooks/stripe/route.js",
+  "/page": "app/page.js",
+  "/api/content/publish/route": "app/api/content/publish/route.js",
+  "/tenant/[slug]/page": "app/tenant/[slug]/page.js"
+}

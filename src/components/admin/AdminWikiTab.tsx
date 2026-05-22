@@ -8,6 +8,9 @@ interface Props {
 }
 
 export const AdminWikiTab: React.FC<Props> = ({ onRefresh }) => {
+  const [entries, setEntries] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [url, setUrl] = useState('');
   const [linkType, setLinkType] = useState('general');
   const [isIngesting, setIsIngesting] = useState(false);
   const [deepCrawl, setDeepCrawl] = useState(false);
