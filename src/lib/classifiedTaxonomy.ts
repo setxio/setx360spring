@@ -20,129 +20,382 @@ export type CategoryConfig = {
   subcategories: SubCategoryConfig[];
 };
 
-const COMMON_CONDITIONS = ['New', 'Like New', 'Used - Good', 'Used - Fair'];
-const COMMON_APPAREL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Other'];
-const COMMON_SHOE_SIZES = ['6', '7', '8', '9', '10', '11', '12', '13', 'Other'];
+const COMMON_CONDITIONS = ['New', 'Like New', 'Used - Good', 'Used - Fair', 'Refurbished'];
+const COMMON_APPAREL_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Other'];
+const COMMON_SHOE_SIZES = ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14', 'Other'];
+const SUIT_PIECES = ['Shirt', 'Pants', 'Jacket', 'Full Suit'];
+const TOOL_POWER_SOURCES = ['Corded Electric', 'Cordless/Battery', 'Gas Powered', 'Pneumatic', 'Manual'];
 
 export const CATEGORY_TAXONOMY: CategoryConfig[] = [
   {
-    name: 'Apparel & Accessories',
+    name: 'Apparel (Fashion)',
     subcategories: [
       {
-        name: 'Men',
+        name: 'Menswear',
         types: [
           { name: 'Shirts & Tops', filters: [{ id: 'size', label: 'Size', type: 'select', options: COMMON_APPAREL_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Pants & Bottoms', filters: [{ id: 'size', label: 'Waist/Length', type: 'text' }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Shoes', filters: [{ id: 'size', label: 'Shoe Size', type: 'select', options: COMMON_SHOE_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Accessories', filters: [{ id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Steel Toe Shoes/Boots', filters: [{ id: 'size', label: 'Shoe Size', type: 'select', options: COMMON_SHOE_SIZES }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Outerwear', filters: [{ id: 'size', label: 'Size', type: 'select', options: COMMON_APPAREL_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
-        name: 'Women',
+        name: 'Womenswear',
         types: [
           { name: 'Shirts & Tops', filters: [{ id: 'size', label: 'Size', type: 'select', options: COMMON_APPAREL_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Pants & Bottoms', filters: [{ id: 'size', label: 'Size (Number/Letter)', type: 'text' }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Shoes', filters: [{ id: 'size', label: 'Shoe Size', type: 'select', options: COMMON_SHOE_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Dresses', filters: [{ id: 'size', label: 'Size', type: 'select', options: COMMON_APPAREL_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Accessories', filters: [{ id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Steel Toe Shoes/Boots', filters: [{ id: 'size', label: 'Shoe Size', type: 'select', options: COMMON_SHOE_SIZES }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Dresses', filters: [{ id: 'size', label: 'Size', type: 'select', options: COMMON_APPAREL_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
-        name: 'Children',
+        name: 'Kidswear & Baby',
         types: [
-          { name: 'Shirts & Tops', filters: [{ id: 'size', label: 'Size', type: 'text' }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Pants & Bottoms', filters: [{ id: 'size', label: 'Size', type: 'text' }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Shoes', filters: [{ id: 'size', label: 'Shoe Size', type: 'text' }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Other', filters: [{ id: 'size', label: 'Size', type: 'text' }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Clothing', filters: [{ id: 'size', label: 'Size/Age', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Shoes', filters: [{ id: 'size', label: 'Size', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Jewelry & Watches',
+        types: [
+          { name: 'Watches', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Jewelry', filters: [{ id: 'material', label: 'Material (Gold, Silver, etc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Bags & Luggage',
+        types: [
+          { name: 'Purses & Handbags', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Luggage & Suitcases', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Backpacks', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Uniforms & Workwear',
+        types: [
+          { name: 'Suits', filters: [{ id: 'piece', label: 'Piece', type: 'select', options: SUIT_PIECES }, { id: 'size', label: 'Size', type: 'text' }, { id: 'color', label: 'Color', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Scrubs', filters: [{ id: 'size', label: 'Size', type: 'select', options: COMMON_APPAREL_SIZES }, { id: 'color', label: 'Color', type: 'text' }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Fire Repellent (FRC)', filters: [{ id: 'type', label: 'Type (Shirt, Pants, Coverall)', type: 'text' }, { id: 'size', label: 'Size', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       }
     ]
   },
   {
-    name: 'Electronics & Tech',
+    name: 'Electronics',
     subcategories: [
       {
-        name: 'Computers',
+        name: 'Cell Phones',
         types: [
-          { name: 'Laptops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Desktops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Smartphones', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'carrier', label: 'Carrier / Unlocked', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Accessories', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
-        name: 'Phones & Tablets',
+        name: 'Computers & Tablets',
         types: [
-          { name: 'Smartphones', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Tablets', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Laptops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'specs', label: 'Processor/RAM', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Desktops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'specs', label: 'Processor/RAM', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Tablets', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'storage', label: 'Storage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Parts & Components', filters: [{ id: 'type', label: 'Component Type', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
-        name: 'Gaming',
+        name: 'TV & Video',
         types: [
-          { name: 'Consoles', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Video Games', filters: [{ id: 'brand', label: 'Platform', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Televisions', filters: [{ id: 'size', label: 'Screen Size', type: 'text' }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Home Audio / Soundbars', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Video Games & Consoles',
+        types: [
+          { name: 'Consoles', filters: [{ id: 'brand', label: 'Brand (PlayStation, Xbox, etc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Video Games', filters: [{ id: 'platform', label: 'Platform', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Controllers & Accessories', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       }
     ]
   },
   {
-    name: 'Home & Garden',
+    name: 'Entertainment',
+    subcategories: [
+      {
+        name: 'Books',
+        types: [
+          { name: 'Fiction', filters: [{ id: 'author', label: 'Author', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Non-Fiction', filters: [{ id: 'author', label: 'Author', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Textbooks', filters: [{ id: 'subject', label: 'Subject', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Movies & Music',
+        types: [
+          { name: 'DVDs & Blu-Rays', filters: [{ id: 'genre', label: 'Genre', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Vinyl Records', filters: [{ id: 'genre', label: 'Genre', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'CDs', filters: [{ id: 'genre', label: 'Genre', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Collectibles',
+        types: [
+          { name: 'Trading Cards', filters: [{ id: 'type', label: 'Type (Pokemon, Baseball, etc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Action Figures', filters: [{ id: 'brand', label: 'Brand/Franchise', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Antiques', filters: [{ id: 'era', label: 'Era/Year', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Family',
+    subcategories: [
+      {
+        name: 'Baby & Kids',
+        types: [
+          { name: 'Strollers & Car Seats', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Nursery Furniture', filters: [{ id: 'type', label: 'Type (Crib, Dresser)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Baby Gear', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Toys & Games',
+        types: [
+          { name: 'Action Figures', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Board Games', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Building Sets (LEGO, etc)', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Health & Beauty',
+        types: [
+          { name: 'Skincare', filters: [{ id: 'brand', label: 'Brand', type: 'text' }] },
+          { name: 'Makeup', filters: [{ id: 'brand', label: 'Brand', type: 'text' }] },
+          { name: 'Fragrances', filters: [{ id: 'brand', label: 'Brand', type: 'text' }] }
+        ]
+      },
+      {
+        name: 'Pet Supplies',
+        types: [
+          { name: 'Dog Supplies', filters: [{ id: 'type', label: 'Type (Food, Toys, Beds)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Cat Supplies', filters: [{ id: 'type', label: 'Type (Food, Toys, Beds)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Other Pet Supplies', filters: [{ id: 'animal', label: 'Animal Type', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Home Goods',
     subcategories: [
       {
         name: 'Furniture',
         types: [
-          { name: 'Living Room', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Bedroom', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Office', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Other', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Living Room', filters: [{ id: 'material', label: 'Material', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Bedroom', filters: [{ id: 'size', label: 'Bed Size', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Dining Room', filters: [{ id: 'seats', label: 'Number of Seats', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Office', filters: [{ id: 'type', label: 'Type (Desk, Chair)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Home Decor',
+        types: [
+          { name: 'Wall Art', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Rugs', filters: [{ id: 'size', label: 'Dimensions', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Lighting', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Kitchen & Dining',
+        types: [
+          { name: 'Cookware', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Tableware', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Small Appliances', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'type', label: 'Type (Coffee Maker, Blender)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'Appliances',
         types: [
-          { name: 'Large Appliances', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Small Appliances', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
-        ]
-      },
-      {
-        name: 'Garden & Outdoor',
-        types: [
-          { name: 'Tools', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Patio Furniture', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Plants & Supplies', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Refrigerators', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Washers & Dryers', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Ovens & Ranges', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       }
     ]
   },
   {
-    name: 'Hobbies & Entertainment',
+    name: 'Home Improvement Supplies',
     subcategories: [
       {
-        name: 'Sporting Goods',
+        name: 'Power Tools',
         types: [
-          { name: 'Golf', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Fitness', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Other Sports', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Drills & Drivers', filters: [{ id: 'brand', label: 'Brand (DeWalt, Hercules, etc)', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Saws', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Grinders & Sanders', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Air Compressors', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'capacity', label: 'Gallon Capacity', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
-        name: 'Musical Instruments',
+        name: 'Hand Tools',
         types: [
-          { name: 'Guitars', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Keyboards & Pianos', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Drums', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Other', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Wrenches & Sockets', filters: [{ id: 'brand', label: 'Brand (Icon, Pittsburgh, etc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Pliers & Cutters', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Screwdrivers', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Hammers & Mallets', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Tool Storage',
+        types: [
+          { name: 'Tool Chests & Cabinets', filters: [{ id: 'brand', label: 'Brand (US General, Yukon, etc)', type: 'text' }, { id: 'size', label: 'Size (Inches)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Tool Bags & Belts', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Automotive Tools',
+        types: [
+          { name: 'Jacks & Stands', filters: [{ id: 'brand', label: 'Brand (Daytona, Pittsburgh, etc)', type: 'text' }, { id: 'capacity', label: 'Weight Capacity', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Diagnostic Tools', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Creepers & Shop Seating', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Welding & Soldering',
+        types: [
+          { name: 'Welders', filters: [{ id: 'brand', label: 'Brand (Titanium, Vulcan, etc)', type: 'text' }, { id: 'type', label: 'Type (MIG, TIG, Stick)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Welding Accessories', filters: [{ id: 'type', label: 'Type (Helmets, Gloves)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Generators & Engines',
+        types: [
+          { name: 'Generators', filters: [{ id: 'brand', label: 'Brand (Predator, etc)', type: 'text' }, { id: 'watts', label: 'Wattage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Small Engines', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'cc', label: 'Engine CC', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Building Materials',
+        types: [
+          { name: 'Lumber', filters: [{ id: 'type', label: 'Wood Type', type: 'text' }] },
+          { name: 'Paint & Supplies', filters: [{ id: 'brand', label: 'Brand', type: 'text' }] },
+          { name: 'Flooring', filters: [{ id: 'type', label: 'Material (Wood, Tile, Vinyl)', type: 'text' }] }
+        ]
+      },
+      {
+        name: 'Hardware',
+        types: [
+          { name: 'Fasteners', filters: [{ id: 'type', label: 'Type', type: 'text' }] },
+          { name: 'Door & Window Hardware', filters: [{ id: 'type', label: 'Type', type: 'text' }] }
+        ]
+      },
+      {
+        name: 'Heating & Cooling',
+        types: [
+          { name: 'Air Conditioners', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'type', label: 'Type (Window, Portable)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Heaters', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Fans', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       }
     ]
   },
   {
-    name: 'General / Other',
+    name: 'Garden & Outdoor',
     subcategories: [
       {
-        name: 'Other',
+        name: 'Patio Furniture',
         types: [
-          { name: 'Other', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Seating & Sofas', filters: [{ id: 'material', label: 'Material', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Dining Sets', filters: [{ id: 'seats', label: 'Number of Seats', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Lawn Mowers & Tractors',
+        types: [
+          { name: 'Push Mowers', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Riding Mowers', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Zero Turn Mowers', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Plants & Gardening',
+        types: [
+          { name: 'Plants & Trees', filters: [{ id: 'type', label: 'Type (Indoor, Outdoor, Fruit)', type: 'text' }] },
+          { name: 'Gardening Tools', filters: [{ id: 'type', label: 'Type (Shovels, Rakes, etc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Pots & Planters', filters: [{ id: 'material', label: 'Material', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Property Rentals & Home Sales',
+    subcategories: [
+      {
+        name: 'Rentals',
+        types: [
+          { name: 'Apartments for Rent', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'pet_friendly', label: 'Pet Friendly', type: 'select', options: ['Yes', 'No'] }] },
+          { name: 'Houses for Rent', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'pet_friendly', label: 'Pet Friendly', type: 'select', options: ['Yes', 'No'] }] },
+          { name: 'Rooms & Shares', filters: [{ id: 'furnished', label: 'Furnished', type: 'select', options: ['Yes', 'No'] }] }
+        ]
+      },
+      {
+        name: 'Sales',
+        types: [
+          { name: 'Houses for Sale', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'type', label: 'Property Type', type: 'text' }] },
+          { name: 'Land', filters: [{ id: 'acres', label: 'Acres', type: 'text' }] },
+          { name: 'Commercial', filters: [{ id: 'sqft', label: 'Square Footage', type: 'text' }] }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Sporting Goods',
+    subcategories: [
+      {
+        name: 'Exercise & Fitness',
+        types: [
+          { name: 'Cardio Equipment', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'type', label: 'Type (Treadmill, Bike)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Weights & Strength', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Outdoor Gear',
+        types: [
+          { name: 'Camping & Hiking', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'type', label: 'Type (Tent, Backpack)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Hunting & Fishing', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Bicycles',
+        types: [
+          { name: 'Mountain Bikes', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'size', label: 'Frame Size', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Road Bikes', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'size', label: 'Frame Size', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'BMX', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Team Sports',
+        types: [
+          { name: 'Baseball & Softball', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Basketball', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Football', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Classifieds & Free Stuff',
+    subcategories: [
+      {
+        name: 'Community',
+        types: [
+          { name: 'Garage Sales', filters: [{ id: 'date', label: 'Dates of Sale', type: 'text' }] },
+          { name: 'Lost & Found', filters: [{ id: 'type', label: 'Lost or Found?', type: 'select', options: ['Lost', 'Found'] }, { id: 'date', label: 'Date Lost/Found', type: 'text' }] }
+        ]
+      },
+      {
+        name: 'Free & Misc',
+        types: [
+          { name: 'Free Stuff', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Miscellaneous Items', filters: [{ id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       }
     ]

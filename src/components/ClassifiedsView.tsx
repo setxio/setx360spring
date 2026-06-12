@@ -265,7 +265,7 @@ export const ClassifiedsView: React.FC = () => {
         const numericPrice = parseFloat(postPrice.replace(/[^0-9.]/g, '')) || 0;
         let cat = postCategory;
         if (postType === 'vehicle') cat = 'Vehicles';
-        if (postType === 'real_estate') cat = 'Property Rentals & Sales';
+        if (postType === 'real_estate') cat = 'Property Rentals & Home Sales';
 
         const vehicle_details = postType === 'vehicle' ? { make: vehMake, model: vehModel, year: vehYear, mileage: vehMileage } : null;
         const real_estate_details = postType === 'real_estate' ? { beds: reBeds, baths: reBaths, sqft: reSqft } : null;
@@ -408,19 +408,19 @@ export const ClassifiedsView: React.FC = () => {
   };
 
   // Derived datasets
-  const myItems = items.filter(i => i.user_id === user?.id && i.category !== 'Vehicles' && i.category !== 'Property Rentals & Sales');
+  const myItems = items.filter(i => i.user_id === user?.id && i.category !== 'Vehicles' && i.category !== 'Property Rentals & Home Sales');
   const myVehicles = items.filter(i => i.user_id === user?.id && i.category === 'Vehicles');
-  const myProperties = items.filter(i => i.user_id === user?.id && i.category === 'Property Rentals & Sales');
+  const myProperties = items.filter(i => i.user_id === user?.id && i.category === 'Property Rentals & Home Sales');
   const myEvents = events.filter(e => e.user_id === user?.id);
 
-  const savedProperties = items.filter(i => favorites.has(i.id) && i.category === 'Property Rentals & Sales');
+  const savedProperties = items.filter(i => favorites.has(i.id) && i.category === 'Property Rentals & Home Sales');
   const savedVehicles = items.filter(i => favorites.has(i.id) && i.category === 'Vehicles');
-  const savedGeneralItems = items.filter(i => favorites.has(i.id) && i.category !== 'Vehicles' && i.category !== 'Property Rentals & Sales');
+  const savedGeneralItems = items.filter(i => favorites.has(i.id) && i.category !== 'Vehicles' && i.category !== 'Property Rentals & Home Sales');
 
   const getFilteredFeed = () => {
     let feed = items;
     if (activeTab === 'items') {
-      feed = feed.filter(i => i.category !== 'Vehicles' && i.category !== 'Property Rentals & Sales');
+      feed = feed.filter(i => i.category !== 'Vehicles' && i.category !== 'Property Rentals & Home Sales');
       if (activeCategory !== 'All') {
         feed = feed.filter(i => i.category === activeCategory);
         
@@ -446,7 +446,7 @@ export const ClassifiedsView: React.FC = () => {
     } else if (activeTab === 'vehicles') {
       feed = feed.filter(i => i.category === 'Vehicles');
     } else if (activeTab === 'real_estate') {
-      feed = feed.filter(i => i.category === 'Property Rentals & Sales');
+      feed = feed.filter(i => i.category === 'Property Rentals & Home Sales');
     }
     
     return feed.filter(i => 
@@ -465,7 +465,7 @@ export const ClassifiedsView: React.FC = () => {
         <button onClick={(e) => toggleFavorite(e, item.id)} style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', padding: 8, display: 'flex', cursor: 'pointer' }}>
           <Heart size={16} fill={favorites.has(item.id) ? '#f43f5e' : 'none'} color={favorites.has(item.id) ? '#f43f5e' : '#fff'} />
         </button>
-        <span className="item-price-tag">{formatPrice(item.price)}{item.category === 'Property Rentals & Sales' && '/mo'}</span>
+        <span className="item-price-tag">{formatPrice(item.price)}{item.category === 'Property Rentals & Home Sales' && '/mo'}</span>
         {item.status === 'sold' && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontWeight: 'bold', fontSize: '1.5rem', letterSpacing: 2 }}>SOLD</div>}
       </div>
       <div className="item-body">
@@ -736,7 +736,7 @@ export const ClassifiedsView: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                 <div>
                   <h2 style={{ margin: '0 0 8px', fontSize: '1.5rem' }}>{selectedItem.title}</h2>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--brand-color)' }}>{formatPrice(selectedItem.price)}{selectedItem.category === 'Property Rentals & Sales' && '/mo'}</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--brand-color)' }}>{formatPrice(selectedItem.price)}{selectedItem.category === 'Property Rentals & Home Sales' && '/mo'}</div>
                 </div>
                 <button onClick={(e) => toggleFavorite(e, selectedItem.id)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: 12, cursor: 'pointer' }}>
                   <Heart size={24} fill={favorites.has(selectedItem.id) ? '#f43f5e' : 'none'} color={favorites.has(selectedItem.id) ? '#f43f5e' : '#fff'} />
@@ -1058,7 +1058,7 @@ export const ClassifiedsView: React.FC = () => {
                       </div>
                     </Popup>
                   </Marker>
-                )) : items.filter(i => i.category === 'Property Rentals & Sales' && i.latitude && i.longitude).map(prop => (
+                )) : items.filter(i => i.category === 'Property Rentals & Home Sales' && i.latitude && i.longitude).map(prop => (
                   <Marker key={prop.id} position={[prop.latitude!, prop.longitude!]} icon={propertyIcon}>
                     <Popup>
                       <div style={{ textAlign: 'center' }}>
@@ -1083,7 +1083,7 @@ export const ClassifiedsView: React.FC = () => {
                   <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={14} /> {ev.location_name}</div>
                 </div>
               </div>
-            )) : items.filter(i => i.category === 'Property Rentals & Sales').map(renderItemCard)
+            )) : items.filter(i => i.category === 'Property Rentals & Home Sales').map(renderItemCard)
           )
         )}
 
