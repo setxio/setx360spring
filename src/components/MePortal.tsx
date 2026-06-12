@@ -21,6 +21,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
 import { getOrCreateWallet } from '../lib/payments';
+import { VerificationModal } from './VerificationModal';
 import './MePortal.css';
 
 export const MePortal: React.FC = () => {
@@ -29,6 +30,7 @@ export const MePortal: React.FC = () => {
     const [wallet, setWallet] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showApplyModal, setShowApplyModal] = useState(false);
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
 
     useEffect(() => {
         if (user) fetchDriverStatus();
@@ -85,8 +87,10 @@ export const MePortal: React.FC = () => {
             }
         },
         { id: 'wallet', label: 'Wallet', icon: <Wallet size={24} />, color: '#8b5cf6', onClick: () => { setEnv('wallet'); setActiveTab(0); } },
-        { id: 'saved', label: 'Saved', icon: <Bookmark size={24} />, color: '#ec4899', onClick: () => { setEnv('me'); setActiveTab(2); } },
-        { id: 'settings', label: 'Settings', icon: <Settings size={24} />, color: '#64748b', onClick: () => { setEnv('me'); setActiveTab(4); } },
+        { id: 'saved', label: 'Saved', icon: <Bookmark size={24} />, color: '#ec4899', onClick: () => { setEnv('me'); setActiveTab(4); } },
+        { id: 'settings', label: 'Settings', icon: <Settings size={24} />, color: '#64748b', onClick: () => { setEnv('me'); setActiveTab(6); } },
+        { id: 'edit-profile', label: 'Edit Profile', icon: <User size={24} />, color: '#3b82f6', onClick: () => { setEnv('social'); setActiveTab(9); } },
+        { id: 'verification', label: 'Get Verified', icon: <ShieldCheck size={24} />, color: '#ef4444', onClick: () => setShowVerificationModal(true) },
     ];
 
     if (isLoading) return <div style={{ height: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 className="animate-spin" size={32} color="var(--primary)" /></div>;
@@ -183,6 +187,14 @@ export const MePortal: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Verification Modal */}
+            {showVerificationModal && (
+                <VerificationModal
+                    user={user}
+                    onClose={() => setShowVerificationModal(false)}
+                />
+            )}
         </div>
     );
 };

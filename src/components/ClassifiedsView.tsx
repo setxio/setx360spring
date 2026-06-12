@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar } from './Avatar';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -18,6 +19,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+import { isVerified } from '../utils/roles';
+import { VerificationModal } from './VerificationModal';
 import { CATEGORY_TAXONOMY } from '../lib/classifiedTaxonomy';
 
 const createCustomIcon = (svgString: string, color: string) => new L.DivIcon({
@@ -133,6 +136,8 @@ export const ClassifiedsView: React.FC = () => {
   // Form State - General Item Details
   const [postSubCategory, setPostSubCategory] = useState('');
   const [postItemType, setPostItemType] = useState('');
+  const [userVoteCounts, setUserVoteCounts] = useState<Record<string, { up: number, down: number }>>({});
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [postFilterValues, setPostFilterValues] = useState<Record<string, string>>({});
   
   // Form State - Event
@@ -318,6 +323,11 @@ export const ClassifiedsView: React.FC = () => {
   };
 
   const handleOpenPostForm = () => {
+    if (!isVerified(user?.role) && user?.role !== 'admin') {
+      setShowVerificationModal(true);
+      return;
+    }
+
     if (activeTab === 'map' && mapFilter === 'events') {
       setPostType('event');
     } else {
@@ -1214,10 +1224,15 @@ export const ClassifiedsView: React.FC = () => {
           <span>Post</span>
         </button>
       </div>
+
+      <AnimatePresence>
+        {showVerificationModal && (
+          <VerificationModal 
+            user={user} 
+            onClose={() => setShowVerificationModal(false)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
-
-
-

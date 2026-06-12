@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle } from 'lucide-react';
+import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -558,13 +558,33 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
             </div>
           </div>
 
-          <button 
-            onClick={toggleTheme}
-            className="home-theme-toggle"
-            title="Toggle Theme"
-          >
-            {theme.includes('dark') ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          <div style={{ display: 'flex', gap: '8px', zIndex: 10 }}>
+            {user?.role === 'admin' && (
+              <button 
+                onClick={() => onNavigate('admin')}
+                className="home-theme-toggle"
+                title="Admin Dashboard"
+              >
+                <Shield size={20} color="#ef4444" />
+              </button>
+            )}
+            
+            <button 
+              onClick={() => onNavigate('social', 6)}
+              className="home-theme-toggle"
+              title="Notifications"
+            >
+              <Bell size={20} />
+            </button>
+
+            <button 
+              onClick={toggleTheme}
+              className="home-theme-toggle"
+              title="Toggle Theme"
+            >
+              {theme.includes('dark') ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          </div>
         </div>
         {/* Dynamic Greeting */}
         <div style={{ padding: '0 24px', marginTop: '16px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -28,6 +28,7 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
 
   const [verifications, setVerifications] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [classifiedReports, setClassifiedReports] = useState<any[]>([]);
 
   useEffect(() => {
     fetchAllData();
@@ -53,6 +54,7 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
         supabase.from('posts').select('*, author:profiles!posts_profile_id_fkey(name, avatar_url)').in('moderation_status', ['flagged', 'hidden']),
         supabase.from('platform_activity').select('*, profiles(*)').order('created_at', { ascending: false }).limit(20),
         supabase.from('ads').select('id', { count: 'exact' }).eq('status', 'active'),
+        supabase.from('classified_reports').select('*, reporter:profiles!classified_reports_reporter_id_fkey(name), item:classified_items(*)').eq('status', 'pending'),
       ]) as any[];
 
       const userCount = results[0].data;
@@ -66,6 +68,7 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
 
       setVerifications(verifData || []);
       setActivityLogs(activityData || []);
+      setClassifiedReports(results[6].data || []);
 
       setStats(prev => ({
         ...prev,
@@ -98,6 +101,16 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
         description: `Approved verification for ${profileId} as ${role}`,
         user_id: user?.id
       });
+    }
+    fetchAllData();
+  };
+
+  const handleReportAction = async (reportId: string, action: 'dismiss' | 'delete_item', itemId?: string) => {
+    if (action === 'dismiss') {
+      await supabase.from('classified_reports').update({ status: 'dismissed' }).eq('id', reportId);
+    } else if (action === 'delete_item' && itemId) {
+      await supabase.from('classified_reports').update({ status: 'reviewed' }).eq('id', reportId);
+      await supabase.from('classified_items').update({ deleted_at: new Date().toISOString(), status: 'deleted' }).eq('id', itemId);
     }
     fetchAllData();
   };
@@ -182,6 +195,27 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
               </div>
             ))}
             {verifications.length === 0 && <p style={{ textAlign: 'center', padding: '20px 0', opacity: 0.5 }}>All caught up!</p>}
+          </div>
+        </div>
+
+        <div className="admin-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0 }}>Classified Reports</h3>
+            <span style={{ fontSize: '0.8rem', padding: '4px 10px', borderRadius: '10px', background: '#ef4444', color: '#fff', fontWeight: 900 }}>{classifiedReports.length}</span>
+          </div>
+          <div className="mini-verification-list">
+            {classifiedReports.slice(0, 5).map(report => (
+              <div key={report.id} className="mini-req-item" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Reported: {report.item?.title || 'Unknown Item'}</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>Reason: {report.reason}</div>
+                <div style={{ fontSize: '0.75rem', opacity: 0.5 }}>By: {report.reporter?.name || 'Anonymous'}</div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                  <button onClick={() => handleReportAction(report.id, 'dismiss')} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 6, color: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>Dismiss</button>
+                  <button onClick={() => handleReportAction(report.id, 'delete_item', report.item_id)} style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.2)', border: 'none', borderRadius: 6, color: '#ef4444', fontSize: '0.8rem', cursor: 'pointer' }}>Delete Item</button>
+                </div>
+              </div>
+            ))}
+            {classifiedReports.length === 0 && <p style={{ textAlign: 'center', padding: '20px 0', opacity: 0.5 }}>No pending reports.</p>}
           </div>
         </div>
       </div>

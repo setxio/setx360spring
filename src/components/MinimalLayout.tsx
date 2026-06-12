@@ -511,6 +511,16 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
               </button>
             </div>
             
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => setEnv('admin')}
+                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                title="Admin Dashboard"
+              >
+                <ShieldCheck size={22} />
+              </button>
+            )}
+
             <button
               onClick={toggleTheme}
               style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
