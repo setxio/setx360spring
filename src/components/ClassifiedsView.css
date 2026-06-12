@@ -395,3 +395,9 @@
 
 
 
+
+/* Fix for native select option styling in light/dark modes */
+.classifieds-container select option, .post-modal select option {
+  background-color: var(--bg, #111) !important;
+  color: var(--text, #fff) !important;
+}
