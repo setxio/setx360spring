@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Search, MapPin, Plus, Filter, Camera, MessageCircle, Clock, ShieldCheck, X, Heart, ChevronLeft, ChevronRight, Send, Image as ImageIcon, Map as MapIcon, Grid, Edit, Trash2, Calendar, CheckCircle, Store, Car, Home, ChevronDown, Eye
+  Search, MapPin, Plus, Filter, Camera, MessageCircle, Clock, ShieldCheck, X, Heart, ChevronLeft, ChevronRight, Send, Image as ImageIcon, Map as MapIcon, Grid, Edit, Trash2, Calendar, CheckCircle, Store, Car, Home, ChevronDown, Eye, Flag, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
@@ -706,9 +706,14 @@ export const ClassifiedsView: React.FC = () => {
                   <h2 style={{ margin: '0 0 8px', fontSize: '1.5rem' }}>{selectedItem.title}</h2>
                   <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--brand-color)' }}>{formatPrice(selectedItem.price)}{selectedItem.category === 'Property Rentals & Home Sales' && '/mo'}</div>
                 </div>
-                <button onClick={(e) => toggleFavorite(e, selectedItem.id)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: 12, cursor: 'pointer' }}>
-                  <Heart size={24} fill={favorites.has(selectedItem.id) ? '#f43f5e' : 'none'} color={favorites.has(selectedItem.id) ? '#f43f5e' : '#fff'} />
-                </button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={(e) => toggleFavorite(e, selectedItem.id)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: 12, cursor: 'pointer' }} title="Favorite">
+                    <Heart size={24} fill={favorites.has(selectedItem.id) ? '#f43f5e' : 'none'} color={favorites.has(selectedItem.id) ? '#f43f5e' : '#fff'} />
+                  </button>
+                  <button onClick={() => showToast('Listing reported to admins for review.')} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '50%', padding: 12, cursor: 'pointer' }} title="Report Suspicious Listing">
+                    <Flag size={24} color="#ef4444" />
+                  </button>
+                </div>
               </div>
 
               {selectedItem.status === 'sold' && (

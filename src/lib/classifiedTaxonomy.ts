@@ -25,6 +25,8 @@ const COMMON_APPAREL_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'O
 const COMMON_SHOE_SIZES = ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14', 'Other'];
 const SUIT_PIECES = ['Shirt', 'Pants', 'Jacket', 'Full Suit'];
 const TOOL_POWER_SOURCES = ['Corded Electric', 'Cordless/Battery', 'Gas Powered', 'Pneumatic', 'Manual'];
+const SERIAL_NUMBER_FILTER: FilterConfig = { id: 'serial_number', label: 'Serial Number (Optional)', type: 'text' };
+const VIN_FILTER: FilterConfig = { id: 'vin', label: 'VIN (Optional)', type: 'text' };
 
 export const CATEGORY_TAXONOMY: CategoryConfig[] = [
   {
@@ -33,49 +35,49 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Cars & Trucks',
         types: [
-          { name: 'Sedans & Coupes', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'SUVs & Crossovers', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Trucks', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'drive', label: 'Drivetrain (4x4, 2WD)', type: 'select', options: ['4x4', '2WD', 'AWD'] }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Vans & Minivans', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Sedans & Coupes', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'SUVs & Crossovers', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Trucks', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'drive', label: 'Drivetrain (4x4, 2WD)', type: 'select', options: ['4x4', '2WD', 'AWD'] }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Vans & Minivans', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'Powersports & ATVs',
         types: [
-          { name: '4-Wheelers & ATVs', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'hours', label: 'Hours/Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Side-by-Sides (UTVs)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'hours', label: 'Hours/Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Dirt Bikes', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Golf Carts', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'power', label: 'Gas or Electric', type: 'select', options: ['Gas', 'Electric'] }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: '4-Wheelers & ATVs', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'hours', label: 'Hours/Mileage', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Side-by-Sides (UTVs)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'hours', label: 'Hours/Mileage', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Dirt Bikes', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Golf Carts', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'power', label: 'Gas or Electric', type: 'select', options: ['Gas', 'Electric'] }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'Motorcycles & Scooters',
         types: [
-          { name: 'Street Bikes & Cruisers', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Mopeds & Scooters', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'cc', label: 'Engine Size (cc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Street Bikes & Cruisers', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Mopeds & Scooters', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'cc', label: 'Engine Size (cc)', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'RVs & Campers',
         types: [
-          { name: 'Travel Trailers & 5th Wheels', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'length', label: 'Length (ft)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Motorhomes & Camper Vans', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Travel Trailers & 5th Wheels', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'length', label: 'Length (ft)', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Motorhomes & Camper Vans', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'Watercraft',
         types: [
-          { name: 'Boats (Fishing, Pontoon, etc)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'length', label: 'Length (ft)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Jet Skis & PWCs', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Boats (Fishing, Pontoon, etc)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'length', label: 'Length (ft)', type: 'text' }, { id: 'hull_id', label: 'Hull ID (Optional)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Jet Skis & PWCs', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'hull_id', label: 'Hull ID (Optional)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Kayaks & Canoes', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'Trailers & Utility',
         types: [
-          { name: 'Utility & Flatbed Trailers', filters: [{ id: 'size', label: 'Dimensions', type: 'text' }, { id: 'axles', label: 'Axles', type: 'select', options: ['Single Axle', 'Tandem Axle', 'Triple Axle'] }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Enclosed Trailers', filters: [{ id: 'size', label: 'Dimensions', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Car Haulers & Equipment', filters: [{ id: 'capacity', label: 'Weight Capacity', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Utility & Flatbed Trailers', filters: [{ id: 'size', label: 'Dimensions', type: 'text' }, { id: 'axles', label: 'Axles', type: 'select', options: ['Single Axle', 'Tandem Axle', 'Triple Axle'] }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Enclosed Trailers', filters: [{ id: 'size', label: 'Dimensions', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Car Haulers & Equipment', filters: [{ id: 'capacity', label: 'Weight Capacity', type: 'text' }, VIN_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
@@ -178,16 +180,16 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Cell Phones',
         types: [
-          { name: 'Smartphones', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'carrier', label: 'Carrier / Unlocked', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Smartphones', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'carrier', label: 'Carrier / Unlocked', type: 'text' }, { id: 'imei', label: 'IMEI / Serial Number (Optional)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Accessories', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'Computers & Tablets',
         types: [
-          { name: 'Laptops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'specs', label: 'Processor/RAM', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Desktops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'specs', label: 'Processor/RAM', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Tablets', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'storage', label: 'Storage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Laptops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'specs', label: 'Processor/RAM', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Desktops', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'specs', label: 'Processor/RAM', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Tablets', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'storage', label: 'Storage', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Parts & Components', filters: [{ id: 'type', label: 'Component Type', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
@@ -201,7 +203,7 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Video Games & Consoles',
         types: [
-          { name: 'Consoles', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Consoles', filters: [{ id: 'brand', label: 'Brand (PlayStation, Xbox, etc)', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Video Games', filters: [{ id: 'platform', label: 'Platform', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Controllers & Accessories', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
@@ -318,10 +320,10 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Power Tools',
         types: [
-          { name: 'Drills & Drivers', filters: [{ id: 'brand', label: 'Brand (DeWalt, Hercules, etc)', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Saws', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Grinders & Sanders', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Air Compressors', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'capacity', label: 'Gallon Capacity', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Drills & Drivers', filters: [{ id: 'brand', label: 'Brand (DeWalt, Hercules, etc)', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Saws', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Grinders & Sanders', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'power', label: 'Power Source', type: 'select', options: TOOL_POWER_SOURCES }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Air Compressors', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'capacity', label: 'Gallon Capacity', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
@@ -351,15 +353,15 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Welding & Soldering',
         types: [
-          { name: 'Welders', filters: [{ id: 'brand', label: 'Brand (Titanium, Vulcan, etc)', type: 'text' }, { id: 'type', label: 'Type (MIG, TIG, Stick)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Welders', filters: [{ id: 'brand', label: 'Brand (Titanium, Vulcan, etc)', type: 'text' }, { id: 'type', label: 'Type (MIG, TIG, Stick)', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Welding Accessories', filters: [{ id: 'type', label: 'Type (Helmets, Gloves)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
         name: 'Generators & Engines',
         types: [
-          { name: 'Generators', filters: [{ id: 'brand', label: 'Brand (Predator, etc)', type: 'text' }, { id: 'watts', label: 'Wattage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Small Engines', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'cc', label: 'Engine CC', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Generators', filters: [{ id: 'brand', label: 'Brand (Predator, etc)', type: 'text' }, { id: 'watts', label: 'Wattage', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Small Engines', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'cc', label: 'Engine CC', type: 'text' }, SERIAL_NUMBER_FILTER, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
@@ -466,6 +468,7 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Community',
         types: [
+          { name: 'Stolen Goods / BOLO', filters: [{ id: 'date_stolen', label: 'Date Stolen', type: 'text' }, { id: 'police_report', label: 'Police Report # (Optional)', type: 'text' }, { id: 'serial_vin', label: 'Serial Number / VIN', type: 'text' }, { id: 'details', label: 'Distinguishing Marks', type: 'text' }] },
           { name: 'Garage Sales', filters: [{ id: 'date', label: 'Dates of Sale', type: 'text' }] },
           { name: 'Lost & Found', filters: [{ id: 'type', label: 'Lost or Found?', type: 'select', options: ['Lost', 'Found'] }, { id: 'date', label: 'Date Lost/Found', type: 'text' }] }
         ]
