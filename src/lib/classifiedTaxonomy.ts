@@ -20,13 +20,103 @@ export type CategoryConfig = {
   subcategories: SubCategoryConfig[];
 };
 
-const COMMON_CONDITIONS = ['New', 'Like New', 'Used - Good', 'Used - Fair', 'Refurbished'];
+const COMMON_CONDITIONS = ['New', 'Like New', 'Used - Good', 'Used - Fair', 'Refurbished', 'Parts Only'];
 const COMMON_APPAREL_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Other'];
 const COMMON_SHOE_SIZES = ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14', 'Other'];
 const SUIT_PIECES = ['Shirt', 'Pants', 'Jacket', 'Full Suit'];
 const TOOL_POWER_SOURCES = ['Corded Electric', 'Cordless/Battery', 'Gas Powered', 'Pneumatic', 'Manual'];
 
 export const CATEGORY_TAXONOMY: CategoryConfig[] = [
+  {
+    name: 'Vehicles & Powersports',
+    subcategories: [
+      {
+        name: 'Cars & Trucks',
+        types: [
+          { name: 'Sedans & Coupes', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'SUVs & Crossovers', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Trucks', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'drive', label: 'Drivetrain (4x4, 2WD)', type: 'select', options: ['4x4', '2WD', 'AWD'] }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Vans & Minivans', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Powersports & ATVs',
+        types: [
+          { name: '4-Wheelers & ATVs', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'hours', label: 'Hours/Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Side-by-Sides (UTVs)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'hours', label: 'Hours/Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Dirt Bikes', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Golf Carts', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'power', label: 'Gas or Electric', type: 'select', options: ['Gas', 'Electric'] }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Motorcycles & Scooters',
+        types: [
+          { name: 'Street Bikes & Cruisers', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'model', label: 'Model', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Mopeds & Scooters', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'cc', label: 'Engine Size (cc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'RVs & Campers',
+        types: [
+          { name: 'Travel Trailers & 5th Wheels', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'length', label: 'Length (ft)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Motorhomes & Camper Vans', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'mileage', label: 'Mileage', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Watercraft',
+        types: [
+          { name: 'Boats (Fishing, Pontoon, etc)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'length', label: 'Length (ft)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Jet Skis & PWCs', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'year', label: 'Year', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Kayaks & Canoes', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Trailers & Utility',
+        types: [
+          { name: 'Utility & Flatbed Trailers', filters: [{ id: 'size', label: 'Dimensions', type: 'text' }, { id: 'axles', label: 'Axles', type: 'select', options: ['Single Axle', 'Tandem Axle', 'Triple Axle'] }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Enclosed Trailers', filters: [{ id: 'size', label: 'Dimensions', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Car Haulers & Equipment', filters: [{ id: 'capacity', label: 'Weight Capacity', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Heavy Equipment',
+        types: [
+          { name: 'Tractors', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'hours', label: 'Hours', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Construction (Skid Steers, etc)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'type', label: 'Equipment Type', type: 'text' }, { id: 'hours', label: 'Hours', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Property Rentals & Home Sales',
+    subcategories: [
+      {
+        name: 'Residential Rentals',
+        types: [
+          { name: 'Apartments for Rent', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'pet_friendly', label: 'Pet Friendly', type: 'select', options: ['Yes', 'No'] }] },
+          { name: 'Houses for Rent', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'pet_friendly', label: 'Pet Friendly', type: 'select', options: ['Yes', 'No'] }] },
+          { name: 'Mobile/Trailer Homes for Rent', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'pet_friendly', label: 'Pet Friendly', type: 'select', options: ['Yes', 'No'] }] },
+          { name: 'Rooms & Shares', filters: [{ id: 'furnished', label: 'Furnished', type: 'select', options: ['Yes', 'No'] }] }
+        ]
+      },
+      {
+        name: 'Residential Sales',
+        types: [
+          { name: 'Houses for Sale', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'sqft', label: 'Square Footage', type: 'text' }] },
+          { name: 'Townhomes & Condos', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'sqft', label: 'Square Footage', type: 'text' }] },
+          { name: 'Mobile/Trailer Homes', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'size', label: 'Single/Double Wide', type: 'select', options: ['Single Wide', 'Double Wide', 'Triple Wide'] }] }
+        ]
+      },
+      {
+        name: 'Commercial & Land',
+        types: [
+          { name: 'Land & Lots', filters: [{ id: 'acres', label: 'Acres', type: 'text' }, { id: 'zoning', label: 'Zoning Type', type: 'text' }] },
+          { name: 'Commercial Sales', filters: [{ id: 'sqft', label: 'Square Footage', type: 'text' }, { id: 'type', label: 'Property Type', type: 'text' }] },
+          { name: 'Commercial Rentals', filters: [{ id: 'sqft', label: 'Square Footage', type: 'text' }, { id: 'type', label: 'Property Type', type: 'text' }] }
+        ]
+      }
+    ]
+  },
   {
     name: 'Apparel (Fashion)',
     subcategories: [
@@ -111,7 +201,7 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Video Games & Consoles',
         types: [
-          { name: 'Consoles', filters: [{ id: 'brand', label: 'Brand (PlayStation, Xbox, etc)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Consoles', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Video Games', filters: [{ id: 'platform', label: 'Platform', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Controllers & Accessories', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
@@ -326,29 +416,18 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
     ]
   },
   {
-    name: 'Property Rentals & Home Sales',
-    subcategories: [
-      {
-        name: 'Rentals',
-        types: [
-          { name: 'Apartments for Rent', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'pet_friendly', label: 'Pet Friendly', type: 'select', options: ['Yes', 'No'] }] },
-          { name: 'Houses for Rent', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'pet_friendly', label: 'Pet Friendly', type: 'select', options: ['Yes', 'No'] }] },
-          { name: 'Rooms & Shares', filters: [{ id: 'furnished', label: 'Furnished', type: 'select', options: ['Yes', 'No'] }] }
-        ]
-      },
-      {
-        name: 'Sales',
-        types: [
-          { name: 'Houses for Sale', filters: [{ id: 'beds', label: 'Bedrooms', type: 'text' }, { id: 'baths', label: 'Bathrooms', type: 'text' }, { id: 'type', label: 'Property Type', type: 'text' }] },
-          { name: 'Land', filters: [{ id: 'acres', label: 'Acres', type: 'text' }] },
-          { name: 'Commercial', filters: [{ id: 'sqft', label: 'Square Footage', type: 'text' }] }
-        ]
-      }
-    ]
-  },
-  {
     name: 'Sporting Goods',
     subcategories: [
+      {
+        name: 'Hunting & Fishing',
+        types: [
+          { name: 'Deer Stands & Blinds', filters: [{ id: 'type', label: 'Type (Tripod, Box, Tree, Ground)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Fishing Gear', filters: [{ id: 'type', label: 'Type (Rods, Reels, Tackle, Nets)', type: 'text' }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Hunting Accessories', filters: [{ id: 'type', label: 'Type (Game Cameras, Calls, Decoys)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Optics & Scopes', filters: [{ id: 'type', label: 'Type (Scopes, Binoculars, Rangefinders)', type: 'text' }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Camping & Survival', filters: [{ id: 'type', label: 'Type (Tents, Coolers, Lights)', type: 'text' }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
       {
         name: 'Exercise & Fitness',
         types: [
@@ -359,8 +438,8 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
       {
         name: 'Outdoor Gear',
         types: [
-          { name: 'Camping & Hiking', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'type', label: 'Type (Tent, Backpack)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
-          { name: 'Hunting & Fishing', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+          { name: 'Hiking & Backpacking', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'type', label: 'Type (Backpacks, Boots)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Water Sports', filters: [{ id: 'type', label: 'Type (Paddleboards, Tubes)', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {

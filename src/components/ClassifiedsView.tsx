@@ -128,13 +128,6 @@ export const ClassifiedsView: React.FC = () => {
 
   // Form State - Specific
   const [selectedEventId, setSelectedEventId] = useState<string>(''); 
-  const [vehMake, setVehMake] = useState('');
-  const [vehModel, setVehModel] = useState('');
-  const [vehYear, setVehYear] = useState('');
-  const [vehMileage, setVehMileage] = useState('');
-  const [reBeds, setReBeds] = useState('');
-  const [reBaths, setReBaths] = useState('');
-  const [reSqft, setReSqft] = useState('');
   const [eventAvailability, setEventAvailability] = useState<'now'|'event'>('now');
 
   // Form State - General Item Details
@@ -220,9 +213,9 @@ export const ClassifiedsView: React.FC = () => {
     
     let allowedImages = 3;
     let allowedVideos = 1;
-    if (postType === 'real_estate') {
+    if (postCategory === 'Property Rentals & Home Sales') {
       allowedImages = 20;
-    } else if (postType === 'vehicle') {
+    } else if (postCategory === 'Vehicles & Powersports') {
       allowedImages = 10;
       allowedVideos = 2;
     }
@@ -263,20 +256,12 @@ export const ClassifiedsView: React.FC = () => {
         }
 
         const numericPrice = parseFloat(postPrice.replace(/[^0-9.]/g, '')) || 0;
-        let cat = postCategory;
-        if (postType === 'vehicle') cat = 'Vehicles';
-        if (postType === 'real_estate') cat = 'Property Rentals & Home Sales';
 
-        const vehicle_details = postType === 'vehicle' ? { make: vehMake, model: vehModel, year: vehYear, mileage: vehMileage } : null;
-        const real_estate_details = postType === 'real_estate' ? { beds: reBeds, baths: reBaths, sqft: reSqft } : null;
-        let item_details = null;
-        if (postType === 'item') {
-          item_details = {
-            subcategory: postSubCategory,
-            type: postItemType,
-            ...postFilterValues
-          };
-        }
+        const item_details = {
+          subcategory: postSubCategory,
+          type: postItemType,
+          ...postFilterValues
+        };
 
         await supabase.from('classified_items').insert({
           user_id: user.id,
@@ -284,13 +269,11 @@ export const ClassifiedsView: React.FC = () => {
           title: postTitle,
           price: numericPrice,
           location: postLocation,
-          latitude: postType === 'real_estate' ? postLat : null,
-          longitude: postType === 'real_estate' ? postLng : null,
-          category: cat,
+          latitude: postCategory === 'Property Rentals & Home Sales' ? postLat : null,
+          longitude: postCategory === 'Property Rentals & Home Sales' ? postLng : null,
+          category: postCategory,
           description: postDescription,
           images: imageUrls,
-          vehicle_details,
-          real_estate_details,
           item_details,
           event_availability: selectedEventId ? eventAvailability : 'now',
           status: 'active'
@@ -324,8 +307,6 @@ export const ClassifiedsView: React.FC = () => {
   const resetForms = () => {
     setPostTitle(''); setPostPrice(''); setPostDescription(''); setPostCategory(''); setPostImages([]); setSelectedEventId('');
     setPostLocation(user?.location || '');
-    setVehMake(''); setVehModel(''); setVehYear(''); setVehMileage('');
-    setReBeds(''); setReBaths(''); setReSqft('');
     setEventAvailability('now');
     setEventStart(''); setEventEnd('');
     setEventSchedule({ Monday: '', Tuesday: '', Wednesday: '', Thursday: '', Friday: '', Saturday: '', Sunday: '' });
@@ -337,10 +318,14 @@ export const ClassifiedsView: React.FC = () => {
   };
 
   const handleOpenPostForm = () => {
-    if (activeTab === 'vehicles') setPostType('vehicle');
-    else if (activeTab === 'real_estate') setPostType('real_estate');
-    else if (activeTab === 'map') setPostType(mapFilter === 'properties' ? 'real_estate' : 'event');
-    else setPostType('item');
+    if (activeTab === 'map' && mapFilter === 'events') {
+      setPostType('event');
+    } else {
+      setPostType('item');
+      if (activeTab === 'vehicles') setPostCategory('Vehicles & Powersports');
+      else if (activeTab === 'real_estate' || (activeTab === 'map' && mapFilter === 'properties')) setPostCategory('Property Rentals & Home Sales');
+      else setPostCategory('');
+    }
     setIsPosting(true);
   };
 
@@ -408,19 +393,19 @@ export const ClassifiedsView: React.FC = () => {
   };
 
   // Derived datasets
-  const myItems = items.filter(i => i.user_id === user?.id && i.category !== 'Vehicles' && i.category !== 'Property Rentals & Home Sales');
-  const myVehicles = items.filter(i => i.user_id === user?.id && i.category === 'Vehicles');
+  const myItems = items.filter(i => i.user_id === user?.id && i.category !== 'Vehicles & Powersports' && i.category !== 'Property Rentals & Home Sales');
+  const myVehicles = items.filter(i => i.user_id === user?.id && i.category === 'Vehicles & Powersports');
   const myProperties = items.filter(i => i.user_id === user?.id && i.category === 'Property Rentals & Home Sales');
   const myEvents = events.filter(e => e.user_id === user?.id);
 
   const savedProperties = items.filter(i => favorites.has(i.id) && i.category === 'Property Rentals & Home Sales');
-  const savedVehicles = items.filter(i => favorites.has(i.id) && i.category === 'Vehicles');
-  const savedGeneralItems = items.filter(i => favorites.has(i.id) && i.category !== 'Vehicles' && i.category !== 'Property Rentals & Home Sales');
+  const savedVehicles = items.filter(i => favorites.has(i.id) && i.category === 'Vehicles & Powersports');
+  const savedGeneralItems = items.filter(i => favorites.has(i.id) && i.category !== 'Vehicles & Powersports' && i.category !== 'Property Rentals & Home Sales');
 
   const getFilteredFeed = () => {
     let feed = items;
     if (activeTab === 'items') {
-      feed = feed.filter(i => i.category !== 'Vehicles' && i.category !== 'Property Rentals & Home Sales');
+      feed = feed.filter(i => i.category !== 'Vehicles & Powersports' && i.category !== 'Property Rentals & Home Sales');
       if (activeCategory !== 'All') {
         feed = feed.filter(i => i.category === activeCategory);
         
@@ -444,7 +429,7 @@ export const ClassifiedsView: React.FC = () => {
         });
       }
     } else if (activeTab === 'vehicles') {
-      feed = feed.filter(i => i.category === 'Vehicles');
+      feed = feed.filter(i => i.category === 'Vehicles & Powersports');
     } else if (activeTab === 'real_estate') {
       feed = feed.filter(i => i.category === 'Property Rentals & Home Sales');
     }
@@ -550,8 +535,8 @@ export const ClassifiedsView: React.FC = () => {
                 <>
                   <input type="number" placeholder="Price ($)" value={postPrice} onChange={e => setPostPrice(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <input type="text" placeholder={postType === 'real_estate' ? "Full Address" : "Location/City"} value={postLocation} onChange={e => setPostLocation(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                    {postType === 'real_estate' && (
+                    <input type="text" placeholder={postCategory === 'Property Rentals & Home Sales' ? "Full Address" : "Location/City"} value={postLocation} onChange={e => setPostLocation(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
+                    {postCategory === 'Property Rentals & Home Sales' && (
                       <button onClick={handleGeocodeAddress} style={{ padding: '0 16px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}><MapIcon size={16} /></button>
                     )}
                   </div>
@@ -636,23 +621,6 @@ export const ClassifiedsView: React.FC = () => {
                 </>
               )}
 
-              {postType === 'vehicle' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px' }}>
-                  <input type="text" placeholder="Make (e.g. Ford)" value={vehMake} onChange={e => setVehMake(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                  <input type="text" placeholder="Model (e.g. F-150)" value={vehModel} onChange={e => setVehModel(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                  <input type="number" placeholder="Year" value={vehYear} onChange={e => setVehYear(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                  <input type="number" placeholder="Mileage" value={vehMileage} onChange={e => setVehMileage(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                </div>
-              )}
-
-              {postType === 'real_estate' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px' }}>
-                  <input type="number" placeholder="Beds" value={reBeds} onChange={e => setReBeds(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                  <input type="number" placeholder="Baths" value={reBaths} onChange={e => setReBaths(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                  <input type="number" placeholder="SqFt" value={reSqft} onChange={e => setReSqft(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff' }} />
-                </div>
-              )}
-
               {postType === 'event' && (
                 <>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -685,7 +653,7 @@ export const ClassifiedsView: React.FC = () => {
 
               <textarea placeholder="Description" rows={4} value={postDescription} onChange={e => setPostDescription(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', resize: 'vertical' }} />
 
-              {(postType === 'event' || postType === 'real_estate') && (
+              {(postType === 'event' || postCategory === 'Property Rentals & Home Sales') && (
                 <>
                   <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Tap map to pin exact location</div>
                   <div style={{ height: 200, borderRadius: 8, overflow: 'hidden' }}>
