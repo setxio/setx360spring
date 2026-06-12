@@ -164,8 +164,8 @@ export const ClassifiedsView: React.FC = () => {
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
     const [{ data: itemsData }, { data: eventsData }] = await Promise.all([
-      supabase.from('classified_items').select('*, profiles(name, avatar_url)').order('created_at', { ascending: false }),
-      supabase.from('classified_events').select('*, profiles(name, avatar_url)').order('start_date', { ascending: true })
+      supabase.from('classified_items').select('*, profiles(name, avatar_url)').is('deleted_at', null).order('created_at', { ascending: false }),
+      supabase.from('classified_events').select('*, profiles(name, avatar_url)').is('deleted_at', null).order('start_date', { ascending: true })
     ]);
 
     if (itemsData) {
@@ -186,7 +186,7 @@ export const ClassifiedsView: React.FC = () => {
   };
 
   const fetchEventItems = async (eventId: string) => {
-    const { data } = await supabase.from('classified_items').select('*, profiles(name, avatar_url)').eq('event_id', eventId);
+    const { data } = await supabase.from('classified_items').select('*, profiles(name, avatar_url)').eq('event_id', eventId).is('deleted_at', null);
     if (data) setEventItems(data as any);
   };
 
@@ -339,12 +339,13 @@ export const ClassifiedsView: React.FC = () => {
 
   const handleDeleteItem = async (id: string) => {
     if (!confirm('Delete this listing?')) return;
-    await supabase.from('classified_items').delete().eq('id', id);
+    await supabase.from('classified_items').update({ deleted_at: new Date().toISOString(), status: 'deleted' }).eq('id', id);
     fetchData();
+    if (selectedItem?.id === id) setSelectedItem(null);
   };
   const handleDeleteEvent = async (id: string) => {
     if (!confirm('Delete this event? All associated items will also be deleted.')) return;
-    await supabase.from('classified_events').delete().eq('id', id);
+    await supabase.from('classified_events').update({ deleted_at: new Date().toISOString(), status: 'deleted' }).eq('id', id);
     fetchData();
   };
 
@@ -710,7 +711,17 @@ export const ClassifiedsView: React.FC = () => {
                   <button onClick={(e) => toggleFavorite(e, selectedItem.id)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', padding: 12, cursor: 'pointer' }} title="Favorite">
                     <Heart size={24} fill={favorites.has(selectedItem.id) ? '#f43f5e' : 'none'} color={favorites.has(selectedItem.id) ? '#f43f5e' : '#fff'} />
                   </button>
-                  <button onClick={() => showToast('Listing reported to admins for review.')} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '50%', padding: 12, cursor: 'pointer' }} title="Report Suspicious Listing">
+                  <button 
+                    onClick={async () => {
+                      if (!user?.id) return;
+                      const reason = prompt('Please describe why this listing is suspicious:');
+                      if (!reason) return;
+                      await supabase.from('classified_reports').insert({ reporter_id: user.id, item_id: selectedItem.id, reason });
+                      showToast('Listing reported to admins for review.');
+                    }} 
+                    style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '50%', padding: 12, cursor: 'pointer' }} 
+                    title="Report Suspicious Listing"
+                  >
                     <Flag size={24} color="#ef4444" />
                   </button>
                 </div>
