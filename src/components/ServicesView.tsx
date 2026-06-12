@@ -15,21 +15,41 @@ import {
   Paintbrush,
   Filter,
   Calendar,
-  Loader2
+  Loader2,
+  Fan,
+  Briefcase,
+  Calculator,
+  Server,
+  Wrench,
+  Sparkles,
+  TreePine,
+  HeartPulse,
+  Building,
+  Shield,
+  Ruler
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
 import { SETX_COUNTY_LIST } from '../utils/geo';
+import { RequestQuoteModal } from './RequestQuoteModal';
 import './ServicesView.css';
 
 const CATEGORIES = [
-  { id: 'home', label: 'Home Fix', icon: <Hammer size={24} />, color: '#f59e0b' },
-  { id: 'electric', label: 'Electrical', icon: <Zap size={24} />, color: '#ef4444' },
-  { id: 'plumbing', label: 'Plumbing', icon: <Droplets size={24} />, color: '#3b82f6' },
-  { id: 'beauty', label: 'Personal', icon: <Scissors size={24} />, color: '#ec4899' },
-  { id: 'moving', label: 'Delivery', icon: <Truck size={24} />, color: '#10b981' },
-  { id: 'design', label: 'Creative', icon: <Paintbrush size={24} />, color: '#8b5cf6' },
+  { id: 'electrical', label: 'Electrical Contractors', icon: <Zap size={24} />, color: '#eab308' },
+  { id: 'plumbing', label: 'Plumbing Services', icon: <Droplets size={24} />, color: '#3b82f6' },
+  { id: 'hvac', label: 'HVAC & Climate', icon: <Fan size={24} />, color: '#0ea5e9' },
+  { id: 'construction', label: 'General Contracting', icon: <Hammer size={24} />, color: '#f97316' },
+  { id: 'legal', label: 'Legal & Law Firms', icon: <Briefcase size={24} />, color: '#4f46e5' },
+  { id: 'accounting', label: 'Accounting & Financial', icon: <Calculator size={24} />, color: '#10b981' },
+  { id: 'it', label: 'IT & Managed Services', icon: <Server size={24} />, color: '#8b5cf6' },
+  { id: 'auto', label: 'Auto Repair & Collision', icon: <Wrench size={24} />, color: '#64748b' },
+  { id: 'cleaning', label: 'Commercial Cleaning', icon: <Sparkles size={24} />, color: '#06b6d4' },
+  { id: 'landscaping', label: 'Commercial Landscaping', icon: <TreePine size={24} />, color: '#22c55e' },
+  { id: 'healthcare', label: 'Healthcare & Clinics', icon: <HeartPulse size={24} />, color: '#ef4444' },
+  { id: 'realestate', label: 'Real Estate Agencies', icon: <Building size={24} />, color: '#d946ef' },
+  { id: 'insurance', label: 'Insurance Agencies', icon: <Shield size={24} />, color: '#3b82f6' },
+  { id: 'architecture', label: 'Architecture & Engineering', icon: <Ruler size={24} />, color: '#f59e0b' },
 ];
 
 const SERVICES = [
@@ -83,6 +103,9 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [myBookings, setMyBookings] = useState<any[]>([]);
   const [isBooking, setIsBooking] = useState(false);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [selectedProForQuote, setSelectedProForQuote] = useState<{id: string, name: string} | null>(null);
+  const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'today' | 'emergency'>('all');
 
   React.useEffect(() => {
     fetchServices();
@@ -256,7 +279,29 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
       <section className="services-section">
         <div className="section-header">
           <h2>Recommended Pros in {scopeLabel()}</h2>
-          <button className="view-all">See All</button>
+          <button className="view-all" onClick={() => setActiveTab(1)}>See All</button>
+        </div>
+
+        {/* Availability Filter Pills */}
+        <div className="availability-filters">
+          <button 
+            className={`avail-pill ${availabilityFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setAvailabilityFilter('all')}
+          >
+            All Pros
+          </button>
+          <button 
+            className={`avail-pill today ${availabilityFilter === 'today' ? 'active' : ''}`}
+            onClick={() => setAvailabilityFilter('today')}
+          >
+            <Calendar size={13} /> Available Today
+          </button>
+          <button 
+            className={`avail-pill emergency ${availabilityFilter === 'emergency' ? 'active' : ''}`}
+            onClick={() => setAvailabilityFilter('emergency')}
+          >
+            ⚡ 24/7 Emergency
+          </button>
         </div>
         
         {escalatedScope && (
@@ -300,17 +345,34 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
                   </div>
                   <div className="pro-rating">
                     <Star size={12} fill="#f59e0b" color="#f59e0b" />
-                    <span>{service.rating}</span>
+                    <span>{service.rating} ({service.reviews})</span>
                   </div>
                 </div>
-                <div className="pro-tags">
-                  {service.tags.map((t: string) => <span key={t} className="s-tag">{t}</span>)}
+                {/* Trust Metrics */}
+                <div className="pro-trust-row">
+                  {service.isVerified && (
+                    <span className="trust-chip verified"><ShieldCheck size={11} /> Verified Pro</span>
+                  )}
+                  {service.tags.includes('Licensed') && (
+                    <span className="trust-chip licensed">Licensed &amp; Insured</span>
+                  )}
+                  {service.tags.includes('24/7 Emergency') && (
+                    <span className="trust-chip emergency">⚡ 24/7</span>
+                  )}
                 </div>
                 <div className="pro-footer">
                   <span className="pro-price">{service.price}</span>
                   <div className="pro-actions">
-                    <button className="contact-icon-btn"><MessageSquare size={18} /></button>
-                    <button className="hire-btn" onClick={() => handleHireClick(service.id)}>Hire Now</button>
+                    <button 
+                      className="hire-btn quote" 
+                      onClick={() => {
+                        setSelectedProForQuote({ id: service.id, name: service.provider });
+                        setIsQuoteModalOpen(true);
+                      }}
+                    >
+                      Quote
+                    </button>
+                    <button className="hire-btn" onClick={() => handleHireClick(service.id)}>Hire</button>
                   </div>
                 </div>
               </div>
@@ -404,6 +466,7 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
                         key={slot} 
                         onClick={() => confirmBooking(slot)}
                         disabled={isBooking}
+                        className="slot-btn"
                         style={{
                           background: 'var(--surface)',
                           border: '1px solid var(--primary)',
@@ -414,7 +477,7 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
                           fontWeight: 600
                         }}
                       >
-                        {slot.substring(0, 5)} {parseInt(slot) >= 12 ? 'PM' : 'AM'}
+                        {isBooking ? <Loader2 className="animate-spin" size={14}/> : <>{slot.substring(0, 5)} {parseInt(slot) >= 12 ? 'PM' : 'AM'}</>}
                       </button>
                     ))}
                   </div>
@@ -472,19 +535,19 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
     </div>
   );
 
-  const content = () => {
+  const renderContent = () => {
     switch (activeTab) {
       case 0: return renderHome();
       case 1: return renderPros();
       case 2: return renderSchedule();
       case 3: return renderBookings();
       case 4: return renderAccount();
-      default: return renderHome();
+      default: return null;
     }
   };
 
   return (
-    <div className="services-container">
+    <div className="services-layout">
       <header className="services-header">
         <div className="services-welcome">
           <div className="expert-badge">
@@ -506,7 +569,18 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
           <button className="filter-btn"><Filter size={18} /></button>
         </div>
       </header>
-      {content()}
+      {renderContent()}
+
+      <RequestQuoteModal
+        isOpen={isQuoteModalOpen}
+        onClose={() => {
+          setIsQuoteModalOpen(false);
+          setSelectedProForQuote(null);
+        }}
+        proName={selectedProForQuote?.name || ''}
+        proId={selectedProForQuote?.id || ''}
+        user={user}
+      />
     </div>
   );
 };

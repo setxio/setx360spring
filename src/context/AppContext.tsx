@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabase';
 import type { User, StaffClearance } from '../types/user';
 
-export type Env = 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'media' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me';
+export type Env = 'home' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
@@ -27,9 +27,9 @@ interface AppContextType {
   activeTab: number;
   unreadCount: number;
   isLoading: boolean;
-  isSearchOpen: boolean;
+  localSearchQuery: string;
   onlineUsers: Set<string>;
-  setIsSearchOpen: (open: boolean) => void;
+  setLocalSearchQuery: (query: string) => void;
   setEnv: (env: Env) => void;
   setTheme: (theme: Theme) => void;
   setScope: (scope: Scope) => void;
@@ -44,6 +44,26 @@ interface AppContextType {
   projectSlug: string | null;
   layout: Layout;
   setLayout: (layout: Layout) => void;
+  currentSong: any;
+  isPlaying: boolean;
+  playSong: (song: any, contextQueue?: any[]) => void;
+  togglePlay: () => void;
+  setIsPlaying: (playing: boolean) => void;
+  isQueueModalOpen: boolean;
+  setIsQueueModalOpen: (open: boolean) => void;
+  queue: any[];
+  queueIndex: number;
+  playNext: () => void;
+  playPrevious: () => void;
+  // Music View State Persistence
+  musicSearchQuery: string;
+  setMusicSearchQuery: (q: string) => void;
+  musicIsSearchActive: boolean;
+  setMusicIsSearchActive: (a: boolean) => void;
+  musicActiveArtist: any | null;
+  setMusicActiveArtist: (a: any | null) => void;
+  musicActivePlaylist: any | null;
+  setMusicActivePlaylist: (p: any | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -73,20 +93,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const migrated = localStorage.getItem('ecity_theme_migrated_neodark');
+      const migrated = localStorage.getItem('ecity_theme_migrated_civic_dark_default');
       if (!migrated) {
-        localStorage.setItem('ecity_theme_migrated_neodark', 'true');
-        const defaultTheme = isSetxIO ? 'io-dark' : 'neo-dark';
+        localStorage.setItem('ecity_theme_migrated_civic_dark_default', 'true');
+        const defaultTheme = 'civic-classic-dark';
         localStorage.setItem('ecity_theme', defaultTheme);
         return defaultTheme;
       }
       const saved = localStorage.getItem('ecity_theme') as Theme;
       if (saved) return saved;
     }
-    if (isSetxIO) return 'io-dark';
-    return 'neo-dark';
+    return 'civic-classic-dark';
   });
-  const [layout, setLayoutState] = useState<Layout>(() => (localStorage.getItem('ecity_layout') as Layout) || 'classic');
+  const [layout, setLayoutState] = useState<Layout>(() => (localStorage.getItem('ecity_layout') as Layout) || 'minimal');
   
   
   const [activeTab, setActiveTabState] = useState(() => {
@@ -107,8 +126,78 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+
+  const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
+
+  // Global Audio State
+  const [currentSong, setCurrentSong] = useState<any>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('setx_last_played_song');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return null;
+  });
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [queue, setQueue] = useState<any[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
+
+  // Music UI State Persistence
+  const [musicSearchQuery, setMusicSearchQuery] = useState('');
+  const [musicIsSearchActive, setMusicIsSearchActive] = useState(false);
+  const [musicActiveArtist, setMusicActiveArtist] = useState<any | null>(null);
+  const [musicActivePlaylist, setMusicActivePlaylist] = useState<any | null>(null);
+
+  const playSong = useCallback((song: any, contextQueue?: any[]) => {
+    setCurrentSong(song);
+    setIsPlaying(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('setx_last_played_song', JSON.stringify(song));
+    }
+    if (contextQueue && contextQueue.length > 0) {
+      setQueue(contextQueue);
+      const idx = contextQueue.findIndex(s => s.id === song.id);
+      setQueueIndex(idx !== -1 ? idx : 0);
+    } else {
+      setQueue([song]);
+      setQueueIndex(0);
+    }
+  }, []);
+
+  const playNext = useCallback(() => {
+    if (queue.length > 0 && queueIndex < queue.length - 1) {
+      const nextIndex = queueIndex + 1;
+      setQueueIndex(nextIndex);
+      setCurrentSong(queue[nextIndex]);
+      setIsPlaying(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('setx_last_played_song', JSON.stringify(queue[nextIndex]));
+      }
+    } else {
+      setIsPlaying(false);
+    }
+  }, [queue, queueIndex]);
+
+  const playPrevious = useCallback(() => {
+    if (queue.length > 0 && queueIndex > 0) {
+      const prevIndex = queueIndex - 1;
+      setQueueIndex(prevIndex);
+      setCurrentSong(queue[prevIndex]);
+      setIsPlaying(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('setx_last_played_song', JSON.stringify(queue[prevIndex]));
+      }
+    }
+  }, [queue, queueIndex]);
+
+  const togglePlay = useCallback(() => {
+    if (currentSong) {
+      setIsPlaying(prev => !prev);
+    }
+  }, [currentSong]);
 
   // Persistence wrappers
   const setEnv = (val: Env) => {
@@ -218,9 +307,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // Auto-switch env if just logged in or if no environment is set
     const currentEnv = localStorage.getItem('ecity_env');
-    const isNewSignIn = isSignInEvent || !currentEnv;
-
-    if (isNewSignIn) {
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const envParam = urlParams?.get('env');
+    
+    if (isSignInEvent) {
+      if (userData.email === 'setxplatform@gmail.com' || userData.role === 'admin') {
+        setEnv('admin');
+        setActiveTab(0);
+      } else {
+        setLayout('minimal');
+        setEnv('home');
+        setActiveTab(0);
+      }
+    } else if (!currentEnv && !envParam) {
       if (userData.email === 'setxplatform@gmail.com' || userData.role === 'admin') {
         setEnv('admin');
         setActiveTab(0);
@@ -228,7 +327,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setEnv('labs');
         setActiveTab(0);
       } else {
-        setEnv('discover');
+        const currentLayout = localStorage.getItem('ecity_layout') || 'minimal';
+        setEnv(currentLayout === 'minimal' ? 'home' : 'search');
         setActiveTab(0);
       }
     }
@@ -360,9 +460,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     activeTab,
     unreadCount,
     isLoading,
-    isSearchOpen,
+    localSearchQuery,
     onlineUsers,
-    setIsSearchOpen,
+    setLocalSearchQuery,
     setEnv,
     setTheme,
     setScope,
@@ -381,7 +481,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isSetx360,
     projectSlug,
     layout,
-    setLayout
+    setLayout,
+    currentSong,
+    isPlaying,
+    playSong,
+    togglePlay,
+    setIsPlaying,
+    isQueueModalOpen,
+    setIsQueueModalOpen,
+    queue,
+    queueIndex,
+    playNext,
+    playPrevious,
+    musicSearchQuery,
+    setMusicSearchQuery,
+    musicIsSearchActive,
+    setMusicIsSearchActive,
+    musicActiveArtist,
+    setMusicActiveArtist,
+    musicActivePlaylist,
+    setMusicActivePlaylist
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

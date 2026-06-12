@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from './Avatar';
 import { EmptyState } from './EmptyState';
 import { useApp } from '../context/AppContext';
-import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus, Check, CheckCheck } from 'lucide-react';
+import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus, Check, CheckCheck, Mic, MicOff, X } from 'lucide-react';
 import './MessagesView.css';
 
 interface MessagesViewProps {
@@ -28,6 +28,7 @@ interface Conversation {
   avatar: string | undefined;
   lastMessage: string;
   lastTimestamp: string;
+  unreadCount: number;
 }
 
 export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
@@ -56,6 +57,11 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const recordingTimerRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   
   const { onlineUsers } = useApp();
   
@@ -226,6 +232,65 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     }
   };
 
+  const startVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (audioBlob.size > 0 && activeChatId) {
+          setIsUploading(true);
+          try {
+            const fileName = `${user.id}/${Date.now()}.webm`;
+            const { error: uploadError } = await supabase.storage
+              .from('chat_attachments')
+              .upload(fileName, audioBlob);
+              
+            if (!uploadError) {
+              const { data } = supabase.storage.from('chat_attachments').getPublicUrl(fileName);
+              await sendMessage('Voice Note', data.publicUrl);
+            }
+          } catch (e) {
+            console.error('Voice upload failed', e);
+          }
+          setIsUploading(false);
+        }
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingSeconds(s => s + 1);
+      }, 1000);
+    } catch (e) {
+      alert('Could not access microphone');
+      console.error(e);
+    }
+  };
+
+  const stopVoiceRecording = (cancel = false) => {
+    if (mediaRecorderRef.current && isRecording) {
+      if (cancel) {
+        audioChunksRef.current = []; // Clear chunks to prevent upload
+      }
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(recordingTimerRef.current);
+      setRecordingSeconds(0);
+    }
+  };
+
   const sendMessage = async (text: string | null, mediaUrl?: string) => {
     if (!activeChatId) return;
     const { data, error } = await supabase.from('messages').insert({
@@ -252,13 +317,20 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   // Rebuild conversations list whenever allMessages changes
   useEffect(() => {
     const buildConversations = async () => {
-      const convMap = new Map<string, MessageData>();
+      const convMap = new Map<string, { msg: MessageData, unread: number }>();
       allMessages.forEach(msg => {
         const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-        // Keep the latest message
         const currentStored = convMap.get(otherId);
-        if (!currentStored || new Date(msg.created_at) > new Date(currentStored.created_at)) {
-          convMap.set(otherId, msg);
+        
+        let unread = currentStored ? currentStored.unread : 0;
+        if (msg.receiver_id === user.id && !msg.read_at) {
+          unread++;
+        }
+
+        if (!currentStored || new Date(msg.created_at) > new Date(currentStored.msg.created_at)) {
+          convMap.set(otherId, { msg, unread });
+        } else {
+          convMap.set(otherId, { msg: currentStored.msg, unread });
         }
       });
 
@@ -277,20 +349,21 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
       if (profiles) {
         const convList = uniqueOtherIds.map(otherId => {
           const profile = profiles.find(p => p.id === otherId);
-          const lastMsg = convMap.get(otherId)!;
+          const { msg: lastMsg, unread } = convMap.get(otherId)!;
           return {
             otherId,
             name: profile?.name || 'Unknown User',
             avatar: profile?.avatar_url || undefined,
             lastMessage: lastMsg.content,
-            lastTimestamp: new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            lastTimestamp: new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            unreadCount: unread
           };
         });
 
         // Sort conversations by latest message timestamp mostly
         convList.sort((a, b) => {
-          const msgA = convMap.get(a.otherId)!;
-          const msgB = convMap.get(b.otherId)!;
+          const msgA = convMap.get(a.otherId)!.msg;
+          const msgB = convMap.get(b.otherId)!.msg;
           return new Date(msgB.created_at).getTime() - new Date(msgA.created_at).getTime();
         });
 
@@ -350,7 +423,8 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
         name: otherUser.name,
         avatar: otherUser.avatar_url,
         lastMessage: 'Start a conversation...',
-        lastTimestamp: ''
+        lastTimestamp: '',
+        unreadCount: 0
       }, ...prev]);
     }
   };
@@ -432,6 +506,9 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
                     {conv.lastMessage}
                   </div>
                 </div>
+                {conv.unreadCount > 0 && activeChatId !== conv.otherId && (
+                  <div className="unread-badge">{conv.unreadCount}</div>
+                )}
               </div>
             ))
           )}
@@ -532,29 +609,75 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
                 accept="image/*" 
                 onChange={handleFileUpload} 
               />
-              <div className="chat-input-wrapper">
-                <button 
-                  className="attach-btn" 
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  {isUploading ? <Loader2 className="animate-spin" size={20} /> : <ImageIcon size={20} />}
-                </button>
-                <input 
-                  type="text" 
-                  placeholder="Type a message..." 
-                  value={messageInput}
-                  onChange={handleTyping}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                />
-                <button 
-                  className="send-btn" 
-                  onClick={handleSendMessage}
-                  disabled={!messageInput.trim() && !isUploading}
-                >
-                  <Send size={18} />
-                </button>
-              </div>
+
+              {isRecording ? (
+                /* Voice Recording Mode */
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '24px', padding: '8px 12px', width: '100%' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444', animation: 'rec-pulse 1s ease-in-out infinite', flexShrink: 0 }} />
+                  {/* Animated waveform bars */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flex: 1 }}>
+                    {Array.from({ length: 20 }).map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: '3px',
+                          borderRadius: '2px',
+                          background: '#ef4444',
+                          height: `${8 + Math.sin(i * 0.8 + recordingSeconds) * 6 + Math.random() * 8}px`,
+                          animation: `wave-bar ${0.4 + (i % 3) * 0.15}s ease-in-out infinite alternate`,
+                          animationDelay: `${i * 0.05}s`,
+                          opacity: 0.6 + (i % 2) * 0.4,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ fontSize: '0.82rem', color: '#ef4444', fontWeight: 600, flexShrink: 0, minWidth: '36px' }}>
+                    {String(Math.floor(recordingSeconds / 60)).padStart(2,'0')}:{String(recordingSeconds % 60).padStart(2,'0')}
+                  </span>
+                  <button onClick={() => stopVoiceRecording(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}>
+                    <X size={20} />
+                  </button>
+                  <button onClick={() => stopVoiceRecording(false)} style={{ background: '#ef4444', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <Send size={16} color="#fff" />
+                  </button>
+                </div>
+              ) : (
+                <div className="chat-input-wrapper">
+                  <button 
+                    className="attach-btn" 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? <Loader2 className="animate-spin" size={20} /> : <ImageIcon size={20} />}
+                  </button>
+                  <input 
+                    type="text" 
+                    placeholder="Type a message..." 
+                    value={messageInput}
+                    onChange={handleTyping}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  />
+                  {messageInput.trim() ? (
+                    <button 
+                      className="send-btn primary" 
+                      onClick={handleSendMessage}
+                    >
+                      <Send size={18} />
+                    </button>
+                  ) : (
+                    <button 
+                      className="voice-btn" 
+                      onClick={startVoiceRecording}
+                    >
+                      <Mic size={18} />
+                    </button>
+                  )}
+                </div>
+              )}
+              <style>{`
+                @keyframes rec-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+                @keyframes wave-bar { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
+              `}</style>
             </div>
           </>
         )}

@@ -232,6 +232,7 @@ export const QuickMessageModal: React.FC<QuickMessageModalProps> = ({
         .send-quick-btn {
           width: 40px;
           height: 40px;
+          flex-shrink: 0;
           border-radius: 12px;
           background: var(--store-primary, var(--primary));
           color: white;

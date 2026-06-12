@@ -250,3 +250,42 @@
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+/* ── Light Theme Overrides ─────────────────────────────────── */
+[data-theme*='light'] .w-action-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: var(--text);
+}
+
+[data-theme*='light'] .w-action-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+[data-theme*='light'] .portal-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+}
+
+[data-theme*='light'] .portal-card:hover {
+    background: var(--bg);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme*='light'] .portal-label {
+    color: var(--text);
+}
+
+[data-theme*='light'] .city-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+[data-theme*='light'] .city-card:hover {
+    background: var(--bg);
+    border-color: rgba(139, 92, 246, 0.3);
+}

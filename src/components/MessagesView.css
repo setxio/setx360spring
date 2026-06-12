@@ -211,13 +211,14 @@
   transform: translateX(-4px);
 }
 
-.chat-history {
+.chat-messages {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
   scrollbar-width: none;
 }
 
@@ -244,12 +245,14 @@
 }
 
 .chat-bubble {
-  padding: 14px 20px;
-  border-radius: 22px;
-  font-size: 1rem;
-  line-height: 1.6;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 16px 20px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  line-height: 1.5;
   position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .received .chat-bubble {
@@ -282,7 +285,7 @@
 
 /* Premium Input Area (Floating Island) */
 .chat-input-area {
-  padding: 24px 32px 32px;
+  padding: 24px 32px calc(32px + var(--sticky-player-offset, 0px));
   background: transparent;
   z-index: 10;
 }
@@ -326,6 +329,7 @@
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
+  flex-shrink: 0;
 }
 
 .attach-btn:hover { color: var(--primary); }
@@ -343,6 +347,7 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+  flex-shrink: 0;
 }
 
 .send-btn:hover:not(:disabled) {
@@ -441,6 +446,16 @@
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
 }
+.unread-badge {
+  background: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
 
 /* Make sure Avatar wrapper isn't cutting off the absolute indicator */
 .conversation-item .avatar-container {
@@ -464,17 +479,15 @@
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw;
-    height: 100vh;
     z-index: 9999; /* Ensure it's above everything including global headers */
     display: none;
     background: var(--bg);
-    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: chatFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
   
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+  @keyframes chatFadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   /* Force display when active */
@@ -494,7 +507,7 @@
   }
 
   .chat-input-area { 
-    padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 16px));
+    padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 16px) + var(--sticky-player-offset, 0px));
     background: var(--bg);
     border-top: 1px solid var(--border);
   }

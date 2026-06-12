@@ -54,7 +54,7 @@
   --button-style: flat; /* flat | gradient */
 }
 
-[data-theme='dark'] {
+[data-theme*="dark"] {
   --bg: #0f172a;
   --bg-soft: #1e293b;
   --text: #f8fafc;
@@ -142,12 +142,12 @@
 /* ── Civic (Classic) Dark ──────────────────────────────────── */
 /* Distinct blue-toned background — different from generic dark slate */
 [data-theme='civic-classic-dark'] {
-  --bg: #0d2257;
-  --bg-soft: #162f72;
-  --text: #e8efff;
-  --text-muted: #93acd4;
-  --border: #1e3d8a;
-  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+  --bg: #000000;
+  --bg-soft: #1c1c1e;
+  --text: #ffffff;
+  --text-muted: #a1a1aa;
+  --border: #2c2c2e;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5);
   --primary: #60a5fa;
   --secondary: #34d399;
   /* TopBar color slots */
@@ -452,13 +452,17 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg);
   color: var(--text);
   line-height: 1.5;
   transition: background-color 0.3s ease, color 0.3s ease;
-  overflow-x: hidden;
 }
 
 #root {
@@ -515,13 +519,13 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-[data-theme='dark'] .glass {
+[data-theme*="dark"] .glass {
   background: rgba(15, 23, 42, 0.7);
 }
 
 [data-theme='civic-classic-dark'] .glass {
-  background: rgba(13, 34, 87, 0.75);
-  border-bottom-color: rgba(96, 165, 250, 0.15);
+  background: rgba(28, 28, 30, 0.75);
+  border-bottom-color: rgba(44, 44, 46, 0.5);
 }
 
 [data-theme='setx-dark'] .glass {

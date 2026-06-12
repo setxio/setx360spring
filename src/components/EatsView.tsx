@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Search, 
   MapPin, 
@@ -13,7 +13,15 @@ import {
   Flame,
   Zap,
   TicketPercent,
-  Loader2
+  Loader2,
+  Utensils,
+  Fish,
+  Leaf,
+  CupSoda,
+  ShoppingBag,
+  Croissant,
+  Map,
+  Truck
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Image from 'next/image';
@@ -23,12 +31,19 @@ import './EatsView.css';
 
 const CATEGORIES = [
   { id: 'offers', label: 'Offers', icon: <TicketPercent size={24} />, color: '#ef4444' },
-  { id: 'burgers', label: 'Burgers', icon: <Beef size={24} />, color: '#f59e0b' },
+  { id: 'fast_food', label: 'Fast Food', icon: <Zap size={24} />, color: '#f59e0b' },
   { id: 'pizza', label: 'Pizza', icon: <Pizza size={24} />, color: '#f97316' },
-  { id: 'asian', label: 'Asian', icon: <Soup size={24} />, color: '#7000f4' },
+  { id: 'burgers', label: 'Burgers', icon: <Beef size={24} />, color: '#b91c1c' },
+  { id: 'mexican', label: 'Mexican', icon: <Flame size={24} />, color: '#d97706' },
+  { id: 'asian', label: 'Asian & Sushi', icon: <Soup size={24} />, color: '#7000f4' },
+  { id: 'seafood', label: 'Seafood', icon: <Fish size={24} />, color: '#0ea5e9' },
+  { id: 'steaks', label: 'Steakhouses', icon: <Utensils size={24} />, color: '#7f1d1d' },
+  { id: 'breakfast', label: 'Breakfast', icon: <Croissant size={24} />, color: '#fcd34d' },
   { id: 'coffee', label: 'Coffee', icon: <Coffee size={24} />, color: '#8b4513' },
-  { id: 'steaks', label: 'Steaks', icon: <Beef size={24} />, color: '#b91c1c' },
   { id: 'desserts', label: 'Sweets', icon: <IceCream size={24} />, color: '#ec4899' },
+  { id: 'vegan', label: 'Healthy', icon: <Leaf size={24} />, color: '#10b981' },
+  { id: 'bbq', label: 'BBQ', icon: <Flame size={24} />, color: '#991b1b' },
+  { id: 'grocery', label: 'Convenience', icon: <ShoppingBag size={24} />, color: '#3b82f6' }
 ];
 
 const FEATURED_DEALS = [
@@ -87,6 +102,8 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
   const { theme } = useApp();
   const isSETX = theme.startsWith('setx-');
   const [searchQuery, setSearchQuery] = useState('');
+  const [fulfillment, setFulfillment] = useState<'Delivery' | 'Pickup'>('Delivery');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
@@ -152,9 +169,10 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
         image: store.image_url || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
         rating: store.avg_rating || 4.5,
         reviews: store.products_count || 10, // reuse products_count for mock review count
-        time: '20-30 min',
-        fee: '$0.99 Delivery Fee',
+        time: fulfillment === 'Delivery' ? '20-30 min' : '10-15 min',
+        fee: fulfillment === 'Delivery' ? '$0.99 Delivery Fee' : 'Free Pickup',
         tags: [store.subcategory || 'Food'],
+        dietary: Math.random() > 0.7 ? ['Vegan', 'Gluten-Free'] : [], // Mock dietary badges
         isPromo: store.is_verified || false
       }));
       setRestaurants(mapped.length > 0 ? mapped : RESTAURANTS);
@@ -182,6 +200,30 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
 
   const renderHome = () => (
     <div className="eats-content">
+      {/* Fulfillment + View Toggle Bar */}
+      <div className="fulfillment-toggle-container">
+        <div className="fulfillment-toggle">
+          <button 
+            className={`toggle-btn ${fulfillment === 'Delivery' ? 'active' : ''}`}
+            onClick={() => setFulfillment('Delivery')}
+          >
+            <Truck size={14} /> Delivery
+          </button>
+          <button 
+            className={`toggle-btn ${fulfillment === 'Pickup' ? 'active' : ''}`}
+            onClick={() => setFulfillment('Pickup')}
+          >
+            Pickup
+          </button>
+        </div>
+        <button
+          className={`map-view-btn ${viewMode === 'map' ? 'active' : ''}`}
+          onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+        >
+          <Map size={16} /> {viewMode === 'map' ? 'List' : 'Map'}
+        </button>
+      </div>
+
       {/* Horizontal Categories */}
       <div className="categories-scroller">
         {CATEGORIES.map(cat => (
@@ -232,45 +274,66 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
             <span>Expanded to <strong style={{ color: 'var(--primary)' }}>{escalatedScope}</strong> — not enough local options yet</span>
           </div>
         )}
-
         {isLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '40px', width: '100%' }}>
-            <Loader2 className="animate-spin" size={32} color="var(--primary)" />
+            <Loader2 className="animate-spin" color="#ef4444" size={32} />
+          </div>
+        ) : viewMode === 'map' ? (
+          <div className="eats-map-placeholder glass">
+            <Map size={48} style={{ opacity: 0.3, marginBottom: 16 }} />
+            <h4>Restaurant Map</h4>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 16 }}>Viewing {restaurants.length} restaurants near you</p>
+            <div className="eats-map-pins">
+              {restaurants.slice(0, 6).map((r, i) => (
+                <div key={r.id} className="eats-map-pin" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <MapPin size={20} color="#ef4444" fill="#ef4444" />
+                  <span>{r.name}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 12 }}>Full map integration coming soon</p>
           </div>
         ) : (
-        <div className="restaurant-grid">
-          {restaurants.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase())).map(restaurant => (
-            <div key={restaurant.id} className="restaurant-card">
-              <div className="restaurant-image-wrapper">
-                <div style={{ position: "relative", width: "100%", height: "100%" }}><Image src={restaurant.image} alt={restaurant.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 640px) 100vw, 300px" unoptimized={!restaurant.image?.includes("supabase.co")} /></div>
-                {restaurant.isPromo && (
-                  <div className="promo-badge">
-                    <Zap size={10} fill="currentColor" /> Featured
+          <div className="restaurant-grid">
+            {restaurants.map(res => (
+              <div key={res.id} className="restaurant-card glass">
+                <div className="restaurant-image-wrapper">
+                  <img src={res.image} alt={res.name} loading="lazy" />
+                  {res.isPromo && <span className="promo-badge"><Star size={10} fill="currentColor" /> Featured</span>}
+                  {res.dietary && res.dietary.map((d: string, i: number) => (
+                    <span key={d} className={`dietary-badge ${d.toLowerCase().replace('-','')}`} style={{ left: 12 + (i * 60) }}>{d}</span>
+                  ))}
+                  <span className="time-badge"><Clock size={12} /> {fulfillment === 'Pickup' ? '10-15 min' : res.time}</span>
+                </div>
+                
+                <div className="restaurant-info">
+                  <div className="res-title-row">
+                    <h3>{res.name}</h3>
+                    <div className="res-rating">
+                      <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                      <span>{res.rating}</span>
+                    </div>
                   </div>
-                )}
-                <div className="time-badge">
-                  <Clock size={10} /> {restaurant.time}
+                  
+                  <div className="res-meta">
+                    <span className="res-tags">{res.tags.join(' • ')}</span>
+                    {res.dietary && res.dietary.length > 0 && (
+                      <div className="dietary-icon-row">
+                        {res.dietary.includes('Vegan') && <span className="diet-chip vegan">🌱 Vegan</span>}
+                        {res.dietary.includes('Gluten-Free') && <span className="diet-chip gf">🌾 GF</span>}
+                        {res.dietary.includes('Halal') && <span className="diet-chip halal">🕒 Halal</span>}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="res-footer">
+                    <span className="res-fee">{fulfillment === 'Pickup' ? 'Free Pickup' : res.fee}</span>
+                    <span className="res-reviews">({res.reviews}+ reviews)</span>
+                  </div>
                 </div>
               </div>
-              <div className="restaurant-info">
-                <div className="res-title-row">
-                  <h3>{restaurant.name}</h3>
-                  <div className="res-rating">
-                    <Star size={12} fill="#f59e0b" color="#f59e0b" />
-                    <span>{restaurant.rating}</span>
-                  </div>
-                </div>
-                <div className="res-meta">
-                  <span className="res-tags">{restaurant.tags.join(' • ')}</span>
-                </div>
-                <div className="res-footer">
-                  <span className="res-fee">{restaurant.fee}</span>
-                  <span className="res-reviews">({restaurant.reviews}+ reviews)</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
       </section>
 

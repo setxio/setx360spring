@@ -12,6 +12,7 @@ import { AdCreationModal } from './AdCreationModal';
 import { PostCard } from './PostCard';
 import { AdCard } from './AdCard';
 import { EmptyState } from './EmptyState';
+import { ShareModal } from './ShareModal';
 import { supabase } from '../lib/supabase';
 import { useSocialFeedData } from '../hooks/useSocialFeedData';
 import './SocialFeed.css';
@@ -37,12 +38,14 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   onNavigateToPost,
   onNavigateToProfile
 }) => {
-  const { theme } = useApp();
-  const [activeCategory, setActiveCategory] = useState('Hot');
+  const { theme, layout, localSearchQuery } = useApp();
+  const [activeCategory, setActiveCategory] = useState('Everybody');
   const [activeType, setActiveType] = useState('all');
+  const feedTopRef = React.useRef<HTMLDivElement>(null);
   const [isPosting, setIsPosting] = useState(false);
   const [isPromoting, setIsPromoting] = useState(false);
   const [repostTarget, setRepostTarget] = useState<any>(null);
+  const [activeSharePost, setActiveSharePost] = useState<any>(null);
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const { success, error: toastError, info, warning } = useToast();
   const [userPollVotes, setUserPollVotes] = useState<Record<string, number>>({});
@@ -68,7 +71,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     scope,
     activeCategory,
     activeType,
-    theme
+    theme,
+    localSearchQuery
   );
 
   const posts: any[] = feedData?.posts ?? [];
@@ -121,30 +125,16 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     }
   };
 
-  const handleShare = async (postId: string) => {
-    const shareData = {
-      title: 'Check out this post on SETX 360',
-      text: 'Found something interesting on SETX 360!',
-      url: `${window.location.origin}/?post=${postId}`
-    };
-
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') {
-          console.error("Share failed", err);
-        }
-      }
-    } else {
-      // Fallback: Copy to clipboard
-      try {
-        await navigator.clipboard.writeText(shareData.url);
-        success("Link copied to clipboard!");
-      } catch (err) {
-        console.error("Failed to copy link:", err);
-      }
+  const handleShare = (postId: string) => {
+    const postToShare = posts.find(p => p.id === postId || (p.type === 'repost' && p.original_post?.id === postId));
+    const target = postToShare?.type === 'repost' && postToShare.original_post ? postToShare.original_post : postToShare;
+    if (target) {
+      setActiveSharePost(target);
     }
+  };
+
+  const handleShareNow = (text: string) => {
+    success("Shared successfully!");
   };
 
   const handlePollVote = async (post: any, optionIndex: number) => {
@@ -262,10 +252,21 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
 
   return (
     <div className="social-feed">
+      {/* Spacer to offset the fixed header, allowing posts to scroll underneath it */}
+      <div ref={feedTopRef} className="feed-header-spacer" style={{ height: layout === 'minimal' ? '80px' : '190px', flexShrink: 0, scrollSnapAlign: 'start' }} />
+
       {showFilters && (
         <FeedFilters 
           activeCategory={activeCategory} 
-          onCategoryChange={setActiveCategory}
+          onCategoryChange={(cat) => {
+            if (cat === activeCategory) {
+              // Tap same active tab → scroll to top + refetch
+              feedTopRef.current?.scrollIntoView({ behavior: 'smooth' });
+              refetchFeed();
+            } else {
+              setActiveCategory(cat);
+            }
+          }}
           hasActiveAlert={hasActiveAlert}
           userRole={user?.role}
           activeType={activeType}
@@ -390,8 +391,37 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
               onSuccess={handleRepostSuccess}
             />
           )}
+
+          {activeSharePost && (
+            <ShareModal
+              post={activeSharePost}
+              user={user}
+              onClose={() => setActiveSharePost(null)}
+              onShareNow={handleShareNow}
+            />
+          )}
         </>
       )}
+      {posts.length === 0 && !isLoading && !isPromoting && (
+        <EmptyState 
+          icon={TrendingUp} 
+          title="No Posts Yet" 
+          message={`No posts found${scope !== 'national' ? ` in your ${scope}` : ''}.`} 
+        />
+      )}
+      
+      {/* Infinite Scroll Loader UI */}
+      {posts.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 500 }}>
+            <Loader2 size={18} className="animate-spin" />
+            Loading more...
+          </div>
+        </div>
+      )}
+
+      {/* Spacer to allow the very last post to scroll above the bottom nav */}
+      <div className="feed-footer-spacer" style={{ height: '160px', flexShrink: 0, scrollSnapAlign: 'end' }} />
     </div>
   );
 };

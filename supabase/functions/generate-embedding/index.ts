@@ -24,6 +24,8 @@ serve(async (req) => {
       textToEmbed = `${record.name || ''} ${record.description || ''} ${record.bio || ''}`
     } else if (table === 'events') {
       textToEmbed = `${record.title || ''} ${record.description || ''} ${record.location || ''}`
+    } else if (table === 'wiki_articles') {
+      textToEmbed = `${record.title || ''} ${record.body_content || ''}`
     }
 
     if (!textToEmbed.trim()) {

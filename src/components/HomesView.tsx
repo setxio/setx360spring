@@ -73,6 +73,17 @@ export const HomesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
+
+  // Mortgage Calculator State
+  const [homePrice, setHomePrice] = useState<number>(450000);
+  const [downPaymentPct, setDownPaymentPct] = useState<number>(20);
+  const [interestRate, setInterestRate] = useState<number>(6.8);
+  const [loanTerm, setLoanTerm] = useState<number>(30);
+  
+  // Property Tax (SETX average is around 2.5%)
+  const propertyTaxRate = 0.025;
+  // Home Insurance (Roughly $1200/year for SETX)
+  const yearlyInsurance = 1200;
   
   const { user: contextUser, theme } = useApp();
   const user = propUser || contextUser;
@@ -252,22 +263,102 @@ export const HomesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
     </div>
   );
 
-  const renderFinance = () => (
-    <div className="homes-content-v">
-      <div className="section-title"><h2>Mortgage Finance</h2></div>
-      <div className="finance-card glass">
-        <div className="f-row"><span>Home Price</span><strong>$450,000</strong></div>
-        <div className="f-row"><span>Down Payment</span><strong>$90,000 (20%)</strong></div>
-        <div className="f-row"><span>Interest Rate</span><strong>6.8%</strong></div>
-        <div className="f-divider" />
-        <div className="f-total">
-          <span>Est. Monthly Payment</span>
-          <h3>$2,642 / mo</h3>
+  const renderFinance = () => {
+    const downPaymentAmt = homePrice * (downPaymentPct / 100);
+    const loanAmount = homePrice - downPaymentAmt;
+    const r = (interestRate / 100) / 12;
+    const n = loanTerm * 12;
+    
+    // P & I
+    const monthlyPI = r > 0 ? (loanAmount * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : (loanAmount / n);
+    
+    // Tax & Insurance
+    const monthlyTax = (homePrice * propertyTaxRate) / 12;
+    const monthlyIns = yearlyInsurance / 12;
+
+    const totalMonthly = monthlyPI + monthlyTax + monthlyIns;
+
+    return (
+      <div className="homes-content-v">
+        <div className="section-title"><h2>SETX Mortgage Calculator</h2></div>
+        <div className="finance-card glass" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="f-row-input" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Home Price</label>
+            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px' }}>
+              <span style={{ marginRight: '8px' }}>$</span>
+              <input 
+                type="number" 
+                value={homePrice} 
+                onChange={(e) => setHomePrice(Number(e.target.value))} 
+                style={{ background: 'transparent', border: 'none', color: 'var(--text)', outline: 'none', width: '100%', fontSize: '1.1rem', fontWeight: 'bold' }} 
+              />
+            </div>
+          </div>
+          
+          <div className="f-row-input" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Down Payment</label>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>${downPaymentAmt.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input 
+                type="range" 
+                min="0" max="100" 
+                value={downPaymentPct} 
+                onChange={(e) => setDownPaymentPct(Number(e.target.value))} 
+                style={{ flex: 1, accentColor: 'var(--primary)' }} 
+              />
+              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px 8px', width: '70px' }}>
+                <input type="number" value={downPaymentPct} onChange={(e) => setDownPaymentPct(Number(e.target.value))} style={{ background: 'transparent', border: 'none', color: 'var(--text)', outline: 'none', width: '100%', textAlign: 'right' }} />
+                <span>%</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div className="f-row-input" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Interest Rate</label>
+              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px' }}>
+                <input type="number" step="0.1" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} style={{ background: 'transparent', border: 'none', color: 'var(--text)', outline: 'none', width: '100%', fontWeight: 'bold' }} />
+                <span>%</span>
+              </div>
+            </div>
+            <div className="f-row-input" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Loan Term</label>
+              <select value={loanTerm} onChange={(e) => setLoanTerm(Number(e.target.value))} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text)', outline: 'none', width: '100%', padding: '10px', borderRadius: '8px', fontWeight: 'bold' }}>
+                <option value={15}>15 Years</option>
+                <option value={20}>20 Years</option>
+                <option value={30}>30 Years</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="f-divider" style={{ height: '1px', background: 'var(--border)', margin: '8px 0' }} />
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
+              <span>Principal & Interest</span>
+              <span>${monthlyPI.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
+              <span>Property Tax (SETX Avg 2.5%)</span>
+              <span>${monthlyTax.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
+              <span>Home Insurance</span>
+              <span>${monthlyIns.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+            </div>
+          </div>
+
+          <div className="f-total" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(99, 102, 241, 0.1)', padding: '16px', borderRadius: '12px', marginTop: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text)' }}>Est. Monthly Payment</span>
+            <h3 style={{ margin: 0, color: 'var(--primary)', fontSize: '1.5rem' }}>${totalMonthly.toLocaleString(undefined, {maximumFractionDigits:0})}</h3>
+          </div>
+          <button className="apply-btn" style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'var(--primary)', color: 'white', fontWeight: 'bold', border: 'none', marginTop: '8px', cursor: 'pointer' }}>Get Pre-Approved Locally</button>
         </div>
-        <button className="apply-btn">Get Pre-Approved</button>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderAgent = () => (
     <div className="homes-content-v">

@@ -6,6 +6,7 @@
   width: calc(100% + 32px); /* Compensation for container padding */
   margin-left: -16px;
   margin-right: -16px;
+  scroll-snap-align: start;
 }
 
 .slider-wrapper {

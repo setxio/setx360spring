@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { 
   Menu,
   X,
@@ -63,18 +63,26 @@ import {
   Newspaper,
   AlertTriangle,
   Megaphone,
-  Bot
+  Bot,
+  Smartphone,
+  Beaker,
+  Pause,
+  SkipForward,
+  SkipBack,
+  Plus,
+  Library
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { VerificationModal } from './VerificationModal';
 import { useApp, type Env } from '../context/AppContext';
 import { Avatar } from './Avatar';
 import { SignUpFlow } from './SignUpFlow';
-import { TevisChat } from './TevisChat';
 import { GlobalChatBubbles } from './GlobalChatBubbles';
+import { CreatePostModal } from './CreatePostModal';
+import { isVerified } from '../utils/roles';
 
 interface MinimalLayoutProps {
   renderView: () => React.ReactNode;
-  SearchOverlay: React.ComponentType<any>;
   setActivePostId: (id: string | null) => void;
   setActiveStoreId: (id: string | null) => void;
   setActiveProfileId: (id: string | null) => void;
@@ -85,7 +93,6 @@ interface MinimalLayoutProps {
 
 export const MinimalLayout: React.FC<MinimalLayoutProps> = ({ 
   renderView, 
-  SearchOverlay,
   setActivePostId,
   setActiveStoreId,
   setActiveProfileId,
@@ -93,17 +100,26 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
   updateAvailable,
   onUpdate
 }) => {
-  const { 
-    user, env, theme, activeTab, unreadCount, isSearchOpen,
-    setEnv, setActiveTab, setIsSearchOpen, toggleTheme, logout, isSetxIO
-  } = useApp();
-
+  const { user, env, theme, activeTab, unreadCount, localSearchQuery, setEnv, setActiveTab, setLocalSearchQuery, toggleTheme, logout, isSetxIO } = useApp();
+  const { currentSong, isPlaying, togglePlay, setIsPlaying } = useApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isTevisOpen, setIsTevisOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isLocalSearchExpanded, setIsLocalSearchExpanded] = useState(false);
+  
+
 
   const navigation = [
     { 
-      id: 'me', label: 'Verify Me', icon: <UserCircle size={20} />,
+      id: 'home', label: 'Home', icon: <Home size={20} />,
+      submenus: [
+        { icon: <LayoutGrid size={16} />, label: 'Apps' }
+      ]
+    },
+    { 
+      id: 'me', label: 'Me', icon: <UserCircle size={20} />,
       submenus: [
         { icon: <LayoutGrid size={16} />, label: 'One' },
         { icon: <BarChart3 size={16} />, label: 'Stats' },
@@ -123,7 +139,14 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         { icon: <Sparkles size={16} />, label: 'New' },
         { icon: <Map size={16} />, label: 'Radar' },
         { icon: <User size={16} />, label: 'My Vibes' },
-        { icon: <Bot size={16} color="var(--primary)" />, label: 'Tevis' },
+      ]
+    },
+    { 
+      id: 'search', label: 'Search', icon: <SearchIcon size={20} />,
+      submenus: [
+        { icon: <SearchIcon size={16} />, label: 'All' },
+        { icon: <Users size={16} />, label: 'People' },
+        { icon: <Building size={16} />, label: 'Places' },
       ]
     },
     { 
@@ -251,11 +274,32 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
       ]
     },
     { 
-      id: 'media', label: 'Media', icon: <Film size={20} />,
+      id: 'gigs', label: 'Gigs', icon: <Zap size={20} />,
+      submenus: [
+        { icon: <Zap size={16} />, label: 'Gigs' },
+        { icon: <Briefcase size={16} />, label: 'My Posts' },
+        { icon: <FileText size={16} />, label: 'My Tasks' },
+        { icon: <DollarSign size={16} />, label: 'Earnings' },
+        { icon: <User size={16} />, label: 'Profile' },
+      ]
+    },
+    { 
+      id: 'videos', label: 'Videos', icon: <Film size={20} />,
       submenus: [
         { icon: <Film size={16} />, label: 'Shorts' },
         { icon: <Play size={16} />, label: 'Videos' },
-        { icon: <Music size={16} />, label: 'Music' },
+      ]
+    },
+    { 
+      id: 'classifieds', label: 'Classifieds', icon: <LayoutGrid size={20} />,
+      submenus: []
+    },
+    { 
+      id: 'music', label: 'Music', icon: <Music size={20} />,
+      submenus: [
+        { icon: <Music size={16} />, label: 'Listen' },
+        { icon: <SearchIcon size={16} />, label: 'Discover' },
+        { icon: <Library size={16} />, label: 'Library' },
       ]
     },
     { 
@@ -305,6 +349,16 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         { icon: <AlertTriangle size={16} />, label: 'Report 311' },
         { icon: <HistoryIcon size={16} />, label: 'My Reports' },
         { icon: <WalletIcon size={16} />, label: 'Utilities' },
+        { icon: <User size={16} />, label: 'Account' },
+      ]
+    },
+    { 
+      id: 'apps', label: 'Apps', icon: <Smartphone size={20} />,
+      submenus: [
+        { icon: <LayoutGrid size={16} />, label: 'Home' },
+        { icon: <Briefcase size={16} />, label: 'Pro' },
+        { icon: <Beaker size={16} />, label: 'Incubator' },
+        { icon: <SearchIcon size={16} />, label: 'Search' },
         { icon: <User size={16} />, label: 'Account' },
       ]
     },
@@ -360,6 +414,8 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
     });
   }
 
+  // Removed activeNavIndex reordering logic as it's no longer needed for platform-specific menus
+
   const handleNavClick = (id: Env) => {
     setEnv(id);
     setActiveTab(0);
@@ -378,7 +434,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
       flexDirection: 'column'
     }}>
       {/* Top Header */}
-      {!isSetxIO && env !== 'search' && (
+      {!isSetxIO && env !== 'home' && (
         <header style={{
           height: '64px',
           background: 'var(--glass-bg)',
@@ -419,13 +475,50 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button 
-              onClick={() => setIsSearchOpen(true)}
-              style={{ background: 'var(--glass-bg-strong)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)', cursor: 'pointer' }}
-            >
-              <SearchIcon size={20} />
-            </button>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <AnimatePresence>
+                {isLocalSearchExpanded && (
+                  <motion.input
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 200, opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    type="text"
+                    value={localSearchQuery}
+                    onChange={(e) => setLocalSearchQuery(e.target.value)}
+                    placeholder={`Search ${env}...`}
+                    style={{
+                      position: 'absolute',
+                      right: '48px',
+                      height: '40px',
+                      background: 'var(--glass-bg-strong)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '20px',
+                      padding: '0 16px',
+                      color: 'var(--text)',
+                      outline: 'none',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
+                    autoFocus
+                  />
+                )}
+              </AnimatePresence>
+              <button 
+                onClick={() => setIsLocalSearchExpanded(!isLocalSearchExpanded)}
+                style={{ background: isLocalSearchExpanded ? 'var(--primary)' : 'var(--glass-bg-strong)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isLocalSearchExpanded ? '#fff' : 'var(--text)', cursor: 'pointer', transition: 'all 0.3s ease', zIndex: 2 }}
+              >
+                <SearchIcon size={20} />
+              </button>
+            </div>
             
+            <button
+              onClick={toggleTheme}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Toggle Light/Dark Mode"
+            >
+              {theme.includes('light') ? <Moon size={22} /> : <Sun size={22} />}
+            </button>
+
             {user && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ position: 'relative' }}>
@@ -453,9 +546,9 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
               bottom: 0,
               width: '280px',
               background: 'var(--bg)',
-              zIndex: 99,
+              zIndex: 9999,
               padding: '24px',
-              boxShadow: '10px 0 30px rgba(0,0,0,0.3)',
+              boxShadow: '10px 0 30px rgba(0,0,0,0.5)',
               display: 'flex',
               flexDirection: 'column',
               gap: '8px',
@@ -463,80 +556,158 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
             }}
           >
             <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Navigation</p>
-              {fullNavigation.map(item => (
-                <div key={item.id} style={{ marginBottom: '4px' }}>
-                  <button
-                    onClick={() => handleNavClick(item.id as Env)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      background: env === item.id ? 'var(--primary-light, rgba(112,0,244,0.15))' : 'transparent',
-                      color: env === item.id ? 'var(--primary)' : 'var(--text)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {item.icon}
-                    <span style={{ flex: 1 }}>{item.label}</span>
-                  </button>
-                  
-                  {/* Submenus — expanded when env === item.id */}
-                  <AnimatePresence>
-                    {env === item.id && item.submenus && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+              <button
+                onClick={() => handleNavClick('home' as Env)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'var(--primary-light, rgba(112,0,244,0.15))',
+                  color: 'var(--primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s ease',
+                  marginBottom: '24px'
+                }}
+              >
+                <Home size={20} />
+                <span style={{ flex: 1 }}>Home Screen</span>
+              </button>
+
+              {(() => {
+                const currentNavItem = fullNavigation.find(item => item.id === env);
+                if (!currentNavItem) return null;
+
+                return (
+                  <div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
+                      {currentNavItem.label} Menu
+                    </p>
+                    
+                    {env === 'me' && user && !isVerified(user.role) && (
+                      <button
+                        onClick={() => {
+                          setActiveTab(-1);
+                          setIsVerifying(true);
+                          setIsMenuOpen(false);
+                        }}
                         style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          background: activeTab === -1 ? 'var(--primary)' : 'transparent',
+                          color: activeTab === -1 ? '#fff' : 'var(--text)',
                           display: 'flex',
-                          flexDirection: 'column',
-                          gap: '2px',
-                          paddingLeft: '28px',
-                          marginTop: '4px',
-                          overflow: 'hidden'
+                          alignItems: 'center',
+                          gap: '12px',
+                          fontWeight: activeTab === -1 ? 700 : 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease',
+                          marginBottom: '4px'
                         }}
                       >
-                        {item.submenus.map((sub, idx) => (
+                        <ShieldCheck size={20} color={activeTab === -1 ? '#fff' : 'var(--primary)'} />
+                        <span>Verify Me</span>
+                      </button>
+                    )}
+
+                    {currentNavItem.submenus?.map((sub, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setActiveTab(idx);
+                          setIsMenuOpen(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          background: activeTab === idx ? 'var(--primary)' : 'transparent',
+                          color: activeTab === idx ? '#fff' : 'var(--text)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          fontWeight: activeTab === idx ? 700 : 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease',
+                          marginBottom: '4px'
+                        }}
+                      >
+                        {React.cloneElement(sub.icon as React.ReactElement<any>, { size: 20 })}
+                        <span>{sub.label}</span>
+                      </button>
+                    ))}
+                    
+                      {env === 'classifieds' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <button
-                            key={idx}
                             onClick={() => {
-                              setActiveTab(idx);
+                              window.dispatchEvent(new CustomEvent('changeClassifiedsTab', { detail: 'items' }));
                               setIsMenuOpen(false);
                             }}
-                            style={{
-                              width: '100%',
-                              padding: '8px 12px',
-                              borderRadius: '8px',
-                              border: 'none',
-                              background: activeTab === idx ? 'var(--primary)' : 'transparent',
-                              color: activeTab === idx ? '#fff' : 'var(--text-muted)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '10px',
-                              fontSize: '0.85rem',
-                              fontWeight: activeTab === idx ? 700 : 500,
-                              cursor: 'pointer',
-                              textAlign: 'left',
-                              transition: 'all 0.2s ease'
-                            }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: 'none', background: 'transparent', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease' }}
                           >
-                            {sub.icon}
-                            <span>{sub.label}</span>
+                            <span style={{ flex: 1 }}>Classified Items</span>
                           </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+                          <button
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('changeClassifiedsTab', { detail: 'vehicles' }));
+                              setIsMenuOpen(false);
+                            }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: 'none', background: 'transparent', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease' }}
+                          >
+                            <span style={{ flex: 1 }}>Vehicles</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('changeClassifiedsTab', { detail: 'real_estate' }));
+                              setIsMenuOpen(false);
+                            }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: 'none', background: 'transparent', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease' }}
+                          >
+                            <span style={{ flex: 1 }}>Real Estate</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('changeClassifiedsTab', { detail: 'map' }));
+                              setIsMenuOpen(false);
+                            }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: 'none', background: 'transparent', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease' }}
+                          >
+                            <span style={{ flex: 1 }}>Map</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('changeClassifiedsTab', { detail: 'my_stuff' }));
+                              setIsMenuOpen(false);
+                            }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: 'none', background: 'transparent', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease' }}
+                          >
+                            <span style={{ flex: 1 }}>My Stuff</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('changeClassifiedsTab', { detail: 'saved' }));
+                              setIsMenuOpen(false);
+                            }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: 'none', background: 'transparent', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease' }}
+                          >
+                            <span style={{ flex: 1 }}>Saved</span>
+                          </button>
+                        </div>
+                      )}
+                  </div>
+                );
+              })()}
             </div>
 
             <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
@@ -560,7 +731,18 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
       </AnimatePresence>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '20px' }}>
+      <main style={{ 
+        flex: 1, 
+        padding: '20px',
+        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.4s ease, opacity 0.4s ease',
+        transform: isMenuOpen ? 'scale(0.95) translateX(140px)' : 'scale(1) translateX(0)',
+        borderRadius: isMenuOpen ? '24px' : '0',
+        overflow: isMenuOpen ? 'hidden' : 'visible',
+        opacity: isMenuOpen ? 0.7 : 1,
+        pointerEvents: isMenuOpen ? 'none' : 'auto',
+        position: 'relative',
+        zIndex: 1
+      }}>
         {(user || isSetxIO || env === 'labs') ? (
           <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}><Loader2 className="animate-spin" size={32} color="var(--primary)" /></div>}>
             {renderView()}
@@ -569,6 +751,8 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
           <SignUpFlow />
         )}
       </main>
+
+
 
       {/* Overlay to close menu */}
       {isMenuOpen && <div onClick={() => setIsMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 98, top: '64px' }} />}
@@ -585,20 +769,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         )}
       </AnimatePresence>
 
-      <Suspense fallback={null}>
-        <SearchOverlay 
-          isOpen={isSearchOpen} 
-          onClose={() => setIsSearchOpen(false)}
-          onNavigate={(newEnv: string, newTab: number, params?: Record<string, string>) => {
-            setEnv(newEnv as any);
-            setActiveTab(newTab);
-            if (params?.userId) setActiveProfileId(params.userId);
-            if (params?.storeId) setActiveStoreId(params.storeId);
-            if (params?.postId) { setActivePostId(params.postId); setActiveCommentId(null); }
-          }}
-          user={user}
-        />
-      </Suspense>
+
 
       <AnimatePresence>
         {updateAvailable && (
@@ -612,33 +783,18 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         )}
       </AnimatePresence>
 
-      <TevisChat user={user} isOpen={isTevisOpen} onClose={() => setIsTevisOpen(false)} />
-      <GlobalChatBubbles user={user} />
-      
-      {/* Floating Action Button for Tevis */}
-      {!isSetxIO && user && (
+      {/* Floating Action Button for Posting */}
+      {!isSetxIO && user && env === 'social' && (
         <button 
-          onClick={() => setIsTevisOpen(true)}
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            background: 'var(--primary)',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 8px 24px rgba(var(--primary-rgb), 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 1000
-          }}
+          className="create-post-fab-minimal fade-in"
+          onClick={() => setIsCreatePostOpen(true)}
         >
-          <Avatar url="/logo-neo.png" size={40} />
+          <Plus size={28} />
         </button>
+      )}
+
+      {isCreatePostOpen && (
+        <CreatePostModal onClose={() => setIsCreatePostOpen(false)} user={user} currentScope={'national'} />
       )}
     </div>
   );

@@ -40,7 +40,8 @@ interface Order {
 }
 
 const OrdersView: React.FC = () => {
-  const { user } = useApp();
+  const { user, theme } = useApp();
+  const isDark = theme.endsWith('-dark');
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
 
@@ -89,8 +90,8 @@ const OrdersView: React.FC = () => {
 
     return (
       <div key={order.id} className="p-4 mb-4" style={{
-        background: '#050505',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        background: isDark ? '#050505' : 'var(--bg-soft)',
+        border: isDark ? '1px solid rgba(139, 92, 246, 0.2)' : '1px solid var(--border)',
         borderRadius: '16px',
         backdropFilter: 'blur(10px)'
       }}>
@@ -104,8 +105,8 @@ const OrdersView: React.FC = () => {
               )}
             </div>
             <div>
-              <h4 className="font-semibold text-white/90">{firstVendor?.store_name || 'Merchant'}</h4>
-              <p className="text-sm text-white/40">
+              <h4 className={`font-semibold ${isDark ? 'text-white/90' : 'text-gray-900/90'}`}>{firstVendor?.store_name || 'Merchant'}</h4>
+              <p className={`text-sm ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
                 {firstVendor?.fulfillment_type === 'delivery' ? 'Local Delivery' :
                  firstVendor?.fulfillment_type === 'pickup' ? 'Curbside Pickup' :
                  firstVendor?.fulfillment_type === 'shipping' ? 'Shipping' : 'Order'}
@@ -115,7 +116,7 @@ const OrdersView: React.FC = () => {
           </div>
           <div className="text-right">
             <span className="text-purple-400 font-bold">${order.amount.toFixed(2)}</span>
-            <p className="text-xs text-white/30">{new Date(order.created_at).toLocaleDateString()}</p>
+            <p className={`text-xs ${isDark ? 'text-white/30' : 'text-gray-400'}`}>{new Date(order.created_at).toLocaleDateString()}</p>
           </div>
         </div>
       </div>
@@ -123,11 +124,11 @@ const OrdersView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pb-24 pt-4" style={{ color: '#fff' }}>
+    <div className="max-w-4xl mx-auto px-4 pb-24 pt-4" style={{ color: isDark ? '#fff' : 'var(--text)' }}>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Orders</h1>
-          <p className="text-white/50">Track and manage your purchases</p>
+          <h1 className={`text-3xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Orders</h1>
+          <p className={isDark ? 'text-white/50' : 'text-gray-500'}>Track and manage your purchases</p>
         </div>
         <div className="p-3 rounded-full border" style={{ background: 'rgba(139, 92, 246, 0.1)', borderColor: 'rgba(139, 92, 246, 0.2)' }}>
           <ShoppingBag className="text-purple-400" size={24} />
@@ -138,13 +139,17 @@ const OrdersView: React.FC = () => {
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-4">
           <Truck className="text-blue-400" size={20} />
-          <h2 className="text-xl font-semibold text-white/90">Local Delivery</h2>
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-white/90' : 'text-gray-800'}`}>Local Delivery</h2>
         </div>
         {localDeliveryOrders.length > 0 ? (
           localDeliveryOrders.map(renderOrderCard)
         ) : (
-          <div className="p-8 text-center" style={{ background: '#050505', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '20px' }}>
-            <p className="text-white/30">No active local deliveries</p>
+          <div className="p-8 text-center" style={{ 
+            background: isDark ? '#050505' : 'var(--bg-soft)', 
+            border: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed var(--border)', 
+            borderRadius: '20px' 
+          }}>
+            <p className={isDark ? 'text-white/30' : 'text-gray-400'}>No active local deliveries</p>
           </div>
         )}
       </section>
@@ -153,13 +158,17 @@ const OrdersView: React.FC = () => {
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-4">
           <MapPin className="text-orange-400" size={20} />
-          <h2 className="text-xl font-semibold text-white/90">Pickup</h2>
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-white/90' : 'text-gray-800'}`}>Pickup</h2>
         </div>
         {pickupOrders.length > 0 ? (
           pickupOrders.map(renderOrderCard)
         ) : (
-          <div className="p-8 text-center" style={{ background: '#050505', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '20px' }}>
-            <p className="text-white/30">No active pickups scheduled</p>
+          <div className="p-8 text-center" style={{ 
+            background: isDark ? '#050505' : 'var(--bg-soft)', 
+            border: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed var(--border)', 
+            borderRadius: '20px' 
+          }}>
+            <p className={isDark ? 'text-white/30' : 'text-gray-400'}>No active pickups scheduled</p>
           </div>
         )}
       </section>
@@ -168,13 +177,17 @@ const OrdersView: React.FC = () => {
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-4">
           <Package className="text-green-400" size={20} />
-          <h2 className="text-xl font-semibold text-white/90">Shipping</h2>
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-white/90' : 'text-gray-800'}`}>Shipping</h2>
         </div>
         {shippingOrders.length > 0 ? (
           shippingOrders.map(renderOrderCard)
         ) : (
-          <div className="p-8 text-center" style={{ background: '#050505', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '20px' }}>
-            <p className="text-white/30">No packages currently in transit</p>
+          <div className="p-8 text-center" style={{ 
+            background: isDark ? '#050505' : 'var(--bg-soft)', 
+            border: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed var(--border)', 
+            borderRadius: '20px' 
+          }}>
+            <p className={isDark ? 'text-white/30' : 'text-gray-400'}>No packages currently in transit</p>
           </div>
         )}
       </section>
@@ -183,13 +196,13 @@ const OrdersView: React.FC = () => {
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-6">
           <History className="text-purple-400" size={20} />
-          <h2 className="text-xl font-semibold text-white/90">All Orders</h2>
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-white/90' : 'text-gray-800'}`}>All Orders</h2>
         </div>
 
         {/* Active Orders Carousel */}
         {activeOrders.length > 0 && (
           <div className="mb-10">
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-4">Active Orders</h3>
+            <h3 className={`text-xs font-medium uppercase tracking-wider mb-4 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Active Orders</h3>
             <div className="relative group">
               <div className="overflow-hidden rounded-3xl border" style={{ 
                 background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05))',
@@ -203,7 +216,7 @@ const OrdersView: React.FC = () => {
                     exit={{ opacity: 0, x: -20 }}
                     className="p-8 flex flex-col md:flex-row items-center gap-8"
                   >
-                    <div className="w-full md:w-1/3 aspect-square rounded-2xl flex items-center justify-center overflow-hidden shadow-2xl" style={{ background: '#050505' }}>
+                    <div className="w-full md:w-1/3 aspect-square rounded-2xl flex items-center justify-center overflow-hidden shadow-2xl" style={{ background: isDark ? '#050505' : 'var(--bg-soft)' }}>
                       {activeOrders[activeCarouselIndex].vendor_line_items?.[0]?.items?.[0]?.image_url ? (
                         <img 
                           src={activeOrders[activeCarouselIndex].vendor_line_items[0].items[0].image_url} 
@@ -219,17 +232,17 @@ const OrdersView: React.FC = () => {
                         <span className="px-3 py-1 rounded-full bg-purple-600 text-white text-xs font-bold uppercase">
                           {activeOrders[activeCarouselIndex].status}
                         </span>
-                        <span className="text-white/50 text-sm">
+                        <span className={isDark ? 'text-white/50 text-sm' : 'text-gray-500 text-sm'}>
                           {activeOrders[activeCarouselIndex].vendor_line_items?.[0]?.fulfillment_type}
                         </span>
                       </div>
-                      <h3 className="text-2xl font-bold text-white mb-2">
+                      <h3 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {activeOrders[activeCarouselIndex].vendor_line_items?.[0]?.store_name || 'Merchant Order'}
                       </h3>
-                      <p className="text-white/40 mb-6">
+                      <p className={isDark ? 'text-white/40 mb-6' : 'text-gray-500 mb-6'}>
                         {activeOrders[activeCarouselIndex].vendor_line_items?.[0]?.items?.length || 0} items in this order.
                       </p>
-                      <button className="bg-white text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 mx-auto md:mx-0 hover:bg-gray-100 transition-colors">
+                      <button className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 mx-auto md:mx-0 transition-colors ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-primary text-white hover:opacity-90'}`}>
                         View Details <ChevronRight size={18} />
                       </button>
                     </div>
@@ -241,13 +254,13 @@ const OrdersView: React.FC = () => {
                 <>
                   <button 
                     onClick={() => setActiveCarouselIndex((prev) => (prev - 1 + activeOrders.length) % activeOrders.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${isDark ? 'bg-black/80 border-white/10 text-white' : 'bg-white/90 border-gray-200 text-black'}`}
                   >
                     <ChevronLeft size={20} />
                   </button>
                   <button 
                     onClick={() => setActiveCarouselIndex((prev) => (prev + 1) % activeOrders.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${isDark ? 'bg-black/80 border-white/10 text-white' : 'bg-white/90 border-gray-200 text-black'}`}
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -258,17 +271,17 @@ const OrdersView: React.FC = () => {
         )}
 
         {/* Historical Orders */}
-        <h3 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-4">Order History</h3>
+        <h3 className={`text-sm font-medium uppercase tracking-wider mb-4 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Order History</h3>
         {historicalOrders.length > 0 ? (
           <div className="grid gap-4">
             {historicalOrders.map(renderOrderCard)}
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10" style={{ background: '#050505' }}>
-              <Clock className="text-white/20" size={32} />
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border ${isDark ? 'border-white/10' : 'border-gray-200'}`} style={{ background: isDark ? '#050505' : 'var(--bg-soft)' }}>
+              <Clock className={isDark ? 'text-white/20' : 'text-gray-400'} size={32} />
             </div>
-            <p className="text-white/30">No past orders yet</p>
+            <p className={isDark ? 'text-white/30' : 'text-gray-400'}>No past orders yet</p>
           </div>
         )}
       </section>

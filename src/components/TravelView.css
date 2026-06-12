@@ -111,7 +111,7 @@
   cursor: pointer;
 }
 
-[data-theme='dark'] .search-btn-large {
+[data-theme*="dark"] .search-btn-large {
   background: #fff;
   color: #000;
 }

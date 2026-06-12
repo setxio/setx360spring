@@ -1,0 +1,116 @@
+.post-options-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 4px;
+}
+
+.post-option-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-option-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+
+.post-options-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 340px;
+  background: #242526; /* Facebook dark mode dropdown color */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 1000;
+  margin-top: 8px;
+  color: #e4e6eb;
+}
+
+/* Ensure global themes can override if needed, but #242526 is true to FB dark */
+[data-theme*='light'] .post-options-dropdown {
+  background: #ffffff;
+  color: #050505;
+  box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme*='light'] .dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.item-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.item-icon.bg-gray {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme*='light'] .item-icon.bg-gray {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.item-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-text strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.item-text span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 8px 0;
+}
+
+[data-theme*='light'] .dropdown-divider {
+  background: rgba(0, 0, 0, 0.1);
+}

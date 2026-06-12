@@ -133,6 +133,7 @@ serve(async (req) => {
       county: profile.county,
       state:  profile.state,
       tenant: tenant.tenant_slug,
+      is_verified_resident: profile.is_verified_resident,
     })
       .setProtectedHeader({ alg: "RS256" })
       .setIssuedAt()

@@ -22,7 +22,8 @@ export const useSocialFeedData = (
   scope: string,
   activeCategory: string,
   activeType: string,
-  theme: string
+  theme: string,
+  searchQuery: string = ''
 ) => {
   const fetchContent = async () => {
     let currentFollowWeights: Record<string, number> = {};
@@ -116,6 +117,10 @@ export const useSocialFeedData = (
       if (blockedIds.length > 0) {
         query = query.not('profile_id', 'in', `(${blockedIds.join(',')})`);
       }
+    }
+
+    if (searchQuery && searchQuery.trim() !== '') {
+      query = query.ilike('content', `%${searchQuery.trim()}%`);
     }
 
     const userAge = user ? calculateAge(user.birth_month, user.birth_day, user.birth_year) : 0;
@@ -436,7 +441,7 @@ export const useSocialFeedData = (
   };
 
   return useQuery({
-    queryKey: queryKeys.posts.list(scope, activeCategory),
+    queryKey: [...queryKeys.posts.list(scope, activeCategory), searchQuery],
     queryFn: fetchContent,
   });
 };

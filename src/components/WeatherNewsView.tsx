@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { CloudSun, Wind, Droplets, Thermometer, Newspaper, ArrowRight, AlertTriangle, Map, Trophy, Loader2 } from 'lucide-react';
-import { fetchLocalWeather, fetchLocalSports } from '../lib/admin';
+import { getPreviewWeather } from '../lib/weatherService';
+import { fetchLocalSports } from '../lib/admin';
 import { useApp } from '../context/AppContext';
+import { WeatherForecastModal } from './WeatherForecastModal';
 import './WeatherNewsView.css';
 
 const NEWS_ARTICLES = [
@@ -34,6 +36,7 @@ export const WeatherNewsView: React.FC<{ activeTab?: number; user?: any; scope?:
   const [sports, setSports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
+  const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
 
   const { user: contextUser } = useApp();
   const user = propUser || contextUser;
@@ -58,7 +61,7 @@ export const WeatherNewsView: React.FC<{ activeTab?: number; user?: any; scope?:
       }
 
       const [w, s] = await Promise.all([
-        fetchLocalWeather(activeCounty === 'Jefferson' ? '77701' : '77630'),
+        getPreviewWeather().then(d => d),
         fetchLocalSports()
       ]);
       setWeather(w);
@@ -110,23 +113,34 @@ export const WeatherNewsView: React.FC<{ activeTab?: number; user?: any; scope?:
         </div>
       ) : (
       <>
-      <section className="weather-hero premium-card">
+      <section 
+        className="weather-hero premium-card" 
+        onClick={() => setIsWeatherModalOpen(true)}
+        style={{ cursor: 'pointer' }}
+      >
         <div className="weather-location-badge">
           <Map size={14} /> {activeCounty === 'Jefferson' ? 'Beaumont / Port Arthur, TX' : 'Orange / Vidor, TX'}
         </div>
         <div className="weather-main">
-          <div className="temp-wrap">
-            <h1 className="current-temp">{weather?.temp || 76}°</h1>
-            <div className="weather-condition">
-              <CloudSun size={32} />
-              <span>{weather?.condition || 'Mostly Sunny'}</span>
+          <div className="temp-wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px', fontWeight: 600 }}>
+                  {weather?.locationName || 'Local Area'}
+                </span>
+                <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', color: 'var(--text)' }}>{weather?.current?.temp || 76}°</h3>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{weather?.current?.condition || 'Mostly Sunny'}</span>
+              </div>
+              <CloudSun size={24} color="var(--primary)" />
             </div>
-          </div>
-          <div className="weather-details-grid">
-            <div className="w-detail"><Wind size={16} /> {weather?.wind || 12} mph</div>
-            <div className="w-detail"><Droplets size={16} /> {weather?.humidity || 45}%</div>
-            <div className="w-detail"><Thermometer size={16} /> H: {weather?.high || 82}° L: {weather?.low || 68}°</div>
-          </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Thermometer size={12}/> H:{weather?.current?.high || 82}° L:{weather?.current?.low || 68}°</span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Droplets size={12}/> {weather?.current?.humidity || 45}%</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Wind size={12}/> {weather?.current?.wind || 12} mph</span>
+              </div>
+            </div>
         </div>
         <div className="weather-forecast">
           {FORECAST.map((f, i) => (
@@ -228,6 +242,13 @@ export const WeatherNewsView: React.FC<{ activeTab?: number; user?: any; scope?:
       </section>
       </>
       )}
+
+      {/* Weather Modal */}
+      <WeatherForecastModal 
+        isOpen={isWeatherModalOpen} 
+        onClose={() => setIsWeatherModalOpen(false)}
+        onWeatherLoaded={(w) => setWeather(w.current)}
+      />
     </div>
   );
 };

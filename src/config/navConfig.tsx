@@ -8,7 +8,7 @@ import {
   History as HistoryIcon, Building, CarFront, Landmark, Plane, FileText,
   MessageCircle, Play, Film, Music, Palette, Church, Trophy, Activity,
   CloudSun, Newspaper, AlertTriangle, Megaphone, Bot, User, Bell,
-  MessageSquare, Bookmark, ShoppingBag, Award, Plus
+  MessageSquare, Bookmark, ShoppingBag, Award, Plus, Library, Smartphone, Beaker
 } from 'lucide-react';
 
 export interface NavItem {
@@ -33,12 +33,12 @@ export const discoverNav: NavItem[] = [
   { icon: <Sparkles size={24} />, label: 'New' },
   { icon: <Map size={24} />, label: 'Radar' },
   { icon: <User size={24} />, label: 'My Vibes' },
-  { icon: <Bot size={24} color="var(--primary)" />, label: 'Tevis' },
 ];
 
 export const searchNav: NavItem[] = [
   { icon: <Compass size={24} />, label: 'Home' },
   { icon: <SearchIcon size={24} />, label: 'Search' },
+  { icon: <Library size={24} />, label: 'Wiki' },
 ];
 
 export const socialNav: NavItem[] = [
@@ -141,10 +141,15 @@ export const jobsNav: NavItem[] = [
   { icon: <User size={24} />, label: 'Profile' },
 ];
 
-export const mediaNav: NavItem[] = [
+export const videosNav: NavItem[] = [
   { icon: <Film size={24} />, label: 'Shorts' },
   { icon: <Play size={24} />, label: 'Videos' },
-  { icon: <Music size={24} />, label: 'Music' },
+];
+
+export const musicNav: NavItem[] = [
+  { icon: <Music size={24} />, label: 'Listen' },
+  { icon: <SearchIcon size={24} />, label: 'Discover' },
+  { icon: <Library size={24} />, label: 'Library' },
 ];
 
 export const artNav: NavItem[] = [
@@ -216,6 +221,14 @@ export const adminNav: NavItem[] = [
   { icon: <ShieldCheck size={24} />, label: 'Dash' },
 ];
 
+export const appsNav: NavItem[] = [
+  { icon: <LayoutGrid size={24} />, label: 'Home' },
+  { icon: <Briefcase size={24} />, label: 'Pro' },
+  { icon: <Beaker size={24} />, label: 'Incubator' },
+  { icon: <SearchIcon size={24} />, label: 'Search' },
+  { icon: <User size={24} />, label: 'Account' },
+];
+
 // Switcher env buttons (top footer pill)
 export interface SwitcherItem {
   id: string;
@@ -225,14 +238,30 @@ export interface SwitcherItem {
 
 export const switcherItems: SwitcherItem[] = [
   { id: 'me',       icon: <User size={18} />,       label: 'Me' },
-  { id: 'search',   icon: <SearchIcon size={18} />, label: 'Search' },
   { id: 'discover', icon: <Compass size={18} />,    label: 'Discover' },
+  { id: 'search',   icon: <SearchIcon size={18} />, label: 'Search' },
   { id: 'social',   icon: <Rss size={18} />,        label: 'Social' },
   { id: 'market',   icon: <Store size={18} />,      label: 'Market' },
-  { id: 'events',   icon: <Calendar size={18} />,   label: 'Events' },
-  { id: 'news',     icon: <Newspaper size={18} />,  label: 'News' },
-  { id: 'faith',    icon: <Church size={18} />,     label: 'Faith' },
   { id: 'eats',     icon: <Zap size={18} />,        label: 'Eats' },
+  { id: 'rides',    icon: <Car size={18} />,        label: 'Rides' },
   { id: 'services', icon: <Plus size={18} />,       label: 'Services' },
+  { id: 'events',   icon: <Calendar size={18} />,   label: 'Events' },
+  { id: 'wallet',   icon: <WalletIcon size={18} />, label: 'Wallet' },
+  { id: 'care',     icon: <HeartPulse size={18} />, label: 'Care' },
+  { id: 'homes',    icon: <Building size={18} />,   label: 'Homes' },
+  { id: 'auto',     icon: <CarFront size={18} />,   label: 'Auto' },
+  { id: 'travel',   icon: <Plane size={18} />,      label: 'Travel' },
   { id: 'jobs',     icon: <Award size={18} />,      label: 'Jobs' },
+  { id: 'videos',   icon: <Film size={18} />,       label: 'Videos' },
+  { id: 'music',    icon: <Music size={18} />,      label: 'Music' },
+  { id: 'art',      icon: <Palette size={18} />,    label: 'Art' },
+  { id: 'faith',    icon: <Church size={18} />,     label: 'Faith' },
+  { id: 'sports',   icon: <Trophy size={18} />,     label: 'Sports' },
+  { id: 'news',     icon: <Newspaper size={18} />,  label: 'News' },
+  { id: 'civics',   icon: <Landmark size={18} />,   label: 'Civics' },
+  { id: 'vendor',   icon: <Store size={18} />,      label: 'Vendor' },
+  { id: 'admin',    icon: <ShieldCheck size={18} />,label: 'Admin' },
+  { id: 'contacts', icon: <Users size={18} />,      label: 'Contacts' },
+  { id: 'messages', icon: <MessageCircle size={18} />, label: 'Messages' },
+  { id: 'apps',     icon: <Smartphone size={18} />, label: 'Apps' },
 ];

@@ -78,14 +78,13 @@ import { OnboardingOverlay } from './OnboardingOverlay';
 import {
   meNav, discoverNav, searchNav, socialNav, marketNav, eatsNav, ridesNav,
   servicesNav, eventsNav, walletNav, careNav, homesNav, autoNav,
-  travelNav, jobsNav, mediaNav, artNav, faithNav, sportsNav,
+  travelNav, jobsNav, videosNav, musicNav, artNav, faithNav, sportsNav,
   newsNav, civicsNav, vendorNav, civicNav, adminNav, switcherItems
 } from '../config/navConfig';
 
 // Props for the layout
 interface ClassicLayoutProps {
   renderView: () => React.ReactNode;
-  SearchOverlay: React.ComponentType<any>;
   activePostId: string | null;
   setActivePostId: (id: string | null) => void;
   activeStoreId: string | null;
@@ -101,8 +100,7 @@ interface ClassicLayoutProps {
 }
 
 export const ClassicLayout: React.FC<ClassicLayoutProps> = ({ 
-  renderView, 
-  SearchOverlay,
+  renderView,
   activePostId: _activePostId,
   setActivePostId,
   activeStoreId: _activeStoreId,
@@ -117,8 +115,8 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   onUpdate
 }) => {
   const { 
-    user, env, theme, scope, activeTab, unreadCount, isSearchOpen,
-    setEnv, setScope, setActiveTab, setIsSearchOpen, toggleTheme, refreshUser,
+    user, env, theme, scope, activeTab, unreadCount, localSearchQuery,
+    setEnv, setScope, setActiveTab, setLocalSearchQuery, toggleTheme, refreshUser,
     isSetxIO
   } = useApp();
 
@@ -399,7 +397,8 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     if (env === 'auto') return autoNav;
     if (env === 'travel') return travelNav;
     if (env === 'jobs') return jobsNav;
-    if (env === 'media') return mediaNav;
+    if (env === 'videos') return videosNav;
+    if (env === 'music') return musicNav;
     if (env === 'art') return artNav;
     if (env === 'faith') return faithNav;
     if (env === 'sports') return sportsNav;
@@ -482,31 +481,35 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           {user && (
             <header className="main-header auto-hide-target" style={{ padding: '0 16px 8px' }}>
               <div className="header-content" style={{ display: 'block' }}>
-                <button className="header-action-btn search-trigger" onClick={() => setIsSearchOpen(true)} style={{ width: '100%', background: theme.endsWith('-dark') ? 'rgba(255,255,255,0.08)' : '#fff', border: theme === 'setx-light' ? '2px solid var(--primary)' : theme.endsWith('-light') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', padding: '12px 20px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '14px', justifyContent: 'flex-start', boxShadow: theme.endsWith('-light') ? '0 4px 15px rgba(0,0,0,0.08)' : '0 4px 20px rgba(0,0,0,0.2)', transition: 'all 0.2s ease' }}>
-                  <SearchIcon size={20} className="search-icon-anim" style={{ color: 'var(--primary)' }} />
-                  <span style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.8 }}>Search {scope}...</span>
-                </button>
+                <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
+                  <SearchIcon size={20} className="search-icon-anim" style={{ position: 'absolute', left: '20px', color: 'var(--primary)' }} />
+                  <input
+                    type="text"
+                    value={localSearchQuery}
+                    onChange={(e) => setLocalSearchQuery(e.target.value)}
+                    placeholder={`Search ${env}...`}
+                    style={{ 
+                      width: '100%', 
+                      background: theme.endsWith('-dark') ? 'rgba(255,255,255,0.08)' : '#fff', 
+                      border: theme === 'setx-light' ? '2px solid var(--primary)' : theme.endsWith('-light') ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)', 
+                      color: 'var(--text)', 
+                      padding: '12px 20px 12px 54px', 
+                      borderRadius: '30px', 
+                      outline: 'none',
+                      fontSize: '0.95rem',
+                      fontWeight: 500,
+                      boxShadow: theme.endsWith('-light') ? '0 4px 15px rgba(0,0,0,0.08)' : '0 4px 20px rgba(0,0,0,0.2)', 
+                      transition: 'all 0.2s ease' 
+                    }}
+                  />
+                </div>
               </div>
             </header>
           )}
         </div>
       )}
 
-      <Suspense fallback={null}>
-        <SearchOverlay 
-          isOpen={isSearchOpen} 
-          onClose={() => setIsSearchOpen(false)}
-          onNavigate={(newEnv: string, newTab: number, params?: Record<string, string>) => {
-            setEnv(newEnv as any);
-            setActiveTab(newTab);
-            if (params?.userId) setActiveProfileId(params.userId);
-            if (params?.storeId) setActiveStoreId(params.storeId);
-            if (params?.postId) { setActivePostId(params.postId); setActiveCommentId(null); }
-          }}
-          scope={scope}
-          user={user}
-        />
-      </Suspense>
+
 
       <AnimatePresence>
         {updateAvailable && (
@@ -559,8 +562,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             )}
             <button className="desktop-scroll-btn left" onClick={() => scrollSwitcher('left')}><ChevronLeft size={20} /></button>
             <div className="switcher-scroll" ref={envSwitcherRef} onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} onScroll={() => { handleSwitcherScroll(); if (scrollTimeout.current) clearTimeout(scrollTimeout.current); scrollTimeout.current = setTimeout(() => { isInternalScroll.current = false; }, 100); }}>
-              <div className="sw-btn spacer" aria-hidden="true" />
-              {switcherItems.map(item => (
+              {switcherItems.filter(item => item.id !== 'admin').map(item => (
                 <button key={item.id} className={`sw-btn ${item.id} ${env === item.id ? 'active' : ''}`} onClick={() => handleEnvClick(item.id as Env)}>
                   {item.icon} {item.label}
                 </button>
@@ -568,7 +570,6 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
               {((user?.role && ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(user.role)) || (user?.clearances && user.clearances.length > 0)) && user.role !== 'admin' && (
                 <button className={`sw-btn dashboard ${env === 'dashboard' ? 'active' : ''}`} onClick={() => handleEnvClick('dashboard')}><Store size={18} /> Dashboard</button>
               )}
-              <div className="sw-btn spacer" aria-hidden="true" />
             </div>
             <button className="desktop-scroll-btn right" onClick={() => scrollSwitcher('right')}><ChevronRight size={20} /></button>
           </div>

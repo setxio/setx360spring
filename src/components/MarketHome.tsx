@@ -1,7 +1,7 @@
 import type { User } from '../types/user';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { ArrowRight, Plus, Star, Filter, ShoppingBag, Zap, Award, MapPin, ChevronRight, ChevronLeft, Search, Clock, Sparkles } from 'lucide-react';
+import { ArrowRight, Plus, Star, Filter, ShoppingBag, Zap, Award, MapPin, ChevronRight, ChevronLeft, Search, Clock, Sparkles, Store, Shirt, Monitor, Home, Smile, Puzzle, Dumbbell, ShoppingCart } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { queryKeys } from '../lib/queryKeys';
@@ -15,19 +15,31 @@ interface MarketHomeProps {
   onNavigateToStore?: (id: string) => void;
 }
 
-const CATEGORIES = [
-  { id: 'all', name: 'All Shops', icon: <ShoppingBag size={16} /> },
-  { id: 'artisan', name: 'Artisanal', icon: <Award size={16} /> },
+const PRODUCT_CATEGORIES = [
+  { id: 'all', name: 'All Products', icon: <ShoppingBag size={16} /> },
+  { id: 'electronics', name: 'Electronics & Tech', icon: <Monitor size={16} /> },
+  { id: 'fashion', name: 'Fashion & Apparel', icon: <Shirt size={16} /> },
+  { id: 'home', name: 'Home & Kitchen', icon: <Home size={16} /> },
+  { id: 'beauty', name: 'Beauty & Personal Care', icon: <Smile size={16} /> },
+  { id: 'toys', name: 'Toys & Games', icon: <Puzzle size={16} /> },
+  { id: 'sports', name: 'Sports & Outdoors', icon: <Dumbbell size={16} /> }
+];
+
+const STORE_CATEGORIES = [
+  { id: 'all', name: 'All Stores', icon: <Store size={16} /> },
   { id: 'retail', name: 'Retail', icon: <ShoppingBag size={16} /> },
-  { id: 'food', name: 'Food & Dining', icon: <Zap size={16} /> },
-  { id: 'services', name: 'Services', icon: <Plus size={16} /> },
+  { id: 'boutiques', name: 'Boutiques', icon: <Shirt size={16} /> },
+  { id: 'tech', name: 'Tech & Electronics', icon: <Monitor size={16} /> },
+  { id: 'home_goods', name: 'Home Goods', icon: <Home size={16} /> },
+  { id: 'artisan', name: 'Artisanal & Handmade', icon: <Award size={16} /> },
   { id: 'local', name: 'SETX Only', icon: <MapPin size={16} /> }
 ];
 
 export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national', onNavigateToStore }) => {
-  const { theme, setActiveTab } = useApp();
+  const { theme, setActiveTab, localSearchQuery } = useApp();
   const { addToCart } = useCart();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activeMarketTab, setActiveMarketTab] = useState<'products' | 'stores'>('products');
   const [searchVal, setSearchVal] = useState('');
 
   const formatPrice = (p: number) => `$${(p || 0).toFixed(2)}`;
@@ -86,6 +98,10 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     let query = supabase
       .from('products')
       .select(`*, ${storeJoin}`);
+
+    if (localSearchQuery && localSearchQuery.trim() !== '') {
+      query = query.ilike('name', `%${localSearchQuery.trim()}%`);
+    }
 
     if (activeCategory !== 'all') {
       if (activeCategory === 'local') {
@@ -186,7 +202,7 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: [...queryKeys.stores.list(scope), activeCategory],
+    queryKey: [...queryKeys.stores.list(scope), activeCategory, localSearchQuery],
     queryFn: fetchProducts,
   });
 
@@ -210,9 +226,59 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     return storeData || [];
   };
 
-  const { data: spotlightStores = [], isLoading: isLoadingStores } = useQuery({
+  const { data: spotlightStores = [], isLoading: isLoadingSpotlight } = useQuery({
     queryKey: ['stores', 'spotlight'],
     queryFn: fetchSpotlightStores,
+  });
+
+  const fetchAllStores = async () => {
+    const needsGeoFilter = user && scope !== 'national';
+    
+    let query = supabase
+      .from('stores')
+      .select('*, seller:profiles!owner_id!inner(community, county, state, country)')
+      .eq('status', 'active');
+      
+    if (localSearchQuery && localSearchQuery.trim() !== '') {
+      query = query.ilike('name', `%${localSearchQuery.trim()}%`);
+    }
+
+    if (activeCategory !== 'all') {
+      if (activeCategory === 'local') {
+        query = query.in('seller.county', ['Jefferson', 'Orange', 'Jefferson County', 'Orange County']);
+      } else {
+        // Map simplified ids back to actual store categories if needed, or just ilike search
+        const catMap: Record<string, string> = { artisan: 'Artisan', retail: 'Retail', boutiques: 'Boutique', tech: 'Tech', home_goods: 'Home' };
+        if (catMap[activeCategory]) {
+          query = query.ilike('category', `%${catMap[activeCategory]}%`);
+        }
+      }
+    }
+    
+    if (needsGeoFilter && activeCategory !== 'local') {
+      const isSETX = theme.startsWith('setx-');
+      if (scope === 'city' && user.community) {
+        query = query.eq('seller.community', user.community);
+      } else if (scope === 'county') {
+        if (isSETX) {
+          query = query.in('seller.county', ['Jefferson', 'Orange', 'Jefferson County', 'Orange County']);
+        } else if (user.county) {
+          query = query.eq('seller.county', user.county);
+        }
+      } else if (scope === 'state' && user.state) {
+        query = query.eq('seller.state', user.state);
+      }
+    }
+    
+    const { data, error } = await query.order('trust_score', { ascending: false }).limit(50);
+    if (error) throw error;
+    return data || [];
+  };
+
+  const { data: allStores = [], isLoading: isLoadingAllStores } = useQuery({
+    queryKey: ['stores', 'all', scope, activeCategory, localSearchQuery],
+    queryFn: fetchAllStores,
+    enabled: activeMarketTab === 'stores'
   });
 
   // Selected Deal of the Day: first item in deals
@@ -336,11 +402,31 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
         </div>
       </div>
 
+      {/* Market Tabs Toggle */}
+      <div className="market-tabs-container" style={{ display: 'flex', justifyContent: 'center', padding: '16px 20px 0' }}>
+        <div className="market-tabs-segmented" style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '30px', padding: '4px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <button 
+            className={`segmented-tab ${activeMarketTab === 'products' ? 'active' : ''}`}
+            onClick={() => { setActiveMarketTab('products'); setActiveCategory('all'); }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '26px', background: activeMarketTab === 'products' ? 'var(--primary)' : 'transparent', color: activeMarketTab === 'products' ? '#fff' : 'var(--text-muted)', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.3s ease' }}
+          >
+            <ShoppingCart size={16} /> Shop Products
+          </button>
+          <button 
+            className={`segmented-tab ${activeMarketTab === 'stores' ? 'active' : ''}`}
+            onClick={() => { setActiveMarketTab('stores'); setActiveCategory('all'); }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '26px', background: activeMarketTab === 'stores' ? 'var(--secondary)' : 'transparent', color: activeMarketTab === 'stores' ? '#fff' : 'var(--text-muted)', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.3s ease' }}
+          >
+            <Store size={16} /> Explore Stores
+          </button>
+        </div>
+      </div>
+
       {/* Category Card/Pill Scroller */}
       <div className="category-scroller-section">
-        <h4 className="market-section-title">Shop by Category</h4>
+        <h4 className="market-section-title">{activeMarketTab === 'products' ? 'Shop by Category' : 'Browse Local Shops'}</h4>
         <div className="category-scroller no-scrollbar">
-          {CATEGORIES.map(cat => (
+          {(activeMarketTab === 'products' ? PRODUCT_CATEGORIES : STORE_CATEGORIES).map(cat => (
             <button 
               key={cat.id} 
               className={`category-pill ${activeCategory === cat.id ? 'active' : ''}`}
@@ -353,9 +439,12 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
         </div>
       </div>
 
-      {/* Deal of the Day (Spotlight / High Conversion Banner) */}
-      {dealOfTheDay && activeCategory === 'all' && (
-        <div className="deal-of-the-day-section fade-in">
+      {/* Product Feed */}
+      {activeMarketTab === 'products' && (
+        <>
+          {/* Deal of the Day (Spotlight / High Conversion Banner) */}
+          {dealOfTheDay && activeCategory === 'all' && (
+            <div className="deal-of-the-day-section fade-in">
           <div className="market-section-header">
             <h4>
               <Sparkles size={18} className="sparkle-icon" /> Featured Local Spotlight
@@ -411,16 +500,16 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
         </div>
       )}
 
-      {/* Geo escalation warning if any */}
-      {escalatedScope && (
-        <div className="geo-escalation-banner fade-in">
-          <MapPin size={16} />
-          <span>Showing results from <strong>{escalatedScope}</strong> due to local availability.</span>
-        </div>
-      )}
+          {/* Geo escalation warning if any */}
+          {escalatedScope && (
+            <div className="geo-escalation-banner fade-in">
+              <MapPin size={16} />
+              <span>Showing results from <strong>{escalatedScope}</strong> due to local availability.</span>
+            </div>
+          )}
 
-      {/* LOADING STATE */}
-      {isLoading ? (
+          {/* LOADING STATE */}
+          {isLoading ? (
         <div style={{ marginTop: '24px' }}>
           <h4 className="market-section-title">Loading the Best of SETX...</h4>
           {renderSkeletons()}
@@ -484,11 +573,16 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
               {renderProductCarousel(newArrivals, 'lane-new-arrivals')}
             </div>
           )}
+            </>
+          )}
         </>
       )}
 
-      {/* Featured Stores Spotlight */}
-      <div className="market-section-header verified-store-header fade-in">
+      {/* Stores Feed */}
+      {activeMarketTab === 'stores' && (
+        <>
+          {/* Featured Stores Spotlight */}
+          <div className="market-section-header verified-store-header fade-in">
         <h4>Verified Storefronts</h4>
         <div className="see-all-link" onClick={() => onNavigateToStore?.('all')}>
           View Directory <ArrowRight size={14} />
@@ -496,7 +590,7 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
       </div>
       
       <div className="spotlight-container no-scrollbar fade-in">
-        {isLoadingStores ? (
+        {isLoadingSpotlight ? (
           <div style={{ padding: '24px', textAlign: 'center', opacity: 0.5, width: '100%' }}>Loading storefronts...</div>
         ) : spotlightStores.length === 0 ? (
           <div style={{ padding: '24px', textAlign: 'center', opacity: 0.5, width: '100%' }}>No storefronts found.</div>
@@ -526,9 +620,48 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
               </div>
               <ChevronRight size={18} style={{ marginLeft: 'auto', opacity: 0.3 }} />
             </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
+        
+        {/* Placeholder for All Stores Grid (Will be populated with actual all stores later) */}
+        <div className="market-section-header verified-store-header fade-in" style={{ marginTop: '32px' }}>
+          <h4>Local Merchants</h4>
+        </div>
+        <div className="product-premium-grid fade-in">
+          {isLoadingAllStores ? (
+             renderSkeletons()
+          ) : allStores.length === 0 ? (
+             <div className="empty-market-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>No local merchants found in this category.</div>
+          ) : (
+            allStores.map((store: any) => (
+              <div key={`grid-${store.id}`} className="product-premium-card" onClick={() => onNavigateToStore?.(store.id)} style={{ cursor: 'pointer', padding: '16px' }}>
+                <div style={{ width: '100%', height: '140px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', overflow: 'hidden' }}>
+                   {store.logo_url ? (
+                     <img src={store.logo_url} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                   ) : (
+                     <Store size={48} style={{ opacity: 0.2 }} />
+                   )}
+                </div>
+                <h3 style={{ fontSize: '1.1rem', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {store.name}
+                  {store.is_verified && <Sparkles size={12} color="#fbbf24" />}
+                </h3>
+                <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{store.category || 'Retail Shop'}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--market-secondary)' }}>
+                    <Star size={12} fill="currentColor" /> {store.trust_score ? (store.trust_score / 20).toFixed(1) : '5.0'}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)' }}>
+                    <MapPin size={12} /> {store.county || 'Local'}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        </>
+      )}
     </div>
   );
 };

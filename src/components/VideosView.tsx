@@ -4,6 +4,7 @@ import { Search, MoreVertical, Play, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
 import { SETX_COUNTY_LIST } from '../utils/geo';
+import { MUSIC_GENRES } from '../config/musicGenres';
 import './VideosView.css';
 
 const CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'News', 'Movies', 'Live', 'Fashion', 'Learning'];
@@ -55,23 +56,33 @@ export const VideosView: React.FC<{ user: User; scope: string }> = ({ user, scop
   const { theme } = useApp();
   const isSETX = theme.startsWith('setx-');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeMusicGenre, setActiveMusicGenre] = useState('All Music');
   const [videos, setVideos] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
 
   React.useEffect(() => {
     fetchVideos();
-  }, [scope, user]);
+  }, [scope, user, activeCategory, activeMusicGenre]);
 
   const fetchVideos = async () => {
     setIsLoading(true);
-    let selectString = `*, author:profiles!posts_profile_id_fkey(name, avatar_url, is_verified, community, county, state, country, email)`;
+    let selectString = `*, author:profiles!posts_profile_id_fkey(name, avatar_url, is_verified, community, county, state, country, email, role)`;
     const needsGeoFilter = user && scope !== 'national';
-    if (needsGeoFilter) {
-      selectString = `*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country, email)`;
+    // We force an inner join if we need to filter by geo OR if we are filtering by music artist role
+    const needsInnerJoin = needsGeoFilter || activeCategory === 'Music';
+    
+    if (needsInnerJoin) {
+      selectString = `*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country, email, role)`;
     }
 
     let query = supabase.from('posts').select(selectString).eq('type', 'video').order('created_at', { ascending: false }).limit(20);
+
+    if (activeCategory === 'Music') {
+      // Categorize properly as a music artist like YouTube/YouTube Music
+      query = query.eq('author.role', 'artist');
+      // If we had genre tags in the db we'd filter here: if (activeMusicGenre !== 'All Music') query = query.contains('tags', [activeMusicGenre]);
+    }
 
     if (needsGeoFilter) {
       if (scope === 'city') query = query.eq('author.community', user.community);
@@ -97,7 +108,8 @@ export const VideosView: React.FC<{ user: User; scope: string }> = ({ user, scop
       };
       const esc = escalationMap[scope];
       if (esc && esc.filterValue) {
-        let escQuery = supabase.from('posts').select(`*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country, email)`).eq('type', 'video').order('created_at', { ascending: false }).limit(20);
+        let escQuery = supabase.from('posts').select(`*, author:profiles!posts_profile_id_fkey!inner(name, avatar_url, is_verified, community, county, state, country, email, role)`).eq('type', 'video').order('created_at', { ascending: false }).limit(20);
+        if (activeCategory === 'Music') escQuery = escQuery.eq('author.role', 'artist');
         if (esc.nextScope !== 'national') escQuery = escQuery.eq(esc.filterKey, esc.filterValue);
         const { data: escData } = await escQuery;
         if (escData && escData.length > 0) {
@@ -149,6 +161,21 @@ export const VideosView: React.FC<{ user: User; scope: string }> = ({ user, scop
           </button>
         ))}
       </div>
+      
+      {activeCategory === 'Music' && (
+        <div className="v-categories" style={{ paddingTop: 0 }}>
+          {['All Music', ...MUSIC_GENRES].map(genre => (
+            <button 
+              key={genre} 
+              className={`cat-chip ${activeMusicGenre === genre ? 'active' : ''}`}
+              style={activeMusicGenre === genre ? { background: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' } : {}}
+              onClick={() => setActiveMusicGenre(genre)}
+            >
+              {genre}
+            </button>
+          ))}
+        </div>
+      )}
       
       {escalatedScope && (
         <div style={{

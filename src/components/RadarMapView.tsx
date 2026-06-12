@@ -1,26 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { Icon } from 'leaflet';
-import { Loader2, Store, Calendar, Navigation, MapPin } from 'lucide-react';
+import L, { DivIcon } from 'leaflet';
+import { Loader2, Store, Calendar, Navigation, MapPin, Layers } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import 'leaflet/dist/leaflet.css';
 import './RadarMapView.css';
 
-// Fix for default marker icons in Leaflet with React
-const storeIcon = new Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/1177/1177568.png', // Or a local SVG
+const storeIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/1177/1177568.png',
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32]
 });
 
-const eventIcon = new Icon({
+const eventIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/3702/3702202.png',
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32]
 });
+
+const createGlowIcon = (type: 'store' | 'event'): DivIcon => {
+  const cls = type === 'store' ? 'heat-glow-store' : 'heat-glow-event';
+  const size = type === 'store' ? 80 : 70;
+  return L.divIcon({
+    className: '',
+    html: `<div class="heat-glow-point ${cls}"></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+};
 
 interface RadarMapViewProps {
   user?: any;
@@ -34,6 +44,7 @@ export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'natio
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);
   const [center, setCenter] = useState<[number, number]>([30.0802, -94.1266]); // Default Beaumont, TX area
   const [zoom] = useState(13);
+  const [isHeatmapMode, setIsHeatmapMode] = useState(false);
 
   useEffect(() => {
     fetchMapData();
@@ -111,7 +122,7 @@ export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'natio
   }
 
   return (
-    <div className="radar-map-container">
+    <div className={`radar-map-container ${isHeatmapMode ? 'heatmap-active' : ''}`}>
       <div className="map-overlay-header glass">
         <div className="radar-stats">
           <div className="stat-pill">
@@ -121,9 +132,17 @@ export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'natio
             <Calendar size={14} /> {items.filter(i => i.mapType === 'event').length} Events
           </div>
         </div>
-        <button className="refresh-map-btn" onClick={fetchMapData}>
-          <Navigation size={16} /> Recenter
-        </button>
+        <div className="radar-actions">
+          <button 
+            className={`heatmap-toggle-btn ${isHeatmapMode ? 'active' : ''}`} 
+            onClick={() => setIsHeatmapMode(!isHeatmapMode)}
+          >
+            <Layers size={16} /> Heatmap
+          </button>
+          <button className="refresh-map-btn" onClick={fetchMapData}>
+            <Navigation size={16} /> Recenter
+          </button>
+        </div>
       </div>
 
       {escalatedScope && (
@@ -158,32 +177,45 @@ export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'natio
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {items.map((item) => (
-          <Marker 
-            key={`${item.mapType}-${item.id}`}
-            position={[item.lat, item.lng]}
-            icon={item.mapType === 'store' ? storeIcon : eventIcon}
-          >
-            <Popup className="premium-popup">
-              <div className="popup-content">
-                {item.mapType === 'store' ? (
-                  <>
-                    <h4 className="store-name"><Store size={14} /> {item.name}</h4>
-                    <p className="store-desc">{item.description?.substring(0, 80)}...</p>
-                    <button className="popup-action">Visit Store</button>
-                  </>
-                ) : (
-                  <>
-                    <h4 className="event-name"><Calendar size={14} /> {item.profiles?.name} Event</h4>
-                    <p className="event-desc">{item.content?.substring(0, 80)}...</p>
-                    <div className="event-loc"><MapPin size={12} /> {item.location}</div>
-                    <button className="popup-action">View Event</button>
-                  </>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {items.map((item) => {
+          if (isHeatmapMode) {
+            return (
+              <Marker 
+                key={`heat-${item.mapType}-${item.id}`}
+                position={[item.lat, item.lng]}
+                icon={createGlowIcon(item.mapType)}
+              />
+            );
+          }
+
+          return (
+            <Marker 
+              key={`${item.mapType}-${item.id}`}
+              position={[item.lat, item.lng]}
+              icon={item.mapType === 'store' ? storeIcon : eventIcon}
+              zIndexOffset={1000}
+            >
+              <Popup className="premium-popup">
+                <div className="popup-content">
+                  {item.mapType === 'store' ? (
+                    <>
+                      <h4 className="store-name"><Store size={14} /> {item.name}</h4>
+                      <p className="store-desc">{item.description?.substring(0, 80)}...</p>
+                      <button className="popup-action">Visit Store</button>
+                    </>
+                  ) : (
+                    <>
+                      <h4 className="event-name"><Calendar size={14} /> {item.profiles?.name} Event</h4>
+                      <p className="event-desc">{item.content?.substring(0, 80)}...</p>
+                      <div className="event-loc"><MapPin size={12} /> {item.location}</div>
+                      <button className="popup-action">View Event</button>
+                    </>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
         <RecenterMap center={center} />
       </MapContainer>
     </div>

@@ -1,7 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to be set in environment
-const supabaseUrl = process.env.SUPABASE_URL || '';
+let __dirname = '';
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  __dirname = path.dirname(__filename);
+} catch (e) {
+  __dirname = path.resolve();
+}
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -192,5 +203,49 @@ if (require.main === module) {
     bio_summary: 'Born in Vidor, Texas. Country music artist who has charted more than thirty hit singles in his career, including "Holdin\' Heaven" and "Watermelon Crawl".',
     era: '1990s-2000s',
     metadata: { profession: 'musician', genres: ['country'] }
+  });
+
+  // Historical Events
+  ingestTSHAEvent({
+    slug: 'spindletop-discovery',
+    title: 'Spindletop Gusher',
+    event_date: '1901-01-10',
+    description: 'The Lucas Gusher at Spindletop in Beaumont blew in, marking the birth of the modern petroleum industry. It produced an estimated 100,000 barrels of oil per day.',
+    location_coords: '30.0198,-94.0746',
+    impact_rating: 100
+  });
+
+  ingestTSHAEvent({
+    slug: 'sabine-pass-battle',
+    title: 'Battle of Sabine Pass',
+    event_date: '1863-09-08',
+    description: 'A significant Confederate victory in the American Civil War, where a small force under Richard W. Dowling thwarted a Union invasion at Sabine Pass in Jefferson County.',
+    location_coords: '29.7289,-93.8705',
+    impact_rating: 85
+  });
+
+  ingestTSHAEvent({
+    slug: 'hurricane-rita-setx',
+    title: 'Hurricane Rita Landfall',
+    event_date: '2005-09-24',
+    description: 'Hurricane Rita made landfall near the Texas-Louisiana border, causing widespread destruction in Jefferson and Orange counties, leading to mass evacuations and significant structural damage.',
+    impact_rating: 95
+  });
+
+  // County Statistics
+  ingestCensusStats({
+    county: 'Jefferson',
+    year: 2020,
+    data_type: 'demographic',
+    metrics: { population: 256526, median_income: 53378 },
+    source_url: 'https://www.census.gov/'
+  });
+
+  ingestCensusStats({
+    county: 'Orange',
+    year: 2020,
+    data_type: 'demographic',
+    metrics: { population: 84808, median_income: 61985 },
+    source_url: 'https://www.census.gov/'
   });
 }

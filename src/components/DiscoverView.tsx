@@ -1,6 +1,6 @@
 import type { User } from '../types/user';
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, Zap, Sparkles, Heart, MessageSquare, MapPin, Camera } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TrendingUp, Zap, Sparkles, Heart, MessageSquare, MapPin, Camera, ShoppingBag, Tag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { weightByCounty, SETX_COUNTY_LIST, isSETXTheme } from '../utils/geo';
 import { useApp } from '../context/AppContext';
@@ -14,6 +14,7 @@ interface Post {
   created_at: string;
   upvote_count?: number;
   comments_count?: number;
+  _feedType?: 'post' | 'trending' | 'market';
   author?: {
     id: string;
     name: string;
@@ -30,108 +31,134 @@ interface MarketListing {
   media_urls?: string[];
 }
 
-const CAROUSEL_LIMIT = 10;
+type FeedItem = (Post | MarketListing) & { _feedType: 'post' | 'trending' | 'market' };
 
-export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' | 'county' | 'city' }> = ({ user, scope = 'national' }) => {
+const FETCH_LIMIT = 12;
+
+export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' | 'county' | 'city'; onNavigate?: (env: string) => void }> = ({ user, scope = 'national', onNavigate }) => {
   const { theme } = useApp();
-  const [topPosts, setTopPosts] = useState<Post[]>([]);
-  const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
-  const [marketItems, setMarketItems] = useState<MarketListing[]>([]);
-  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
-  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
-  const [isLoadingMarket, setIsLoadingMarket] = useState(true);
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isARModeOpen, setIsARModeOpen] = useState(false);
+
+  // Swipe logic
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX || !touchEndX || !onNavigate) return;
+    const distance = touchStartX - touchEndX;
+    const isLeftSwipe = distance > minSwipeDistance; // touchStartX > touchEndX (finger moved left)
+    if (isLeftSwipe) {
+      onNavigate('home');
+    }
+  };
 
   const isSETX = isSETXTheme(theme);
 
   useEffect(() => {
-    fetchTopPosts();
-    fetchTrendingPosts();
-    fetchMarketItems();
+    buildFeed();
   }, [scope, theme]);
 
-  const fetchTopPosts = async () => {
-    setIsLoadingPosts(true);
+  const buildFeed = async () => {
+    setIsLoading(true);
     try {
-      let query = supabase
-        .from('posts')
-        .select(`
-          id, content, media_urls, created_at, upvote_count, comments_count,
-          author:profiles!posts_profile_id_fkey(id, name, avatar_url, county, community)
-        `)
-        .neq('moderation_status', 'hidden')
-        .is('group_id', null)
-        .order('hot_score', { ascending: false })
-        .limit(50); // Fetch more, weight & slice
+      // Fetch posts, trending, and market items in parallel
+      const [postsRes, trendingRes, marketRes] = await Promise.all([
+        fetchTopPosts(),
+        fetchTrendingPosts(),
+        fetchMarketItems(),
+      ]);
 
-      // Apply scope filter
-      if (isSETX && (scope === 'county' || scope === 'city')) {
-        query = query.in('author_county', SETX_COUNTY_LIST);
-      } else if (scope === 'state' && user?.state) {
-        query = query.eq('author_state', user.state);
-      } else if (scope === 'city' && user?.community) {
-        query = query.eq('author_community', user.community);
+      // Interleave: post, post, market, trending, post, post, market, trending...
+      const merged: FeedItem[] = [];
+      const maxLen = Math.max(postsRes.length, trendingRes.length, marketRes.length);
+      let pIdx = 0, tIdx = 0, mIdx = 0;
+
+      for (let i = 0; i < maxLen * 3; i++) {
+        const slot = i % 4;
+        if (slot === 0 && pIdx < postsRes.length) {
+          merged.push({ ...postsRes[pIdx++], _feedType: 'post' });
+        } else if (slot === 1 && pIdx < postsRes.length) {
+          merged.push({ ...postsRes[pIdx++], _feedType: 'post' });
+        } else if (slot === 2 && mIdx < marketRes.length) {
+          merged.push({ ...marketRes[mIdx++], _feedType: 'market' });
+        } else if (slot === 3 && tIdx < trendingRes.length) {
+          merged.push({ ...trendingRes[tIdx++], _feedType: 'trending' });
+        }
       }
 
-      const { data } = await query;
-      if (data) {
-        const weighted = weightByCounty(data as any[], user?.county, 'author.county');
-        setTopPosts(weighted.slice(0, CAROUSEL_LIMIT) as unknown as Post[]);
-      }
+      setFeedItems(merged.filter(Boolean));
     } catch (err) {
-      console.error('DiscoverView fetchTopPosts:', err);
+      console.error('DiscoverView buildFeed:', err);
     } finally {
-      setIsLoadingPosts(false);
+      setIsLoading(false);
     }
   };
 
-  const fetchTrendingPosts = async () => {
-    setIsLoadingTrending(true);
-    try {
-      let query = supabase
-        .from('posts')
-        .select(`
-          id, content, media_urls, created_at, upvote_count, comments_count,
-          author:profiles!posts_profile_id_fkey(id, name, avatar_url, county, community)
-        `)
-        .neq('moderation_status', 'hidden')
-        .is('group_id', null)
-        .order('upvote_count', { ascending: false })
-        .limit(50);
+  const fetchTopPosts = async (): Promise<Post[]> => {
+    let query = supabase
+      .from('posts')
+      .select(`id, content, media_urls, created_at, upvote_count, comments_count,
+        author:profiles!posts_profile_id_fkey(id, name, avatar_url, county, community)`)
+      .neq('moderation_status', 'hidden')
+      .is('group_id', null)
+      .order('hot_score', { ascending: false })
+      .limit(FETCH_LIMIT);
 
-      if (isSETX && (scope === 'county' || scope === 'city')) {
-        query = query.in('author_county', SETX_COUNTY_LIST);
-      } else if (scope === 'state' && user?.state) {
-        query = query.eq('author_state', user.state);
-      }
-
-      const { data } = await query;
-      if (data) {
-        const weighted = weightByCounty(data as any[], user?.county, 'author.county');
-        setTrendingPosts(weighted.slice(0, CAROUSEL_LIMIT) as unknown as Post[]);
-      }
-    } catch (err) {
-      console.error('DiscoverView fetchTrendingPosts:', err);
-    } finally {
-      setIsLoadingTrending(false);
+    if (isSETX && (scope === 'county' || scope === 'city')) {
+      query = query.in('author_county', SETX_COUNTY_LIST);
+    } else if (scope === 'state' && user?.state) {
+      query = query.eq('author_state', user.state);
+    } else if (scope === 'city' && user?.community) {
+      query = query.eq('author_community', user.community);
     }
+
+    const { data } = await query;
+    if (!data) return [];
+    return weightByCounty(data as any[], user?.county, 'author.county') as unknown as Post[];
   };
 
-  const fetchMarketItems = async () => {
-    setIsLoadingMarket(true);
-    try {
-      const { data } = await supabase
-        .from('listings')
-        .select('id, title, price, media_urls')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(CAROUSEL_LIMIT);
-      setMarketItems(data || []);
-    } catch (err) {
-      console.error('DiscoverView fetchMarketItems:', err);
-    } finally {
-      setIsLoadingMarket(false);
+  const fetchTrendingPosts = async (): Promise<Post[]> => {
+    let query = supabase
+      .from('posts')
+      .select(`id, content, media_urls, created_at, upvote_count, comments_count,
+        author:profiles!posts_profile_id_fkey(id, name, avatar_url, county, community)`)
+      .neq('moderation_status', 'hidden')
+      .is('group_id', null)
+      .order('upvote_count', { ascending: false })
+      .limit(FETCH_LIMIT);
+
+    if (isSETX && (scope === 'county' || scope === 'city')) {
+      query = query.in('author_county', SETX_COUNTY_LIST);
+    } else if (scope === 'state' && user?.state) {
+      query = query.eq('author_state', user.state);
     }
+
+    const { data } = await query;
+    if (!data) return [];
+    return weightByCounty(data as any[], user?.county, 'author.county') as unknown as Post[];
+  };
+
+  const fetchMarketItems = async (): Promise<MarketListing[]> => {
+    const { data } = await supabase
+      .from('listings')
+      .select('id, title, price, media_urls')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(FETCH_LIMIT);
+    return data || [];
   };
 
   const formatTimeAgo = (dateStr: string) => {
@@ -143,14 +170,83 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
     return `${Math.floor(hrs / 24)}d`;
   };
 
-  return (
-    <div className="discover-view">
+  const renderPostCard = (item: Post, type: 'post' | 'trending') => {
+    const hasImage = item.media_urls && item.media_urls.length > 0 &&
+      !item.media_urls[0].match(/\.(mp4|webm|ogg)$/i);
+    const accentColor = type === 'trending' ? 'var(--secondary)' : 'var(--primary)';
 
+    return (
+      <div key={`${type}-${item.id}`} className="discover-feed-card glass">
+        <div className="dfc-label" style={{ color: accentColor }}>
+          {type === 'trending' ? <><Zap size={12} /> Trending</> : <><TrendingUp size={12} /> Hot</>}
+        </div>
+        {hasImage && (
+          <img
+            className="dfc-image"
+            src={item.media_urls![0]}
+            alt=""
+            loading="lazy"
+          />
+        )}
+        <div className="dfc-body">
+          <div className="dfc-meta">
+            {item.author?.avatar_url ? (
+              <img src={item.author.avatar_url} alt={item.author.name} className="dfc-avatar" />
+            ) : (
+              <div className="dfc-avatar-placeholder" style={{ background: accentColor }} />
+            )}
+            <span className="dfc-author">{item.author?.name || 'Community'}</span>
+            {item.author?.county && (
+              <span className="dfc-location"><MapPin size={10} /> {item.author.county}</span>
+            )}
+            <span className="dfc-time">{formatTimeAgo(item.created_at)}</span>
+          </div>
+          <p className="dfc-content">{item.content}</p>
+          <div className="dfc-stats">
+            <span><Heart size={13} /> {item.upvote_count || 0}</span>
+            <span><MessageSquare size={13} /> {item.comments_count || 0}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMarketCard = (item: MarketListing) => (
+    <div key={`market-${item.id}`} className="discover-feed-card discover-market-card-v glass">
+      <div className="dfc-label" style={{ color: '#f97316' }}>
+        <Sparkles size={12} /> Hot on Market
+      </div>
+      {item.media_urls && item.media_urls[0] ? (
+        <img className="dfc-image" src={item.media_urls[0]} alt={item.title} loading="lazy" />
+      ) : (
+        <div className="dfc-market-placeholder" />
+      )}
+      <div className="dfc-body">
+        <div className="dfc-market-info">
+          <ShoppingBag size={16} color="#f97316" />
+          <div>
+            <h4 className="dfc-market-title">{item.title}</h4>
+            {item.price != null && (
+              <div className="dfc-market-price"><Tag size={12} /> ${item.price.toFixed(2)}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div 
+      className="discover-view"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Hero Banner */}
       <div className="premium-card discover-hero" style={{
         background: 'linear-gradient(135deg, var(--primary), var(--discover-secondary, var(--secondary)))',
         color: 'white',
-        marginBottom: '28px',
+        marginBottom: '24px',
         border: 'none',
         display: 'flex',
         flexDirection: 'column',
@@ -165,7 +261,7 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
             ? `Your local pulse — Jefferson, Orange, Hardin & Jasper Counties`
             : `Discover what's trending in your community`}
         </p>
-        <button 
+        <button
           onClick={() => setIsARModeOpen(true)}
           style={{
             marginTop: '8px',
@@ -187,150 +283,21 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
         </button>
       </div>
 
-      {/* Top Posts Carousel */}
-      <div className="discover-carousel-section">
-        <div className="discover-section-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TrendingUp size={18} color="var(--primary)" />
-            <h4>Top Posts</h4>
-          </div>
-          {user?.county && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <MapPin size={12} /> {user.county}
-            </span>
-          )}
-        </div>
-
-        {isLoadingPosts ? (
-          <div className="discover-skeleton">
-            {[1,2,3].map(i => <div key={i} className="discover-skeleton-card" />)}
-          </div>
-        ) : topPosts.length === 0 ? (
-          <div className="discover-empty">No posts yet — be the first to share something!</div>
+      {/* Infinite Vertical Feed */}
+      <div className="discover-vertical-feed">
+        {isLoading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="dfc-skeleton glass" style={{ animationDelay: `${i * 0.08}s` }} />
+          ))
+        ) : feedItems.length === 0 ? (
+          <div className="discover-empty">Nothing to discover yet — check back soon!</div>
         ) : (
-          <div className="discover-carousel">
-            {topPosts.map(post => {
-              const hasImage = post.media_urls && post.media_urls.length > 0 &&
-                !post.media_urls[0].match(/\.(mp4|webm|ogg)$/i);
-              return (
-                <div key={post.id} className={`discover-carousel-card ${hasImage ? '' : 'text-only'}`}>
-                  {hasImage && (
-                    <img
-                      className="discover-carousel-card-img"
-                      src={post.media_urls![0]}
-                      alt=""
-                      loading="lazy"
-                    />
-                  )}
-                  <div className="discover-carousel-card-body">
-                    <div className="discover-carousel-card-meta">
-                      {post.author?.avatar_url ? (
-                        <img src={post.author.avatar_url} alt={post.author.name} />
-                      ) : (
-                        <div style={{
-                          width: 24, height: 24, borderRadius: '50%',
-                          background: 'var(--primary)', opacity: 0.4, flexShrink: 0
-                        }} />
-                      )}
-                      <span>{post.author?.name || 'Community'}</span>
-                      <span style={{ marginLeft: 'auto', flexShrink: 0 }}>{formatTimeAgo(post.created_at)}</span>
-                    </div>
-                    <div className="discover-carousel-card-content">{post.content}</div>
-                    <div className="discover-carousel-card-stats">
-                      <span><Heart size={12} /> {post.upvote_count || 0}</span>
-                      <span><MessageSquare size={12} /> {post.comments_count || 0}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Trending Posts Carousel */}
-      <div className="discover-carousel-section">
-        <div className="discover-section-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Zap size={18} color="var(--secondary)" />
-            <h4>Trending Now</h4>
-          </div>
-        </div>
-
-        {isLoadingTrending ? (
-          <div className="discover-skeleton">
-            {[1,2,3].map(i => <div key={i} className="discover-skeleton-card" />)}
-          </div>
-        ) : trendingPosts.length === 0 ? (
-          <div className="discover-empty">Nothing trending yet — check back soon!</div>
-        ) : (
-          <div className="discover-carousel">
-            {trendingPosts.map(post => (
-              <div key={post.id} className="discover-carousel-card text-only">
-                <div className="discover-carousel-card-body">
-                  <div className="discover-carousel-card-meta">
-                    {post.author?.avatar_url ? (
-                      <img src={post.author.avatar_url} alt={post.author.name} />
-                    ) : (
-                      <div style={{
-                        width: 24, height: 24, borderRadius: '50%',
-                        background: 'var(--secondary)', opacity: 0.4, flexShrink: 0
-                      }} />
-                    )}
-                    <span>{post.author?.name || 'Community'}</span>
-                    <span style={{ marginLeft: 'auto', flexShrink: 0 }}>{formatTimeAgo(post.created_at)}</span>
-                  </div>
-                  <div className="discover-carousel-card-content">{post.content}</div>
-                  <div className="discover-carousel-card-stats">
-                    <span><Heart size={12} /> {post.upvote_count || 0}</span>
-                    <span><MessageSquare size={12} /> {post.comments_count || 0}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Hot Market Items Carousel */}
-      <div className="discover-carousel-section">
-        <div className="discover-section-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={18} color="#f97316" />
-            <h4>Hot on Market</h4>
-          </div>
-        </div>
-
-        {isLoadingMarket ? (
-          <div className="discover-skeleton">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="discover-skeleton-card" style={{ flex: '0 0 200px', height: 180 }} />
-            ))}
-          </div>
-        ) : marketItems.length === 0 ? (
-          <div className="discover-empty">No listings yet — open Market to post one!</div>
-        ) : (
-          <div className="discover-market-carousel">
-            {marketItems.map(item => (
-              <div key={item.id} className="discover-market-card">
-                {item.media_urls && item.media_urls[0] ? (
-                  <img src={item.media_urls[0]} alt={item.title} loading="lazy" />
-                ) : (
-                  <div style={{
-                    width: '100%', height: 120,
-                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                    opacity: 0.2
-                  }} />
-                )}
-                <div className="discover-market-card-info">
-                  <h5>{item.title}</h5>
-                  {item.price != null && (
-                    <div className="discover-market-card-price">${item.price.toFixed(2)}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          feedItems.map(item => {
+            if (item._feedType === 'market') {
+              return renderMarketCard(item as MarketListing);
+            }
+            return renderPostCard(item as Post, item._feedType as 'post' | 'trending');
+          })
         )}
       </div>
 

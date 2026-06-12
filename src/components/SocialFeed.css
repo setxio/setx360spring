@@ -2,28 +2,26 @@
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  height: calc(100vh - 70px); /* Adjust for typical mobile headers/navs */
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none; /* Hide scrollbar for clean UI */
+  min-height: 100vh;
+  padding-bottom: 40px;
 }
 
-.social-feed::-webkit-scrollbar {
-  display: none;
-}
-
-/* Make individual posts snap perfectly */
+/* Facebook-style feed with gaps */
 .social-feed .post-card {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  height: 100%; /* Take up the full viewport/container */
-  margin-bottom: 0;
-  border-radius: 0; /* Remove rounded corners for full-screen feel */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 16px; /* Facebook-like gap */
+  border-radius: 12px;
+  background: var(--bg-soft);
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center content vertically */
+}
+
+@media (max-width: 600px) {
+  .social-feed .post-card {
+    border-radius: 0; /* Full width on mobile */
+    border-left: none;
+    border-right: none;
+    margin-bottom: 10px; /* Slightly smaller gap on mobile */
+  }
 }
 
 .social-fab {

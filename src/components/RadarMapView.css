@@ -50,6 +50,40 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.radar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.heatmap-toggle-btn {
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.heatmap-toggle-btn:hover {
+  border-color: #f97316;
+  color: #f97316;
+}
+
+.heatmap-toggle-btn.active {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(249, 115, 22, 0.3));
+  border-color: #f97316;
+  color: #f97316;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.3);
+}
+
 .refresh-map-btn {
   background: var(--primary);
   color: white;
@@ -68,6 +102,58 @@
 .refresh-map-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* ── Heatmap Glow Points ──────────────────────── */
+.leaflet-marker-icon[class*="heat-"] {
+  background: transparent !important;
+  border: none !important;
+}
+
+.heat-glow-point {
+  border-radius: 50%;
+  animation: heatPulse 2.5s ease-in-out infinite;
+}
+
+.heat-glow-store {
+  background: radial-gradient(
+    circle at center,
+    rgba(249, 115, 22, 0.75) 0%,
+    rgba(239, 68, 68, 0.45) 40%,
+    rgba(239, 68, 68, 0) 75%
+  );
+  width: 80px !important;
+  height: 80px !important;
+  box-shadow: 0 0 24px 8px rgba(249, 115, 22, 0.35);
+}
+
+.heat-glow-event {
+  background: radial-gradient(
+    circle at center,
+    rgba(99, 102, 241, 0.75) 0%,
+    rgba(139, 92, 246, 0.45) 40%,
+    rgba(139, 92, 246, 0) 75%
+  );
+  width: 70px !important;
+  height: 70px !important;
+  box-shadow: 0 0 24px 8px rgba(99, 102, 241, 0.35);
+}
+
+@keyframes heatPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 0.55;
+  }
+}
+
+/* Heatmap mode tint on map container */
+.radar-map-container.heatmap-active .leaflet-tile-pane {
+  filter: saturate(0.4) brightness(0.6);
+  transition: filter 0.5s ease;
 }
 
 /* Premium Popup Styling */

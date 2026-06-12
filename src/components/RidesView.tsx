@@ -8,7 +8,9 @@ import {
   ShieldCheck,
   CreditCard,
   Plus,
-  Heart
+  Heart,
+  Share2,
+  AlertOctagon
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { RidesMapView } from './RidesMapView';
@@ -35,6 +37,11 @@ export const RidesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [onlineFavoritesCount, setOnlineFavoritesCount] = useState(0);
+  const [sosSlidePos, setSosSlidePos] = useState(0);
+  const [sosTriggered, setSosTriggered] = useState(false);
+  const [shareTriggered, setShareTriggered] = useState(false);
+  const sosDragStart = React.useRef<number | null>(null);
+  const sosTrackRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (user) fetchFavorites();
@@ -107,6 +114,22 @@ export const RidesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
     }, 3000);
   };
 
+  const handleSosTrigger = async () => {
+    setSosTriggered(true);
+    
+    // Simulate getting GPS coords
+    const currentLat = 30.0802;
+    const currentLng = -94.1266;
+
+    await supabase.from('sos_alerts').insert([{
+      user_id: user.id,
+      lat: currentLat,
+      lng: currentLng,
+      status: 'active',
+      meta: { source: 'rides_view', app: 'setx360' }
+    }]);
+  };
+
   const renderHome = () => (
     <div className="rides-content">
       <RidesMapView />
@@ -121,7 +144,68 @@ export const RidesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
               <h3>Driver is 4 min away</h3>
               <p>Silver Toyota Camry • ABC-1234</p>
             </div>
-            <button className="cancel-btn" onClick={() => setIsConfirmed(false)}>Cancel</button>
+
+            {/* Share Ride */}
+            <div style={{ marginTop: '16px', width: '100%' }}>
+              {shareTriggered ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '14px', background: 'rgba(16,185,129,0.15)', border: '1px solid #10b981' }}>
+                  <Share2 size={18} color="#10b981" />
+                  <span style={{ color: '#10b981', fontWeight: 700, fontSize: '0.9rem' }}>Live link shared with contacts!</span>
+                </div>
+              ) : (
+                <button onClick={() => setShareTriggered(true)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '14px', background: 'var(--bg-soft)', border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer', fontWeight: 600 }}>
+                  <Share2 size={18} /> Share My Ride
+                </button>
+              )}
+            </div>
+
+            {/* Slide-to-SOS */}
+            <div style={{ marginTop: '12px', width: '100%' }}>
+              {sosTriggered ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '14px', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', animation: 'pulse-sos 1s ease-in-out infinite' }}>
+                  <AlertOctagon size={18} color="#ef4444" />
+                  <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.9rem' }}>SOS Sent! Emergency contacts alerted 🚨</span>
+                </div>
+              ) : (
+                <div
+                  ref={sosTrackRef}
+                  style={{ position: 'relative', height: '52px', borderRadius: '26px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', overflow: 'hidden', userSelect: 'none' }}
+                  onMouseDown={(e) => { sosDragStart.current = e.clientX; }}
+                  onMouseMove={(e) => {
+                    if (sosDragStart.current !== null && sosTrackRef.current) {
+                      const maxSlide = sosTrackRef.current.offsetWidth - 60;
+                      const delta = Math.max(0, Math.min(maxSlide, e.clientX - sosDragStart.current));
+                      setSosSlidePos(delta);
+                      if (delta >= maxSlide * 0.9) { handleSosTrigger(); sosDragStart.current = null; }
+                    }
+                  }}
+                  onMouseUp={() => { sosDragStart.current = null; setSosSlidePos(0); }}
+                  onMouseLeave={() => { if (sosDragStart.current !== null) { sosDragStart.current = null; setSosSlidePos(0); } }}
+                  onTouchStart={(e) => { sosDragStart.current = e.touches[0].clientX; }}
+                  onTouchMove={(e) => {
+                    if (sosDragStart.current !== null && sosTrackRef.current) {
+                      const maxSlide = sosTrackRef.current.offsetWidth - 60;
+                      const delta = Math.max(0, Math.min(maxSlide, e.touches[0].clientX - sosDragStart.current));
+                      setSosSlidePos(delta);
+                      if (delta >= maxSlide * 0.9) { handleSosTrigger(); sosDragStart.current = null; }
+                    }
+                  }}
+                  onTouchEnd={() => { sosDragStart.current = null; setSosSlidePos(0); }}
+                >
+                  {/* Track fill */}
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${sosSlidePos + 52}px`, background: `rgba(239,68,68,${Math.min(0.3, sosSlidePos / 200)})`, borderRadius: '26px', transition: sosSlidePos === 0 ? 'width 0.3s ease' : 'none' }} />
+                  {/* Label */}
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#ef4444', pointerEvents: 'none', opacity: sosSlidePos > 20 ? Math.max(0, 1 - sosSlidePos / 80) : 1 }}>← Slide to SOS →</div>
+                  {/* Thumb */}
+                  <div style={{ position: 'absolute', left: `${sosSlidePos}px`, top: '4px', width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #ef4444, #b91c1c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(239,68,68,0.5)', transition: sosSlidePos === 0 ? 'left 0.3s ease' : 'none', cursor: 'grab' }}>
+                    <AlertOctagon size={20} color="#fff" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button className="cancel-btn" onClick={() => setIsConfirmed(false)} style={{ marginTop: '16px' }}>Cancel</button>
+            <style>{`@keyframes pulse-sos { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }`}</style>
           </div>
         ) : (
           <>

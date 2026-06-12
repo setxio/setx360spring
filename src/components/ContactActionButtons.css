@@ -1,0 +1,54 @@
+.contact-action-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.contact-action-buttons .action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.contact-action-buttons .action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.contact-action-buttons .action-btn:active {
+  transform: translateY(0);
+}
+
+/* Call Button (Green) */
+.contact-action-buttons .call-btn {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+/* Message Button (Blue) */
+.contact-action-buttons .message-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* Sizes */
+.contact-action-buttons.size-small .action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+.contact-action-buttons.size-medium .action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.contact-action-buttons.size-large .action-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+}

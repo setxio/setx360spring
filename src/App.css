@@ -5,14 +5,22 @@
   position: relative;
   background-color: var(--bg);
   color: var(--text);
-  padding-bottom: 160px; /* Space for dual footers */
+  padding-bottom: calc(160px + var(--sticky-player-offset, 0px)); /* Space for dual footers */
+  overflow-x: hidden;
 }
 
 .sticky-header-group {
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 1000;
   width: 100%;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.sticky-header-group.header-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .main-header {
@@ -90,7 +98,7 @@
 /* Footer 1: Environment Switcher */
 .env-switcher-footer {
   position: fixed;
-  bottom: 80px; /* Above the bottom nav */
+  bottom: calc(80px + var(--sticky-player-offset, 0px)); /* Above the bottom nav */
   left: 0;
   right: 0;
   z-index: 90;
@@ -251,53 +259,30 @@
   border-bottom-right-radius: 30px;
 }
 
-/* Tablet: show scroll arrow buttons */
-@media (min-width: 768px) and (max-width: 1023px) {
+/* Tablet and Desktop: show scroll arrow buttons and allow scrolling */
+@media (min-width: 768px) {
   .desktop-scroll-btn {
     display: flex;
     align-items: center;
     justify-content: center;
   }
-}
 
-/* Desktop: expand all switcher buttons inline, no scroll needed */
-@media (min-width: 1024px) {
   .switcher-wrapper {
-    max-width: 1200px;
-    width: auto;
-    border-radius: 20px;
-    padding: 0 10px;
+    max-width: 800px;
   }
 
   .switcher-scroll {
-    justify-content: center;
-    cursor: default;
-    gap: 4px;
-    overflow-x: visible;
+    justify-content: flex-start;
   }
 
   .sw-btn {
     width: auto;
-    min-width: 90px;
+    min-width: 100px;
     max-width: none;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     padding: 10px 14px;
     border-radius: 14px;
-    font-size: 0.8rem;
-  }
-
-  .sw-btn.spacer {
-    display: none;
-  }
-
-  /* Hide the fade edge — not needed when fully expanded */
-  .switcher-wrapper::after {
-    display: none;
-  }
-
-  /* Hide scroll arrows — not needed on desktop */
-  .desktop-scroll-btn {
-    display: none !important;
+    font-size: 0.85rem;
   }
 }
 
@@ -384,7 +369,7 @@
 /* Footer 2: Bottom Navigation */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
+  bottom: var(--sticky-player-offset, 0px);
   left: 0;
   right: 0;
   z-index: 90;
@@ -500,3 +485,65 @@
     justify-content: flex-start;
   }
 }
+
+/* Create Post FAB Styles */
+.create-post-fab-classic {
+  position: fixed;
+  bottom: calc(160px + var(--sticky-player-offset, 0px));
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background: var(--primary);
+  border: none;
+  color: white;
+  box-shadow: 0 8px 24px rgba(var(--primary-rgb, 112,0,244), 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9000;
+  transition: transform 0.2s ease;
+}
+
+.create-post-fab-classic:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .create-post-fab-classic {
+    bottom: calc(150px + var(--sticky-player-offset, 0px));
+    right: 16px;
+  }
+}
+
+.create-post-fab-minimal {
+  position: fixed;
+  bottom: calc(24px + var(--sticky-player-offset, 0px));
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background: var(--primary);
+  border: none;
+  color: white;
+  box-shadow: 0 8px 24px rgba(var(--primary-rgb, 112,0,244), 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9000;
+  transition: transform 0.2s ease;
+}
+
+.create-post-fab-minimal:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .create-post-fab-minimal {
+    bottom: calc(24px + var(--sticky-player-offset, 0px));
+    right: 16px;
+  }
+}
+

@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Compass, Rss, Store, Calendar, Zap, TrendingUp, History, User, MessageSquare, ShoppingBag, Globe, ArrowRight, Loader2, Play, ExternalLink, Image as ImageIcon, Video } from 'lucide-react';
+import { Search, Compass, Rss, Store, Calendar, Zap, TrendingUp, History, User, Users, MessageSquare, ShoppingBag, Globe, ArrowRight, Loader2, Play, ExternalLink, Image as ImageIcon, Video, MapPin, X, Moon, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 import './SearchView.css';
+import { WikiArticleView } from './wiki/WikiArticleView';
+import { WikiEditModal } from './wiki/WikiEditModal';
 
 interface SearchViewProps {
   user: any;
@@ -13,13 +15,18 @@ interface SearchViewProps {
 }
 
 export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate }) => {
-  const { theme, isSetxIO } = useApp();
+  const { theme, isSetxIO, toggleTheme } = useApp();
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [selectedWikiItem, setSelectedWikiItem] = useState<any>(null);
+  const [wikiDetails, setWikiDetails] = useState<any>(null);
+  const [isWikiLoading, setIsWikiLoading] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [articleToEdit, setArticleToEdit] = useState<any>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -64,10 +71,38 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
     }
   };
 
+  const handleWikiClick = async (item: any) => {
+    setSelectedWikiItem(item);
+    setWikiDetails(null);
+    setIsWikiLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('wiki_articles')
+        .select('*')
+        .eq('id', item.id)
+        .single();
+      
+      if (error) throw error;
+      setWikiDetails(data);
+    } catch (err) {
+      console.error('Failed to fetch wiki details:', err);
+    } finally {
+      setIsWikiLoading(false);
+    }
+  };
+
   const handleResultClick = (type: string, item: any) => {
+    if (type === 'wiki' && (item.type === 'wiki_profile' || item.type === 'wiki_event' || item.type === 'wiki_article')) {
+      handleWikiClick(item);
+      return;
+    }
+
     switch (type) {
       case 'profiles':
         onNavigate('social', 2, { userId: item.id });
+        break;
+      case 'groups':
+        onNavigate('social', 3, { groupId: item.id });
         break;
       case 'posts':
         onNavigate('social', 0, { postId: item.id });
@@ -110,7 +145,13 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
   // Google-like Results View
   if (hasSearched) {
     return (
-      <div className="search-results-layout">
+      <div className="search-results-layout" style={{ position: 'relative' }}>
+        <button 
+          onClick={toggleTheme}
+          style={{ position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1000, color: 'var(--text)' }}
+        >
+          {theme.includes('dark') ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
         <div className="search-results-header">
           <div className="search-results-top-row">
             <img 
@@ -137,13 +178,15 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
           
           <div className="search-results-tabs">
             <button className={`search-tab-btn ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>All</button>
-            <button className={`search-tab-btn ${activeTab === 'stores' ? 'active' : ''}`} onClick={() => setActiveTab('stores')}>Places</button>
+            <button className={`search-tab-btn ${activeTab === 'web' ? 'active' : ''}`} onClick={() => setActiveTab('web')}>Web</button>
             <button className={`search-tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>Posts</button>
-            <button className={`search-tab-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>Market</button>
-            <button className={`search-tab-btn ${activeTab === 'profiles' ? 'active' : ''}`} onClick={() => setActiveTab('profiles')}>People</button>
             <button className={`search-tab-btn ${activeTab === 'images' ? 'active' : ''}`} onClick={() => setActiveTab('images')}>Images</button>
             <button className={`search-tab-btn ${activeTab === 'videos' ? 'active' : ''}`} onClick={() => setActiveTab('videos')}>Videos</button>
-            <button className={`search-tab-btn ${activeTab === 'web' ? 'active' : ''}`} onClick={() => setActiveTab('web')}>Web</button>
+            <button className={`search-tab-btn ${activeTab === 'wiki' ? 'active' : ''}`} onClick={() => setActiveTab('wiki')}>Wiki</button>
+            <button className={`search-tab-btn ${activeTab === 'profiles' ? 'active' : ''}`} onClick={() => setActiveTab('profiles')}>People</button>
+            <button className={`search-tab-btn ${activeTab === 'stores' ? 'active' : ''}`} onClick={() => setActiveTab('stores')}>Places</button>
+            <button className={`search-tab-btn ${activeTab === 'groups' ? 'active' : ''}`} onClick={() => setActiveTab('groups')}>Groups</button>
+            <button className={`search-tab-btn ${activeTab === 'products' ? 'active' : ''}`} onClick={() => setActiveTab('products')}>Products</button>
           </div>
         </div>
 
@@ -155,6 +198,28 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
             </div>
           ) : results ? (
             <div className="results-list">
+              {/* Knowledge Panel (Wiki Match) */}
+              {activeTab === 'all' && results.wiki?.find((w: any) => !w.url) && (() => {
+                const topWiki = results.wiki.find((w: any) => !w.url);
+                return (
+                  <div className="search-result-card knowledge-panel-card" onClick={() => handleResultClick('wiki', topWiki)}>
+                    {topWiki.image_url && (
+                      <img src={topWiki.image_url} alt={topWiki.title} className="knowledge-panel-image" />
+                    )}
+                    <div className="knowledge-panel-content">
+                      <div className="knowledge-panel-header">
+                        <h2 className="knowledge-panel-title">{topWiki.title}</h2>
+                        <span className="knowledge-panel-badge">Knowledge Panel</span>
+                      </div>
+                      <p className="knowledge-panel-desc">{topWiki.description?.substring(0, 300)}...</p>
+                      <button className="knowledge-panel-btn">
+                        <Globe size={16} /> Explore Full Wiki
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* People */}
               {(activeTab === 'all' || activeTab === 'profiles') && results.profiles?.length > 0 && (
                 <div className="results-section-block">
@@ -187,6 +252,24 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
                 </div>
               )}
 
+              {/* Groups */}
+              {(activeTab === 'all' || activeTab === 'groups') && results.groups?.length > 0 && (
+                <div className="results-section-block" style={{ marginTop: '32px' }}>
+                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Users size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Groups</h3>
+                  {results.groups.map((g: any) => (
+                    <div key={g.id} className="search-result-card" onClick={() => handleResultClick('groups', g)}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Avatar url={g.avatar_url || g.image_url} name={g.name} size={40} />
+                        <div>
+                          <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: 'var(--primary)' }}>{g.name}</h3>
+                          <p>{(g.description || g.content)?.substring(0, 100)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Posts */}
               {(activeTab === 'all' || activeTab === 'posts') && results.posts?.length > 0 && (
                 <div className="results-section-block" style={{ marginTop: '32px' }}>
@@ -203,7 +286,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
               {/* Products */}
               {(activeTab === 'all' || activeTab === 'products') && results.products?.length > 0 && (
                 <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><ShoppingBag size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Market</h3>
+                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><ShoppingBag size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Products</h3>
                   {results.products.map((pd: any) => (
                     <div key={pd.id} className="search-result-card" onClick={() => handleResultClick('products', pd)}>
                       <h3>{pd.name}</h3>
@@ -214,55 +297,57 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
                 </div>
               )}
               
-              {/* Wiki */}
-              {(activeTab === 'all' || activeTab === 'web' || activeTab === 'wiki') && results.wiki?.length > 0 && (
+              {/* Web */}
+              {(activeTab === 'all' || activeTab === 'web') && results.wiki?.filter((w: any) => !!w.url)?.length > 0 && (
                 <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Globe size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Web & Media</h3>
-                  {results.wiki.map((w: any) => {
-                    const isExternal = !!w.url;
-                    
-                    const CardContent = (
-                      <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                          <h3 style={{ color: '#3b82f6', margin: 0, textDecoration: isExternal ? 'underline' : 'none' }}>{w.title}</h3>
-                          {isExternal && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
-                              <ExternalLink size={10} /> External
-                            </span>
-                          )}
-                        </div>
-                        {isExternal && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '8px' }}>{w.url}</p>}
-                        <p style={{ color: 'var(--text)', textDecoration: 'none' }}>{w.description?.substring(0, 150)}...</p>
-                      </>
-                    );
+                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><ExternalLink size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Web</h3>
+                  {results.wiki.filter((w: any) => !!w.url).map((w: any) => (
+                    <a 
+                      key={w.id} 
+                      href={w.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="search-result-card" 
+                      style={{ display: 'block', textDecoration: 'none' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <h3 style={{ color: '#3b82f6', margin: 0, textDecoration: 'underline' }}>{w.title}</h3>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                          <ExternalLink size={10} /> External
+                        </span>
+                      </div>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '8px' }}>{w.url}</p>
+                      <p style={{ color: 'var(--text)', textDecoration: 'none' }}>{w.description?.substring(0, 150)}...</p>
+                    </a>
+                  ))}
+                </div>
+              )}
 
-                    if (isExternal) {
-                      return (
-                        <a 
-                          key={w.id} 
-                          href={w.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="search-result-card" 
-                          style={{ display: 'block', textDecoration: 'none' }}
-                        >
-                          {CardContent}
-                        </a>
-                      );
-                    }
-
-                    return (
+              {/* Wiki */}
+              {(activeTab === 'all' || activeTab === 'wiki') && results.wiki?.filter((w: any) => !w.url).length > 0 && (() => {
+                const wikiResults = results.wiki.filter((w: any) => !w.url);
+                const filteredWiki = activeTab === 'all' ? wikiResults.slice(1) : wikiResults; // Skip top wiki in "All" tab since it's the Knowledge Panel
+                
+                if (filteredWiki.length === 0) return null;
+                
+                return (
+                  <div className="results-section-block" style={{ marginTop: '32px' }}>
+                    <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Globe size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Wiki</h3>
+                    {filteredWiki.map((w: any) => (
                       <div 
                         key={w.id} 
                         className="search-result-card" 
                         onClick={() => handleResultClick('wiki', w)}
                       >
-                        {CardContent}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <h3 style={{ color: '#3b82f6', margin: 0 }}>{w.title}</h3>
+                        </div>
+                        <p style={{ color: 'var(--text)', textDecoration: 'none' }}>{w.description?.substring(0, 150)}...</p>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* Images */}
               {(activeTab === 'images') && (
@@ -320,7 +405,13 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
   // Classic Landing Page Mode
   return (
-    <div className="search-view-container">
+    <div className="search-view-container" style={{ position: 'relative' }}>
+      <button 
+        onClick={toggleTheme}
+        style={{ position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1000, color: 'var(--text)' }}
+      >
+        {theme.includes('dark') ? <Sun size={20} /> : <Moon size={20} />}
+      </button>
       <motion.div 
         className="search-view-content"
         initial={{ opacity: 0, y: 10 }}
@@ -385,6 +476,64 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
           </div>
         </div>
       </motion.div>
+
+      {/* Wiki Details Modal */}
+      <AnimatePresence>
+        {selectedWikiItem && (
+          <div className="wiki-detail-modal-backdrop" onClick={(e) => { e.stopPropagation(); setSelectedWikiItem(null); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 16 }}>
+            <motion.div 
+              className="wiki-detail-modal-container glass"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{ width: '100%', maxWidth: '1100px', height: '90vh', overflowY: 'auto', background: 'var(--bg-soft)', borderRadius: 20, border: '1px solid var(--border)', position: 'relative', padding: 24 }}
+            >
+              <button className="wiki-detail-close" onClick={() => setSelectedWikiItem(null)} style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+
+              {isWikiLoading ? (
+                <div className="wiki-detail-loader" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <Loader2 className="animate-spin" size={32} />
+                  <p style={{ marginTop: 12 }}>Loading historical records...</p>
+                </div>
+              ) : wikiDetails ? (
+                <div className="wiki-detail-content" style={{ marginTop: 20 }}>
+                  <WikiArticleView
+                    article={wikiDetails}
+                    user={user}
+                    onBack={() => setSelectedWikiItem(null)}
+                    onEdit={(art) => {
+                      setArticleToEdit(art);
+                      setIsEditModalOpen(true);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="wiki-detail-error" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <p>Failed to retrieve records. Please try again.</p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {isEditModalOpen && (
+        <WikiEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setArticleToEdit(null);
+            if (selectedWikiItem) {
+              handleWikiClick(selectedWikiItem); // refresh detail view
+            }
+          }}
+          article={articleToEdit}
+          user={user}
+        />
+      )}
     </div>
   );
 };

@@ -399,6 +399,23 @@
   margin-bottom: 4px;
 }
 
+.hire-btn.quote {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  flex: 1;
+}
+
+.hire-btn.quote:hover {
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.service-card-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .booking-actions {
   display: flex;
   gap: 10px;
@@ -458,4 +475,82 @@
   .services-categories {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* ── Availability Filters ─────────────────── */
+.availability-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.avail-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.avail-pill.active,
+.avail-pill:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.avail-pill.today.active,
+.avail-pill.today:hover {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.avail-pill.emergency.active,
+.avail-pill.emergency:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+/* ── Trust Metric Chips ───────────────────── */
+.pro-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+
+.trust-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.trust-chip.verified {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.trust-chip.licensed {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.trust-chip.emergency {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }

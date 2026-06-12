@@ -14,6 +14,7 @@ import { formatRelativeTime } from '../utils/dateUtils';
 import { PostStatsModal } from './PostStatsModal';
 import { LinkPreviewCard, extractPreviewUrl } from './LinkPreviewCard';
 import { ShoppableProductMini } from './ShoppableProductMini';
+import { PostOptionsMenu } from './PostOptionsMenu';
 import './PostCard.css';
 
 interface PostCardProps {
@@ -52,6 +53,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [isHidden, setIsHidden] = useState(false);
   const [userReaction, setUserReaction] = useState<string | null>(() => 
     localStorage.getItem(`reaction_${post.id}`) || null
   );
@@ -100,6 +102,8 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   const helpfulNotes = communityNotes.filter(n => n.status === 'helpful');
   const proposedNotesCount = communityNotes.filter(n => n.status === 'proposed').length;
+
+  if (isHidden) return null;
 
   return (
     <div 
@@ -167,15 +171,14 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
         
-        {isAuthor && (
-          <button 
-            className="delete-btn"
-            onClick={(e) => { e.stopPropagation(); onDelete(post.id); }}
-            title="Delete Post"
-          >
-            <X size={18} />
-          </button>
-        )}
+        <PostOptionsMenu 
+          isAuthor={isAuthor}
+          authorName={isQuotePost ? post.author?.name : (contentPost.author?.name || 'User')}
+          onHide={() => setIsHidden(true)}
+          onDelete={() => onDelete(post.id)}
+          onSave={() => onToggleBookmark?.(contentPost.id)}
+          onReport={() => setShowFlagModal(true)}
+        />
       </div>
 
       <div className={`post-content ${shouldBlur ? 'blurred-text' : ''}`}>

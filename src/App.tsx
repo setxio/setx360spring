@@ -7,14 +7,18 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 // We now lazy load layouts to keep framer-motion out of the critical bundle
 const ClassicLayout = lazy(() => import('./components/ClassicLayout').then(m => ({ default: m.ClassicLayout })));
 const MinimalLayout = lazy(() => import('./components/MinimalLayout').then(m => ({ default: m.MinimalLayout })));
+const StickyPlayer = lazy(() => import('./components/StickyPlayer').then(m => ({ default: m.StickyPlayer })));
+const MusicQueueModal = lazy(() => import('./components/MusicQueueModal').then(m => ({ default: m.MusicQueueModal })));
 
 // Heavy page-level components (lazy loaded on demand)
-const SearchOverlay    = lazy(() => import('./components/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
+
 const RadarMapView     = lazy(() => import('./components/RadarMapView').then(m => ({ default: m.RadarMapView })));
 const SocialFeed       = lazy(() => import('./components/SocialFeed').then(m => ({ default: m.SocialFeed })));
 const MarketHome       = lazy(() => import('./components/MarketHome').then(m => ({ default: m.MarketHome })));
 const DiscoverView     = lazy(() => import('./components/DiscoverView').then(m => ({ default: m.DiscoverView })));
 const SearchView       = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
+const HomeView         = lazy(() => import('./components/HomeView').then(m => ({ default: m.HomeView })));
+const WikiHome         = lazy(() => import('./components/wiki/WikiHome').then(m => ({ default: m.WikiHome })));
 const StoresDirectory  = lazy(() => import('./components/StoresDirectory').then(m => ({ default: m.StoresDirectory })));
 const ProductSearch    = lazy(() => import('./components/ProductSearch').then(m => ({ default: m.ProductSearch })));
 const UserDirectory    = lazy(() => import('./components/SocialDirectories').then(m => ({ default: m.UserDirectory })));
@@ -23,6 +27,7 @@ const CartView         = lazy(() => import('./components/CartWishlistView').then
 const WishlistView     = lazy(() => import('./components/CartWishlistView').then(m => ({ default: m.WishlistView })));
 const ComingSoon       = lazy(() => import('./components/ComingSoon').then(m => ({ default: m.ComingSoon })));
 const JobsView         = lazy(() => import('./components/JobsView').then(m => ({ default: m.JobsView })));
+const GigsView         = lazy(() => import('./components/GigsView').then(m => ({ default: m.GigsView })));
 const RidesView        = lazy(() => import('./components/RidesView').then(m => ({ default: m.RidesView })));
 const ClassifiedsView  = lazy(() => import('./components/ClassifiedsView').then(m => ({ default: m.ClassifiedsView })));
 const SavedView        = lazy(() => import('./components/SavedView').then(m => ({ default: m.SavedView })));
@@ -30,11 +35,6 @@ const ProfilePage      = lazy(() => import('./components/ProfilePage').then(m =>
 const SettingsPage     = lazy(() => import('./components/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const EditProfilePage  = lazy(() => import('./components/EditProfilePage').then(m => ({ default: m.EditProfilePage })));
 const MessagesView     = lazy(() => import('./components/MessagesView').then(m => ({ default: m.MessagesView })));
-const AdminDashboard   = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const VendorDashboard  = lazy(() => import('./components/VendorDashboard').then(m => ({ default: m.VendorDashboard })));
-const CreatorDashboard = lazy(() => import('./components/CreatorDashboard').then(m => ({ default: m.CreatorDashboard })));
-const CivicDashboard   = lazy(() => import('./components/CivicDashboard').then(m => ({ default: m.CivicDashboard })));
-const MinistryDashboard= lazy(() => import('./components/MinistryDashboard').then(m => ({ default: m.MinistryDashboard })));
 const StoreFrontView   = lazy(() => import('./components/StoreFrontView').then(m => ({ default: m.StoreFrontView })));
 const NotificationsView= lazy(() => import('./components/NotificationsView').then(m => ({ default: m.NotificationsView })));
 const MarketAccount    = lazy(() => import('./components/MarketAccount').then(m => ({ default: m.MarketAccount })));
@@ -54,6 +54,7 @@ const WalletView       = lazy(() => import('./components/WalletView').then(m => 
 const EventsView       = lazy(() => import('./components/EventsView').then(m => ({ default: m.EventsView })));
 const ServicesView     = lazy(() => import('./components/ServicesView').then(m => ({ default: m.ServicesView })));
 const MediaView        = lazy(() => import('./components/MediaView').then(m => ({ default: m.MediaView })));
+const MusicView        = lazy(() => import('./components/MusicView').then(m => ({ default: m.MusicView })));
 const ArtGalleryView   = lazy(() => import('./components/ArtGalleryView').then(m => ({ default: m.ArtGalleryView })));
 const FaithView        = lazy(() => import('./components/FaithView').then(m => ({ default: m.FaithView })));
 const SportsView       = lazy(() => import('./components/SportsView').then(m => ({ default: m.SportsView })));
@@ -61,7 +62,9 @@ const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
 const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
-
+const AppsView         = lazy(() => import('./components/apps/AppsView').then(m => ({ default: m.AppsView })));
+const ContactsView     = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
+const PhoneView        = lazy(() => import('./components/PhoneView').then(m => ({ default: m.PhoneView })));
 const Overview         = lazy(() => import('./components/Overview').then(m => ({ default: m.Overview })));
 const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
@@ -69,7 +72,7 @@ const OrdersView       = lazy(() => import('./components/OrdersView').then(m => 
 const ProductDetailsModal = lazy(() => import('./components/ProductDetailsModal').then(m => ({ default: m.ProductDetailsModal })));
 const LocalActionAgent    = lazy(() => import('./components/LocalActionAgent').then(m => ({ default: m.LocalActionAgent })));
 
-import { useApp } from './context/AppContext';
+import { useApp, type Env } from './context/AppContext';
 import { supabase } from './lib/supabase';
 import { useToast } from './context/ToastContext';
 
@@ -77,7 +80,7 @@ const App: React.FC = () => {
   const { info } = useToast();
   const { 
     user, env, theme, scope, activeTab, isLoading,
-    setEnv, setTheme, setActiveTab, setIsSearchOpen, toggleTheme, updateUser,
+    setEnv, setTheme, setActiveTab, toggleTheme, updateUser,
     isSetxIO, projectSlug, layout
   } = useApp();
 
@@ -115,6 +118,18 @@ const App: React.FC = () => {
 
         // 3. Force a check for updates every time the app loads
         registration.update().catch(err => console.log('SW update check failed', err));
+
+        // 4. Periodically check for updates every 15 minutes if left open
+        setInterval(() => {
+          registration.update().catch(err => console.log('SW periodic update check failed', err));
+        }, 15 * 60 * 1000);
+
+        // 5. Check for updates when the user returns to the app
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            registration.update().catch(err => console.log('SW visibility update check failed', err));
+          }
+        });
       });
     }
 
@@ -194,17 +209,8 @@ const App: React.FC = () => {
     setActiveGroupId(null);
   }, [env]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isCmdK = (e.metaKey || e.ctrlKey) && e.key === 'k';
-      // '/' or Cmd+K to search, but not if typing in an input
-      if ((e.key === '/' || isCmdK) && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-        setIsSearchOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
 
+  useEffect(() => {
     const handleNavigateToProduct = (e: CustomEvent) => {
       setActiveProduct(e.detail);
     };
@@ -229,11 +235,10 @@ const App: React.FC = () => {
       .subscribe();
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('NAVIGATE_TO_PRODUCT', handleNavigateToProduct as EventListener);
       supabase.removeChannel(flashChannel);
     };
-  }, [setIsSearchOpen, info]);
+  }, [info]);
 
 
 
@@ -241,9 +246,9 @@ const App: React.FC = () => {
     // Handle Project Slugs or Custom Domains
     if (projectStore) {
       const isOwner = user?.id === projectStore.owner_id;
-      // If owner is logged in and not explicitly in "market" mode, show dashboard
       if (isOwner && env !== 'market') {
-        return <VendorDashboard user={user} />;
+        window.location.href = 'https://www.setx.io/dashboard';
+        return null;
       }
       // Otherwise show the public storefront/website
       return <StoreFrontView storeId={projectStore.id} currentUser={user} onBack={() => {}} />;
@@ -329,7 +334,17 @@ const App: React.FC = () => {
     }
 
     if (env === 'search') {
+      if (activeTab === 2) {
+        return <WikiHome user={user} />;
+      }
       return <SearchView user={user} scope={scope} onNavigate={(envStr) => {
+        setEnv(envStr as any);
+        setActiveTab(0);
+      }} />;
+    }
+
+    if (env === 'home') {
+      return <HomeView user={user} scope={scope} onNavigate={(envStr) => {
         setEnv(envStr as any);
         setActiveTab(0);
       }} />;
@@ -337,7 +352,10 @@ const App: React.FC = () => {
 
     if (env === 'discover') {
       switch (activeTab) {
-        case 0: return <DiscoverView user={user} scope={scope} />;
+        case 0: return <DiscoverView user={user} scope={scope} onNavigate={(envStr) => {
+          setEnv(envStr as any);
+          setActiveTab(0);
+        }} />;
         case 1: return <TrendingView scope={scope} user={user} />;
         case 2: return <HotDealsView scope={scope} user={user} />;
         case 3: return <NewArrivalsView scope={scope} user={user} />;
@@ -355,6 +373,7 @@ const App: React.FC = () => {
           scope={scope} 
           onNavigateToPost={(pid, cid) => { setActivePostId(pid); setActiveCommentId(cid || null); }} 
           onNavigateToProfile={setActiveProfileId}
+          showFAB={false}
         />;
         case 1: return <ClassifiedsView />;
         case 2: return <UserDirectory scope={scope} />;
@@ -396,7 +415,10 @@ const App: React.FC = () => {
     if (env === 'auto') return <AutoView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'travel') return <TravelView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'jobs') return <JobsView activeTab={activeTab} user={user} scope={scope} />;
-    if (env === 'media') return <MediaView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'gigs') return <GigsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'classifieds') return <ClassifiedsView />;
+    if (env === 'videos') return <MediaView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'music') return <MusicView user={user} scope={scope} />;
     if (env === 'art') return <ArtGalleryView user={user} scope={scope} />;
     if (env === 'faith') return <FaithView user={user} scope={scope} />;
     if (env === 'sports') return <SportsView activeTab={activeTab} user={user} scope={scope} />;
@@ -407,25 +429,26 @@ const App: React.FC = () => {
       return <CivicsView activeTab={activeTab} user={user} scope={scope} />;
     }
     
-    if (env === 'dashboard') {
-      const role = user?.role || '';
-      const hasClearance = (type: string) => user?.clearances?.some((c: any) => c.entity_type === type);
-      if (['official', 'chamber', 'city_worker', 'city_manager'].includes(role) || hasClearance('civic')) return <CivicDashboard user={user} activeTab={activeTab} />;
-      if (['church', 'non_profit'].includes(role) || hasClearance('ministry')) return <MinistryDashboard user={user} activeTab={activeTab} />;
-      if (['artist', 'media', 'venue'].includes(role) || hasClearance('creator')) return <CreatorDashboard user={user} activeTab={activeTab} />;
-      
-      // Default Vendor Dashboard (Retail) or Specialized ones
-      return (
-        <VendorDashboard 
-          user={user} 
-          activeTab={activeTab} 
-          initialStoreId={activeStoreId} 
-          onNavigateToStore={setActiveStoreId} 
-        />
-      );
+    if (env === 'apps') {
+      return <AppsView activeTab={activeTab} />;
     }
     
-    if (env === 'admin') return <AdminDashboard activeTab={activeTab} />;
+    if (env === 'contacts') {
+      return <ContactsView user={user} scope={scope} onNavigate={(e, t, p) => { setEnv(e as Env); if (t !== undefined) setActiveTab(t); }} />;
+    }
+
+    if (env === 'phone') {
+      return <PhoneView user={user} />;
+    }
+    
+    if (env === 'messages') {
+      return <MessagesView user={user} />;
+    }
+    
+    if (env === 'dashboard' || env === 'admin') {
+      window.location.href = 'https://www.setx.io/dashboard';
+      return null;
+    }
     
     return <ComingSoon title="Unknown View" />;
   };
@@ -446,7 +469,6 @@ const App: React.FC = () => {
       <React.Suspense fallback={<div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><Loader2 className="animate-spin" size={48} color="var(--primary)" /></div>}>
         <MinimalLayout 
           renderView={renderView}
-          SearchOverlay={SearchOverlay}
           setActivePostId={setActivePostId}
           setActiveStoreId={setActiveStoreId}
           setActiveProfileId={setActiveProfileId}
@@ -465,7 +487,10 @@ const App: React.FC = () => {
             }}
           />
         )}
-        {user && <LocalActionAgent />}
+        <React.Suspense fallback={null}>
+          <StickyPlayer />
+          <MusicQueueModal />
+        </React.Suspense>
       </React.Suspense>
     );
   }
@@ -474,7 +499,6 @@ const App: React.FC = () => {
     <React.Suspense fallback={<div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><Loader2 className="animate-spin" size={48} color="var(--primary)" /></div>}>
       <ClassicLayout 
         renderView={renderView}
-        SearchOverlay={SearchOverlay}
         activePostId={activePostId}
         setActivePostId={setActivePostId}
         activeStoreId={activeStoreId}
@@ -499,9 +523,13 @@ const App: React.FC = () => {
           }}
         />
       )}
-      {user && <React.Suspense fallback={null}><LocalActionAgent /></React.Suspense>}
+      <React.Suspense fallback={null}>
+        <StickyPlayer />
+        <MusicQueueModal />
+      </React.Suspense>
     </React.Suspense>
   );
 };
 
 export default App;
+

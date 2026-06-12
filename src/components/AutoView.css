@@ -451,7 +451,7 @@
   box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
 
-[data-theme='dark'] .sell-car-btn {
+[data-theme*="dark"] .sell-car-btn {
   background: white;
   color: black;
 }

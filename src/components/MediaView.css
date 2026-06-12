@@ -6,10 +6,10 @@
   overflow: hidden;
 }
 
-[data-theme='dark'] .media-view-container {
+[data-theme*="dark"] .media-view-container {
   background: var(--bg);
 }
 
-[data-theme='light'] .media-view-container {
+[data-theme*="light"] .media-view-container {
   background: #f8fafc;
 }

@@ -17,9 +17,7 @@ export const FeedFilters: React.FC<FeedFiltersProps> = ({ activeCategory, onCate
   const [showRightArrow, setShowRightArrow] = useState(false);
 
   const categories = [
-    'Hot',
     'Everybody',
-    'AI Picks',
     'Following',
     'Civic',
     'Groups',

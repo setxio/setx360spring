@@ -275,7 +275,7 @@
   font-size: 1.1rem;
 }
 
-[data-theme='dark'] .price-tag {
+[data-theme*="dark"] .price-tag {
   background: #fff;
   color: #000;
 }
