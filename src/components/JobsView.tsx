@@ -179,6 +179,13 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
     (job as any).role_match?.includes(user?.role)
   );
 
+  const filteredJobs = jobs.filter((job: any) => 
+    !searchQuery || 
+    job.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (job.company_name || job.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.location?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleApply = (id: string) => {
     setApplyingId(id);
     recordSwipe(id, 'applied');
@@ -239,7 +246,7 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
       ) : (
         <>
 
-      {smartMatches.length > 0 && (
+      {!searchQuery && smartMatches.length > 0 && (
         <section className="jobs-section smart-match-section">
           <div className="section-header">
             <h2 className="smart-title"><Sparkles size={20} /> Smart Matches</h2>
@@ -247,7 +254,7 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
           </div>
 
           {swipeCardIdx >= smartMatches.length ? (
-            <div style={{ textAlign: 'center', padding: '32px 16px', background: 'var(--bg-card)', borderRadius: '20px', border: '1px dashed var(--border)' }}>
+            <div style={{ textAlign: 'center', padding: '32px 16px', background: 'var(--bg-soft)', borderRadius: '20px', border: '1px dashed var(--border)' }}>
               <Sparkles size={32} color="var(--primary)" style={{ marginBottom: '12px' }} />
               <h3 style={{ margin: '0 0 8px', color: 'var(--text)' }}>All caught up!</h3>
               <p style={{ margin: '0 0 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Check back later for new matches.</p>
@@ -287,7 +294,7 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
                     key={job.id}
                     style={{
                       position: 'absolute', width: '100%', borderRadius: '20px',
-                      background: 'var(--bg-card)', border: '1px solid var(--border)',
+                      background: 'var(--bg-soft)', border: '1px solid var(--border)',
                       padding: '20px', boxSizing: 'border-box',
                       boxShadow: isTop ? '0 12px 40px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.1)',
                       transform: `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotate}deg) scale(${scale})`,
@@ -329,6 +336,7 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
         </section>
       )}
 
+      {!searchQuery && (
       <section className="jobs-section">
         <div className="section-header">
           <h2>Trending Categories</h2>
@@ -341,15 +349,19 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
           ))}
         </div>
       </section>
+      )}
 
       <section className="jobs-section">
         <div className="section-header">
-          <h2>Recent Postings</h2>
-          <button className="see-all">View All</button>
+          <h2>{searchQuery ? `Search Results (${filteredJobs.length})` : 'Recent Postings'}</h2>
+          {!searchQuery && <button className="see-all">View All</button>}
         </div>
         <div className="jobs-list">
-          {jobs.map((job: any) => (
-            <div key={job.id} className="job-card glass">
+          {filteredJobs.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px', width: '100%' }}>No jobs found matching "{searchQuery}"</p>
+          ) : (
+            filteredJobs.map((job: any) => (
+              <div key={job.id} className="job-card glass">
               <div className="job-card-main">
                 <div className="company-logo">{job.logo || (job.company_name ? job.company_name.substring(0, 2).toUpperCase() : 'JB')}</div>
                 <div className="job-info">
@@ -369,7 +381,8 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
                 <span className="posted-date">{job.posted || 'Just now'}</span>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
       </>

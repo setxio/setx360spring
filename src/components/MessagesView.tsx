@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from './Avatar';
 import { EmptyState } from './EmptyState';
 import { useApp } from '../context/AppContext';
-import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus, Check, CheckCheck, Mic, MicOff, X, History, Users, MapPin, Briefcase, Landmark } from 'lucide-react';
+import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus, Check, CheckCheck, Mic, MicOff, X, History, Users, MapPin, Star, Landmark, Briefcase } from 'lucide-react';
 import './MessagesView.css';
 
 interface MessagesViewProps {
@@ -32,10 +32,11 @@ interface Conversation {
   role?: string | null;
   isInteraction?: boolean;
   isFriend?: boolean;
+  isProPlus?: boolean;
 }
 
 export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic'>('recent');
+  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic' | 'proplus'>('recent');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -415,6 +416,40 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
             }
           });
         }
+
+        // Fetch Connect connections
+        const { data: proReqs } = await supabase
+          .from('pro_connections')
+          .select('*')
+          .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+          .eq('status', 'accepted');
+
+        if (proReqs && proReqs.length > 0) {
+          const proIds = proReqs.map(req => req.requester_id === user.id ? req.recipient_id : req.requester_id);
+          const { data: proProfiles } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url')
+            .in('id', proIds);
+
+          if (proProfiles) {
+            proProfiles.forEach(proUser => {
+              const existingConv = convList.find(c => c.otherId === proUser.id);
+              if (!existingConv) {
+                convList.push({
+                  otherId: proUser.id,
+                  name: proUser.name || 'Pro Connection',
+                  avatar: proUser.avatar_url,
+                  lastMessage: 'Start a conversation...',
+                  lastTimestamp: '',
+                  unreadCount: 0,
+                  isProPlus: true
+                });
+              } else {
+                existingConv.isProPlus = true;
+              }
+            });
+          }
+        }
       }
 
       // Fetch businesses
@@ -531,6 +566,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     if (activeTab === 'interactions') return c.isInteraction;
     if (activeTab === 'businesses') return ['vendor', 'business', 'restaurant', 'store'].includes(c.role || '');
     if (activeTab === 'civic') return c.role === 'civic';
+    if (activeTab === 'proplus') return c.isProPlus;
     return true;
   });
 
@@ -563,6 +599,9 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
             </button>
             <button className={`tab-btn ${activeTab === 'civic' ? 'active' : ''}`} onClick={() => setActiveTab('civic')}>
               <Landmark size={14} /> <span style={{fontSize:'0.8rem'}}>Civic</span>
+            </button>
+            <button className={`tab-btn ${activeTab === 'proplus' ? 'active' : ''}`} onClick={() => setActiveTab('proplus')}>
+              <Star size={14} /> <span style={{fontSize:'0.8rem'}}>Connect</span>
             </button>
           </nav>
 

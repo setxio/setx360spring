@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabase';
 import type { User, StaffClearance } from '../types/user';
 
-export type Env = 'home' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages';
+export type Env = 'home' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages' | 'proplus' | 'crowdfund' | 'charity' | 'page_creator';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
@@ -21,6 +21,10 @@ export type Scope = 'national' | 'state' | 'county' | 'city';
 
 interface AppContextType {
   user: User | null;
+  userPages: import('../types/user').Page[];
+  setUserPages: (pages: import('../types/user').Page[]) => void;
+  activeContext: import('../types/user').Page | null; // null means personal user context
+  setActiveContext: (page: import('../types/user').Page | null) => void;
   env: Env;
   theme: Theme;
   scope: Scope;
@@ -138,6 +142,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [masterSearchQuery, setMasterSearchQuery] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+
+  // Pages Architecture State
+  const [userPages, setUserPages] = useState<import('../types/user').Page[]>([]);
+  const [activeContext, setActiveContext] = useState<import('../types/user').Page | null>(null);
 
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
 
@@ -341,6 +349,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userData.clearances = clearances;
     }
 
+    // Fetch user pages
+    const { data: pages } = await supabase
+      .from('pages')
+      .select('*')
+      .eq('owner_id', supabaseUser.id);
+
+    setUserPages(pages || []);
     setUser(userData);
     if (userData.translation_language) {
       setTranslationLanguage(userData.translation_language);
@@ -497,6 +512,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const value = {
     user,
+    userPages,
+    setUserPages,
+    activeContext,
+    setActiveContext,
     env,
     theme,
     scope,

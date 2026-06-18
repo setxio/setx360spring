@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
 import { ContactActionButtons } from './ContactActionButtons';
 import { Avatar } from './Avatar';
-import { Loader2, Search, ArrowLeft, History, Users, Briefcase, Landmark, MapPin, Smartphone, CheckCircle2 } from 'lucide-react';
+import { Loader2, Search, ArrowLeft, History, Users, Star, Landmark, MapPin, Smartphone, CheckCircle2, Briefcase } from 'lucide-react';
 import './ContactsPlatform.css';
 
 interface ContactsPlatformProps {
@@ -15,7 +15,7 @@ interface ContactsPlatformProps {
 
 export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hideHeader, hideRecentTab, hideTabs }) => {
   const { user } = useApp();
-  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic'>(hideRecentTab ? 'friends' : 'recent');
+  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic' | 'proplus'>(hideRecentTab ? 'friends' : 'recent');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Data states
@@ -24,6 +24,7 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
   const [interactions, setInteractions] = useState<any[]>([]);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [civicContacts, setCivicContacts] = useState<any[]>([]);
+  const [proConnections, setProConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
@@ -51,6 +52,27 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
           }
         } else {
           setFriends([]);
+        }
+      } else if (activeTab === 'proplus') {
+        if (user) {
+          const { data: proReqs } = await supabase
+            .from('pro_connections')
+            .select('*')
+            .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+            .eq('status', 'accepted');
+          
+          if (proReqs && proReqs.length > 0) {
+            const proIds = proReqs.map(req => req.requester_id === user.id ? req.recipient_id : req.requester_id);
+            const { data: proProfiles } = await supabase
+              .from('profiles')
+              .select('*')
+              .in('id', proIds);
+            setProConnections(proProfiles || []);
+          } else {
+            setProConnections([]);
+          }
+        } else {
+          setProConnections([]);
         }
       } else if (activeTab === 'businesses') {
         // Fetch businesses (profiles with specific roles)
@@ -210,6 +232,9 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
           <button className={`tab-btn ${activeTab === 'civic' ? 'active' : ''}`} onClick={() => setActiveTab('civic')}>
             <Landmark size={16} /> Civic
           </button>
+          <button className={`tab-btn ${activeTab === 'proplus' ? 'active' : ''}`} onClick={() => setActiveTab('proplus')}>
+            <Star size={16} /> Connect
+          </button>
         </nav>
         )}
         </header>
@@ -245,6 +270,9 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
               <button className={`tab-btn ${activeTab === 'civic' ? 'active' : ''}`} onClick={() => setActiveTab('civic')}>
                 <Landmark size={16} /> Civic
               </button>
+              <button className={`tab-btn ${activeTab === 'proplus' ? 'active' : ''}`} onClick={() => setActiveTab('proplus')}>
+                <Star size={16} /> Connect
+              </button>
             </nav>
           )}
         </div>
@@ -256,6 +284,7 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
         {activeTab === 'interactions' && renderList(interactions, 'interactions')}
         {activeTab === 'businesses' && renderList(businesses, 'businesses')}
         {activeTab === 'civic' && renderList(civicContacts, 'civic')}
+        {activeTab === 'proplus' && renderList(proConnections, 'proplus')}
       </main>
     </div>
   );

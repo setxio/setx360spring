@@ -25,3 +25,31 @@ export type User = {
 // Convenience type aliases
 export type UserRole = NonNullable<ProfileRow['role']>;
 export type StaffClearance = StaffClearanceRow;
+
+// --- Pages Architecture ---
+
+export type PageType = 'business' | 'artist' | 'non_profit' | 'venue' | 'official' | 'chamber' | 'media' | 'church';
+
+export interface Page {
+  id: string;
+  owner_id: string;
+  page_type: PageType;
+  name: string;
+  avatar_url?: string | null;
+  cover_url?: string | null;
+  about?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  website?: string | null;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PageMember {
+  id: string;
+  page_id: string;
+  user_id: string;
+  access_level: 'admin' | 'editor' | 'contributor';
+  created_at: string;
+}

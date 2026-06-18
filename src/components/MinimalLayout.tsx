@@ -118,7 +118,10 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
     setEnv, 
     toggleTheme, 
     logout, 
-    isSetxIO 
+    isSetxIO,
+    userPages,
+    activeContext,
+    setActiveContext
   } = useApp();
   const { currentSong, isPlaying, togglePlay, setIsPlaying } = useApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -128,6 +131,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isBugReportOpen, setIsBugReportOpen] = useState(false);
   const [isLocalSearchExpanded, setIsLocalSearchExpanded] = useState(false);
+  const [isContextDropdownOpen, setIsContextDropdownOpen] = useState(false);
   
 
 
@@ -491,7 +495,10 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
             </div>
 
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ position: 'relative', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none' }}>
+              <div 
+                onClick={() => { setEnv('home'); setActiveTab(0); }}
+                style={{ position: 'relative', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none' }}
+              >
                 <img src={getHeaderLogo()} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
               </div>
             </div>
@@ -566,8 +573,121 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
                   {unreadCount > 0 && <span style={{ position: 'absolute', top: -2, right: -2, background: 'red', color: 'white', fontSize: '10px', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadCount}</span>}
                 </div>
 
-                <Avatar url={user.avatar_url} name={user.name} size={36} />
-              </div>
+                {/* Context Switcher */}
+                <div style={{ position: 'relative' }}>
+                  <div 
+                    onClick={() => setIsContextDropdownOpen(!isContextDropdownOpen)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 8px', borderRadius: '24px', background: 'var(--glass-bg-strong)', border: '1px solid var(--border)', transition: 'all 0.2s' }}
+                  >
+                    <Avatar 
+                      url={activeContext ? activeContext.avatar_url : user.avatar_url} 
+                      name={activeContext ? activeContext.name : user.name} 
+                      size={32} 
+                    />
+                  </div>
+
+                  <AnimatePresence>
+                    {isContextDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 8px)',
+                          right: 0,
+                          width: '240px',
+                          background: 'var(--bg)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '16px',
+                          boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+                          overflow: 'hidden',
+                          zIndex: 1000
+                        }}
+                      >
+                        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Interacting As</span>
+                        </div>
+
+                        {/* Personal Account */}
+                        <div 
+                          onClick={() => { setActiveContext(null); setIsContextDropdownOpen(false); }}
+                          style={{
+                            padding: '12px 16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            cursor: 'pointer',
+                            background: activeContext === null ? 'var(--primary-light, rgba(112,0,244,0.1))' : 'transparent',
+                            transition: 'background 0.2s'
+                          }}
+                        >
+                          <Avatar url={user.avatar_url} name={user.name} size={32} />
+                          <div style={{ flex: 1, overflow: 'hidden' }}>
+                            <div style={{ fontWeight: activeContext === null ? 700 : 500, fontSize: '0.9rem', color: activeContext === null ? 'var(--primary)' : 'var(--text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Personal Account</div>
+                          </div>
+                          {activeContext === null && <CheckCircle size={16} color="var(--primary)" />}
+                        </div>
+
+                        {/* User Pages */}
+                        {userPages && userPages.length > 0 && (
+                          <div style={{ borderTop: '1px solid var(--border)' }}>
+                            <div style={{ padding: '8px 16px', background: 'var(--bg-muted)' }}>
+                              <span style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Your Pages</span>
+                            </div>
+                            {userPages.map(page => (
+                              <div 
+                                key={page.id}
+                                onClick={() => { setActiveContext(page); setIsContextDropdownOpen(false); }}
+                                style={{
+                                  padding: '12px 16px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  cursor: 'pointer',
+                                  background: activeContext?.id === page.id ? 'var(--primary-light, rgba(112,0,244,0.1))' : 'transparent',
+                                  transition: 'background 0.2s'
+                                }}
+                              >
+                                <Avatar url={page.avatar_url} name={page.name} size={32} />
+                                <div style={{ flex: 1, overflow: 'hidden' }}>
+                                  <div style={{ fontWeight: activeContext?.id === page.id ? 700 : 500, fontSize: '0.9rem', color: activeContext?.id === page.id ? 'var(--primary)' : 'var(--text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{page.name}</div>
+                                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{page.page_type.replace('_', ' ')}</div>
+                                </div>
+                                {activeContext?.id === page.id && <CheckCircle size={16} color="var(--primary)" />}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ padding: '8px', borderTop: '1px solid var(--border)' }}>
+                          <button 
+                            onClick={() => { setEnv('page_creator'); setActiveTab(0); setIsContextDropdownOpen(false); }}
+                            style={{
+                              width: '100%',
+                              padding: '10px',
+                              borderRadius: '8px',
+                              border: 'none',
+                              background: 'var(--bg-muted)',
+                              color: 'var(--text)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <Plus size={16} /> Create New Page
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
             )}
           </div>
         </header>

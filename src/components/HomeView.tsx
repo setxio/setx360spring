@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield, Settings, LogOut, Power } from 'lucide-react';
+import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield, Settings, LogOut, Power, HeartHandshake, HandHeart, Home, Landmark, Map, Utensils, Contact, Star, Trophy } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -54,10 +54,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
 
   // Folders definition
   const folderConfig = [
-    { id: 'social_comms', label: 'Social & Comms', items: ['social', 'discover', 'contacts', 'messages', 'phone'] },
+    { id: 'social_comms', label: 'Social & Comms', items: ['social', 'discover', 'contacts', 'messages', 'phone', 'proplus'] },
     { id: 'market_shops', label: 'Market & Shops', items: ['market', 'wallet', 'classifieds', 'jobs', 'gigs'] },
     { id: 'media_events', label: 'Media & Events', items: ['videos', 'music', 'events', 'eats', 'art', 'faith', 'sports'] },
-    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'care', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
+    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'care', 'crowdfund', 'charity', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
   ];
   // Swipe logic
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -115,13 +115,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'market', label: 'Market', icon: <Store size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #3b82f6, #0ea5e9)' },
     { id: 'discover', label: 'Discover', icon: <Compass size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #0ea5e9, #a855f7)' },
     { id: 'events', label: 'Events', icon: <Calendar size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f59e0b, #ef4444)' },
-    { id: 'eats', label: 'Eats', icon: <Zap size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f97316, #facc15)' },
-    { id: 'rides', label: 'Rides', icon: <Car size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #eab308, #f59e0b)' },
+    { id: 'eats', label: 'Eats', icon: <Utensils size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f97316, #facc15)' },
+    { id: 'rides', label: 'Rides', icon: <Map size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #eab308, #f59e0b)' },
     { id: 'services', label: 'Services', icon: <Wrench size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #64748b, #334155)' },
     { id: 'wallet', label: 'Wallet', icon: <Wallet size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #22d3ee, #0284c7)' },
     { id: 'classifieds', label: 'Classifieds', icon: <ShoppingBag size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #8b5cf6, #ec4899)' },
     { id: 'care', label: 'Care', icon: <Heart size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f43f5e, #be123c)' },
-    { id: 'homes', label: 'Homes', icon: <Building size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #2dd4bf, #0f766e)' },
+    { id: 'homes', label: 'Homes', icon: <Home size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #2dd4bf, #0f766e)' },
     { id: 'auto', label: 'Auto', icon: <Car size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #94a3b8, #475569)' },
     { id: 'travel', label: 'Travel', icon: <Plane size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #84cc16, #4d7c0f)' },
     { id: 'jobs', label: 'Jobs', icon: <Briefcase size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #3b82f6, #1e3a8a)' },
@@ -130,13 +130,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'music', label: 'Music', icon: <Music size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #8b5cf6, #5b21b6)' },
     { id: 'art', label: 'Art', icon: <Palette size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #d946ef, #a21caf)' },
     { id: 'faith', label: 'Faith', icon: <Book size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #a855f7, #6d28d9)' },
-    { id: 'sports', label: 'Sports', icon: <Activity size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #ea580c, #9a3412)' },
+    { id: 'sports', label: 'Sports', icon: <Trophy size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #ea580c, #9a3412)' },
     { id: 'news', label: 'News', icon: <Newspaper size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #60a5fa, #1d4ed8)' },
-    { id: 'civics', label: 'Civics', icon: <Building size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #cbd5e1, #64748b)' },
+    { id: 'civics', label: 'Civics', icon: <Landmark size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #cbd5e1, #64748b)' },
     { id: 'phone', label: 'Phone', icon: <Phone size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
-    { id: 'contacts', label: 'Contacts', icon: <Users size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #fb923c, #c2410c)' },
+    { id: 'contacts', label: 'Contacts', icon: <Contact size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #fb923c, #c2410c)' },
     { id: 'messages', label: 'Messages', icon: <MessageCircle size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f472b6, #db2777)' },
+    { id: 'proplus', label: 'Connect', icon: <Star size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #0284c7, #0ea5e9)' },
+    { id: 'page_creator', label: 'Create Page', icon: <LayoutGrid size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #10b981, #059669)' },
     { id: 'admin_messages', label: 'Admin Msgs', icon: <MessageSquare size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f43f5e, #be123c)' },
+    { id: 'crowdfund', label: 'CrowdFund', icon: <HeartHandshake size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #10b981, #047857)' },
+    { id: 'charity', label: 'Charities', icon: <HandHeart size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' },
     { id: 'me', label: 'Me Portal', icon: <User size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)' },
     { id: 'settings', label: 'Settings', icon: <Settings size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #64748b, #475569)' },
     { id: 'logout', label: 'Sign Out', icon: <Power size={32} strokeWidth={1.5} color="#ef4444" />, gradient: 'linear-gradient(135deg, #1f2937, #000000)' }
@@ -607,15 +611,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
         transition={{ duration: 0.4 }}
       >
         <div className="home-header">
-          <div style={{ width: 40 }} /> {/* Spacer to balance the toggle and center logo */}
+          <div style={{ flex: 1 }} /> {/* Flexible spacer to balance the right controls */}
           
-          <div className="home-logo-wrapper">
+          <div className="home-logo-wrapper" style={{ flex: 'none' }}>
             <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxShadow: theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none' }}>
               <img src={getHeaderLogo()} alt="SETX 360 Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', zIndex: 10 }}>
+          <div style={{ flex: 1, display: 'flex', gap: '8px', zIndex: 10, justifyContent: 'flex-end' }}>
             {user?.role === 'admin' && (
               <button 
                 onClick={() => onNavigate('admin')}

@@ -31,6 +31,7 @@ const GigsView         = lazy(() => import('./components/GigsView').then(m => ({
 const RidesView        = lazy(() => import('./components/RidesView').then(m => ({ default: m.RidesView })));
 const ClassifiedsView  = lazy(() => import('./components/ClassifiedsView').then(m => ({ default: m.ClassifiedsView })));
 const SavedView        = lazy(() => import('./components/SavedView').then(m => ({ default: m.SavedView })));
+const ProPlusView      = lazy(() => import('./components/ProPlusView').then(m => ({ default: m.ProPlusView })));
 const ProfilePage      = lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const SettingsPage     = lazy(() => import('./components/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const EditProfilePage  = lazy(() => import('./components/EditProfilePage').then(m => ({ default: m.EditProfilePage })));
@@ -62,6 +63,7 @@ const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
 const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
+const PageCreatorView  = lazy(() => import('./components/PageCreatorView').then(m => ({ default: m.PageCreatorView })));
 const AppsView         = lazy(() => import('./components/apps/AppsView').then(m => ({ default: m.AppsView })));
 const ContactsView     = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const PhoneView        = lazy(() => import('./components/PhoneView').then(m => ({ default: m.PhoneView })));
@@ -69,6 +71,9 @@ const AdminMessagesView = lazy(() => import('./components/AdminMessagesView').th
 const Overview         = lazy(() => import('./components/Overview').then(m => ({ default: m.Overview })));
 const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
+
+const CharitiesView    = lazy(() => import('./components/CharitiesView').then(m => ({ default: m.CharitiesView })));
+const CrowdFundView    = lazy(() => import('./components/CrowdFundView').then(m => ({ default: m.CrowdFundView })));
 
 const ProductDetailsModal = lazy(() => import('./components/ProductDetailsModal').then(m => ({ default: m.ProductDetailsModal })));
 const LocalActionAgent    = lazy(() => import('./components/LocalActionAgent').then(m => ({ default: m.LocalActionAgent })));
@@ -273,6 +278,10 @@ const App: React.FC = () => {
       return <LabsView setActiveStoreId={setActiveStoreId} />;
     }
 
+    if (env === 'page_creator') {
+      return <PageCreatorView />;
+    }
+
     // Existing authenticated views
     if (!user) return null; // Should be handled by parent, but for safety
     
@@ -427,12 +436,15 @@ const App: React.FC = () => {
     if (env === 'jobs') return <JobsView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'gigs') return <GigsView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'classifieds') return <ClassifiedsView />;
+    if (env === 'proplus') return <ProPlusView user={user} scope={scope} />;
     if (env === 'videos') return <MediaView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'music') return <MusicView user={user} scope={scope} />;
     if (env === 'art') return <ArtGalleryView user={user} scope={scope} />;
     if (env === 'faith') return <FaithView user={user} scope={scope} />;
     if (env === 'sports') return <SportsView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'news') return <WeatherNewsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'crowdfund') return <CrowdFundView />;
+    if (env === 'charity') return <CharitiesView />;
 
     if (env === 'civics') {
       if (user?.role !== 'admin') { setEnv('discover'); return null; }

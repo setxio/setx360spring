@@ -27,6 +27,9 @@
   --secondary: var(--social-secondary);
   --bg: #f8f8ff;
   --bg-soft: var(--white);
+  --bg-card: var(--bg-soft);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-strong: rgba(255, 255, 255, 0.85);
   --text: var(--gray-900);
   --text-muted: var(--gray-500);
   --border: var(--gray-200);
@@ -57,6 +60,9 @@
 [data-theme*="dark"] {
   --bg: #0f172a;
   --bg-soft: #1e293b;
+  --bg-card: var(--bg-soft);
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-bg-strong: rgba(15, 23, 42, 0.85);
   --text: #f8fafc;
   --text-muted: #94a3b8;
   --border: #334155;
@@ -719,3 +725,5 @@ body {
 #google_translate_element {
   display: none !important;
 }
+. s p i n   {   a n i m a t i o n :   s p i n   1 s   l i n e a r   i n f i n i t e ;   }   @ k e y f r a m e s   s p i n   {   1 0 0 %   {   t r a n s f o r m :   r o t a t e ( 3 6 0 d e g ) ;   }   }  
+ 
