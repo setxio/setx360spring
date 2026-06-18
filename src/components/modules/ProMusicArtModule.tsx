@@ -113,6 +113,7 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
       if (error) throw error;
       setIsAlbumModalOpen(false);
       setAlbumTitle(''); setAlbumCoverUrl(''); setAlbumCoverFile(null);
+      setActiveTab('albums');
       fetchData();
     } catch (err: any) {
       alert('Error saving album: ' + err.message);
@@ -200,6 +201,7 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
       setTrackTitle(''); setTrackDesc(''); setTrackMediaUrl(''); setTrackMediaFile(null);
       setTrackCoverUrl(''); setTrackCoverFile(null); setTrackGenre(''); setTrackMoods('');
       setTrackExplicit(false); setTrackNumber(1);
+      setActiveTab('tracks');
       setTimeout(() => setUploadProgress(0), 500);
       fetchData();
     } catch (err: any) {
