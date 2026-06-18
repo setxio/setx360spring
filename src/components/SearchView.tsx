@@ -15,8 +15,8 @@ interface SearchViewProps {
 }
 
 export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate }) => {
-  const { theme, isSetxIO, toggleTheme } = useApp();
-  const [query, setQuery] = useState('');
+  const { theme, isSetxIO, toggleTheme, masterSearchQuery, setMasterSearchQuery } = useApp();
+  const [query, setQuery] = useState(masterSearchQuery || '');
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [results, setResults] = useState<any>(null);
@@ -38,9 +38,18 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
     return theme.includes('light') ? '/logo-setx-blue.png' : '/logo-setx-transparent.png';
   };
 
-  const handleSearchSubmit = async (e?: React.FormEvent) => {
+  useEffect(() => {
+    if (masterSearchQuery) {
+      setQuery(masterSearchQuery);
+      handleSearchSubmit(undefined, masterSearchQuery);
+      setMasterSearchQuery(''); // Clear it so it doesn't fire repeatedly
+    }
+  }, [masterSearchQuery]);
+
+  const handleSearchSubmit = async (e?: React.FormEvent, forceQuery?: string) => {
     if (e) e.preventDefault();
-    if (!query.trim()) {
+    const activeQuery = forceQuery !== undefined ? forceQuery : query;
+    if (!activeQuery.trim()) {
       setHasSearched(false);
       return;
     }
@@ -56,7 +65,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
       const { data, error } = await supabase.functions.invoke('semantic-search', {
         body: {
-          query: query,
+          query: activeQuery,
           scope_type: scope,
           scope_value: scopeValue
         }

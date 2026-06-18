@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabase';
 import type { User, StaffClearance } from '../types/user';
 
-export type Env = 'home' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds';
+export type Env = 'home' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
@@ -28,8 +28,10 @@ interface AppContextType {
   unreadCount: number;
   isLoading: boolean;
   localSearchQuery: string;
+  masterSearchQuery: string;
   onlineUsers: Set<string>;
   setLocalSearchQuery: (query: string) => void;
+  setMasterSearchQuery: (query: string) => void;
   setEnv: (env: Env) => void;
   setTheme: (theme: Theme) => void;
   setScope: (scope: Scope) => void;
@@ -64,6 +66,8 @@ interface AppContextType {
   setMusicActiveArtist: (a: any | null) => void;
   musicActivePlaylist: any | null;
   setMusicActivePlaylist: (p: any | null) => void;
+  translationLanguage: string;
+  setTranslationLanguage: (lang: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -105,7 +109,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return 'civic-classic-dark';
   });
-  const [layout, setLayoutState] = useState<Layout>(() => (localStorage.getItem('ecity_layout') as Layout) || 'minimal');
+  const [layout, setLayoutState] = useState<Layout>(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ecity_layout', 'minimal');
+    }
+    return 'minimal';
+  });
   
   
   const [activeTab, setActiveTabState] = useState(() => {
@@ -127,6 +136,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [masterSearchQuery, setMasterSearchQuery] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
@@ -150,6 +160,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [musicIsSearchActive, setMusicIsSearchActive] = useState(false);
   const [musicActiveArtist, setMusicActiveArtist] = useState<any | null>(null);
   const [musicActivePlaylist, setMusicActivePlaylist] = useState<any | null>(null);
+
+  const [translationLanguage, setTranslationLanguageState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ecity_translation_language') || 'en';
+    }
+    return 'en';
+  });
+
+  const setTranslationLanguage = (val: string) => {
+    setTranslationLanguageState(val);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ecity_translation_language', val);
+      
+      const domain = window.location.hostname;
+      // Clear old cookies to be safe
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${domain}; path=/;`;
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${domain}; path=/;`;
+
+      if (val !== 'en') {
+        const cookieVal = `/en/${val}`;
+        document.cookie = `googtrans=${cookieVal}; path=/`;
+        document.cookie = `googtrans=${cookieVal}; domain=${domain}; path=/`;
+        document.cookie = `googtrans=${cookieVal}; domain=.${domain}; path=/`;
+      }
+    }
+  };
 
   const playSong = useCallback((song: any, contextQueue?: any[]) => {
     setCurrentSong(song);
@@ -290,6 +327,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       birth_month: profile?.birth_month || supabaseUser.user_metadata?.birth_month,
       birth_day: profile?.birth_day || supabaseUser.user_metadata?.birth_day,
       birth_year: profile?.birth_year || supabaseUser.user_metadata?.birth_year,
+      translation_language: profile?.translation_language || supabaseUser.user_metadata?.translation_language || 'en',
       clearances: [] as StaffClearance[]
     };
 
@@ -304,13 +342,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     setUser(userData);
+    if (userData.translation_language) {
+      setTranslationLanguage(userData.translation_language);
+    }
     
     // Auto-switch env if just logged in or if no environment is set
     const currentEnv = localStorage.getItem('ecity_env');
     const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const envParam = urlParams?.get('env');
     
-    if (isSignInEvent) {
+    const isAuthenticatingFromPublic = currentEnv === 'market' || currentEnv === 'search' || !currentEnv;
+
+    if (isSignInEvent && isAuthenticatingFromPublic && !envParam) {
       if (userData.email === 'setxplatform@gmail.com' || userData.role === 'admin') {
         setEnv('admin');
         setActiveTab(0);
@@ -461,8 +504,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     unreadCount,
     isLoading,
     localSearchQuery,
+    masterSearchQuery,
     onlineUsers,
     setLocalSearchQuery,
+    setMasterSearchQuery,
     setEnv,
     setTheme,
     setScope,
@@ -500,7 +545,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     musicActiveArtist,
     setMusicActiveArtist,
     musicActivePlaylist,
-    setMusicActivePlaylist
+    setMusicActivePlaylist,
+    translationLanguage,
+    setTranslationLanguage
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield } from 'lucide-react';
+import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield, Settings, LogOut, Power } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -20,7 +20,7 @@ interface HomeViewProps {
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) => {
-  const { theme, toggleTheme } = useApp();
+  const { theme, toggleTheme, logout } = useApp();
   const [query, setQuery] = useState('');
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   // Search state
@@ -43,8 +43,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
 
-  const [showAlertWidget, setShowAlertWidget] = useState(true);
-  const [showLiveWidget, setShowLiveWidget] = useState(true);
+  const [showAlertWidget, setShowAlertWidget] = useState(false);
+  const [showLiveWidget, setShowLiveWidget] = useState(false);
+  const [adminBroadcasts, setAdminBroadcasts] = useState<any[]>([]);
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   const { currentSong, isPlaying, togglePlay, setIsQueueModalOpen } = useApp();
 
@@ -55,7 +57,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'social_comms', label: 'Social & Comms', items: ['social', 'discover', 'contacts', 'messages', 'phone'] },
     { id: 'market_shops', label: 'Market & Shops', items: ['market', 'wallet', 'classifieds', 'jobs', 'gigs'] },
     { id: 'media_events', label: 'Media & Events', items: ['videos', 'music', 'events', 'eats', 'art', 'faith', 'sports'] },
-    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'care', 'homes', 'auto', 'travel', 'news', 'civics'] }
+    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'care', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
   ];
   // Swipe logic
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -133,12 +135,21 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'civics', label: 'Civics', icon: <Building size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #cbd5e1, #64748b)' },
     { id: 'phone', label: 'Phone', icon: <Phone size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
     { id: 'contacts', label: 'Contacts', icon: <Users size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #fb923c, #c2410c)' },
-    { id: 'messages', label: 'Messages', icon: <MessageCircle size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f472b6, #db2777)' }
+    { id: 'messages', label: 'Messages', icon: <MessageCircle size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f472b6, #db2777)' },
+    { id: 'admin_messages', label: 'Admin Msgs', icon: <MessageSquare size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f43f5e, #be123c)' },
+    { id: 'me', label: 'Me Portal', icon: <User size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)' },
+    { id: 'settings', label: 'Settings', icon: <Settings size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #64748b, #475569)' },
+    { id: 'logout', label: 'Sign Out', icon: <Power size={32} strokeWidth={1.5} color="#ef4444" />, gradient: 'linear-gradient(135deg, #1f2937, #000000)' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [sortedPlatforms, setSortedPlatforms] = useState(defaultPlatforms);
 
   useEffect(() => {
+    // Demo Modal
+    if (!localStorage.getItem('setx_demo_seen')) {
+      setShowDemoModal(true);
+    }
+
     // Load app usage stats to sort platforms
     const usageStr = localStorage.getItem('setx_app_usage');
     if (usageStr) {
@@ -158,6 +169,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
       }
     }
 
+    // Fetch Admin Broadcasts
+    const fetchBroadcasts = async () => {
+      const { data } = await supabase.from('admin_broadcasts').select('*').eq('active', true).order('created_at', { ascending: false });
+      if (data && data.length > 0) {
+        setAdminBroadcasts(data);
+        setShowAlertWidget(data.some(b => b.type === 'alert'));
+        setShowLiveWidget(data.some(b => b.type === 'info'));
+      }
+    };
+    fetchBroadcasts();
+
     // Fetch Weather
     const loadWeather = async () => {
       try {
@@ -168,7 +190,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
       }
     };
     loadWeather();
-  }, []);
+  }, [theme]);
 
   const handleAppClick = (id: string) => {
     // Increment usage
@@ -183,7 +205,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     localStorage.setItem('setx_app_usage', JSON.stringify(usage));
     
     // Navigate
-    onNavigate(id);
+    if (id === 'logout') {
+      // logout is already imported via useApp() at the top of the component
+      logout();
+      return;
+    }
+
+    if (id === 'settings') {
+      onNavigate('me', 6);
+    } else {
+      onNavigate(id);
+    }
   };
 
   const handleSearchSubmit = async (e?: React.FormEvent) => {
@@ -542,6 +574,31 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
       onTouchEnd={onTouchEnd}
     >
 
+      {/* Demo Mode Modal */}
+      {showDemoModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '24px', maxWidth: '400px', width: '90%', textAlign: 'center', border: '1px solid var(--border)' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <Compass size={32} color="var(--primary)" />
+            </div>
+            <h2 style={{ margin: '0 0 16px', fontSize: '1.5rem', fontWeight: 900 }}>Welcome to SETX 360</h2>
+            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '32px' }}>
+              This environment is for <strong>demo purposes only</strong>. Currently, <strong style={{ color: 'var(--text)' }}>Social</strong> and <strong style={{ color: 'var(--text)' }}>Classifieds</strong> are the only two apps that fully work.
+            </p>
+            <button 
+              className="primary-btn" 
+              onClick={() => {
+                localStorage.setItem('setx_demo_seen', 'true');
+                setShowDemoModal(false);
+              }}
+              style={{ width: '100%', padding: '16px' }}
+            >
+              Got it, let's explore!
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="home-top-bar-strobe"></div>
       <motion.div 
         className="home-view-content"
@@ -553,8 +610,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
           <div style={{ width: 40 }} /> {/* Spacer to balance the toggle and center logo */}
           
           <div className="home-logo-wrapper">
-            <div className="home-logo-glow-ring">
-              <img src={getHeaderLogo()} alt="SETX 360 Logo" className="home-main-logo" />
+            <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxShadow: theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none' }}>
+              <img src={getHeaderLogo()} alt="SETX 360 Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
             </div>
           </div>
 
@@ -570,7 +627,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
             )}
             
             <button 
-              onClick={() => onNavigate('social', 6)}
+              onClick={() => onNavigate('notifications')}
               className="home-theme-toggle"
               title="Notifications"
             >
@@ -662,53 +719,56 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
         </div>
 
         {/* SECRET WIDGETS */}
-        <AnimatePresence>
-          {showAlertWidget && (
-            <motion.div 
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: (showAlertWidget || showLiveWidget) ? '24px' : '0' }}>
+          {adminBroadcasts.filter(b => b.type === 'alert').map((b, idx) => (
+            <motion.div
+              key={b.id || idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               className="secret-widget alert-widget"
-              initial={{ height: 0, opacity: 0, marginTop: 0 }}
-              animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
-              exit={{ height: 0, opacity: 0, marginTop: 0 }}
-              style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '16px', border: '1px solid rgba(239, 68, 68, 0.2)', position: 'relative', overflow: 'hidden' }}
+              style={{ position: 'relative', overflow: 'hidden', padding: '24px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.05))', border: '1px solid rgba(239, 68, 68, 0.2)', boxShadow: '0 8px 32px rgba(239,68,68,0.1)' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '50%' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(239, 68, 68, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <AlertTriangle size={24} color="#ef4444" />
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#ef4444' }}>Severe Thunderstorm Warning</h4>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Jefferson County • Until 6:00 PM</p>
+                  <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: '#fca5a5', fontWeight: 800 }}>System Alert</h3>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text)', opacity: 0.9, lineHeight: 1.5 }}>
+                    {b.message}
+                  </p>
                 </div>
               </div>
-              <button onClick={() => setShowAlertWidget(false)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-                <X size={16} />
-              </button>
             </motion.div>
-          )}
+          ))}
 
-          {showLiveWidget && (
-            <motion.div 
+          {adminBroadcasts.filter(b => b.type === 'info').map((b, idx) => (
+            <motion.div
+              key={b.id || idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
               className="secret-widget live-widget"
-              initial={{ height: 0, opacity: 0, marginTop: 0 }}
-              animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
-              exit={{ height: 0, opacity: 0, marginTop: 0 }}
-              style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '16px', border: '1px solid rgba(59, 130, 246, 0.2)', position: 'relative', overflow: 'hidden' }}
+              style={{ position: 'relative', overflow: 'hidden', padding: '24px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.05))', border: '1px solid rgba(59, 130, 246, 0.2)', boxShadow: '0 8px 32px rgba(59,130,246,0.1)' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '10px', borderRadius: '50%' }}>
-                  <ShoppingBag size={24} color="#3b82f6" />
+              <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '12px' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#60a5fa', boxShadow: '0 0 10px #60a5fa', animation: 'pulse 2s infinite' }} />
+                <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '1px' }}>Broadcast</span>
+              </div>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Bell size={24} color="#60a5fa" />
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#3b82f6' }}>Order Out for Delivery</h4>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>HEB Curbside • Arriving in 15 mins</p>
+                  <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: '#93c5fd', fontWeight: 800, paddingRight: '60px' }}>Notice</h3>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text)', opacity: 0.9, lineHeight: 1.5 }}>
+                    {b.message}
+                  </p>
                 </div>
               </div>
-              <button onClick={() => setShowLiveWidget(false)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-                <X size={16} />
-              </button>
             </motion.div>
-          )}
-        </AnimatePresence>
+          ))}
+        </div>
 
         {/* FOLDERS */}
         <div className={`folder-grid ${(showAlertWidget || showLiveWidget) ? 'hide-folder-labels' : ''}`} style={{ marginTop: '32px' }}>

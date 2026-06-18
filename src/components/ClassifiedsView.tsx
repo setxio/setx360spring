@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Search, MapPin, Plus, Filter, Camera, MessageCircle, Clock, ShieldCheck, X, Heart, ChevronLeft, ChevronRight, Send, Image as ImageIcon, Map as MapIcon, Grid, Edit, Trash2, Calendar, CheckCircle, Store, Car, Home, ChevronDown, Eye, Flag, AlertTriangle
+  Search, MapPin, Plus, Filter, Camera, MessageCircle, Clock, ShieldCheck, X, Heart, ChevronLeft, ChevronRight, Send, Image as ImageIcon, Map as MapIcon, Grid, Edit, Trash2, Calendar, CheckCircle, Store, Car, Home, ChevronDown, Eye, Flag, AlertTriangle, Navigation
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
@@ -83,7 +83,7 @@ type PostType = 'item' | 'vehicle' | 'real_estate' | 'event';
 type MainTab = 'items' | 'vehicles' | 'real_estate' | 'map' | 'my_stuff' | 'saved';
 
 export const ClassifiedsView: React.FC = () => {
-  const { user } = useApp();
+  const { user, theme } = useApp();
   const [activeTab, setActiveTab] = useState<MainTab>('items');
   
   // Data State
@@ -109,6 +109,17 @@ export const ClassifiedsView: React.FC = () => {
       setActiveTab(e.detail);
     };
     window.addEventListener('changeClassifiedsTab', handleTabChange);
+    
+    const pending = localStorage.getItem('pendingClassifiedItem');
+    if (pending) {
+      try {
+        const item = JSON.parse(pending);
+        setSelectedItem(item);
+        setActiveTab('items');
+        localStorage.removeItem('pendingClassifiedItem');
+      } catch (err) {}
+    }
+    
     return () => window.removeEventListener('changeClassifiedsTab', handleTabChange);
   }, []);
   const [postType, setPostType] = useState<PostType>('item');
@@ -359,9 +370,21 @@ export const ClassifiedsView: React.FC = () => {
     fetchData();
   };
 
-  const handleSendInlineChat = () => {
-    if (!chatMessage.trim()) return;
-    showToast(`Message sent to ${chatSeller?.name}! They will reply in your Messages tab.`);
+  const handleSendInlineChat = async () => {
+    if (!chatMessage.trim() || !chatSeller || !user) return;
+    
+    try {
+      const { error } = await supabase.from('messages').insert({
+        sender_id: user.id,
+        receiver_id: chatSeller.id,
+        content: `[Classifieds] ${selectedItem?.title || selectedEvent?.title || 'Inquiry'}\n${chatMessage}`
+      });
+      if (error) throw error;
+      showToast(`Message sent to ${chatSeller.name}! They will reply in your Messages tab.`);
+    } catch (err: any) {
+      showToast(err.message);
+    }
+    
     setChatSeller(null);
     setChatMessage('');
   };
@@ -669,7 +692,10 @@ export const ClassifiedsView: React.FC = () => {
                   <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Tap map to pin exact location</div>
                   <div style={{ height: 200, borderRadius: 8, overflow: 'hidden' }}>
                     <MapContainer center={[postLat, postLng]} zoom={11} style={{ height: '100%', width: '100%' }}>
-                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                        url={`https://{s}.basemaps.cartocdn.com/${theme?.includes('light') ? 'light_all' : 'dark_all'}/{z}/{x}/{y}{r}.png`}
+                      />
                       <MapUpdater lat={postLat} lng={postLng} />
                       <LocationPicker />
                     </MapContainer>
@@ -831,7 +857,10 @@ export const ClassifiedsView: React.FC = () => {
           <div className="post-modal glass" onClick={e => e.stopPropagation()} style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
             <div style={{ height: 200, position: 'relative' }}>
               <MapContainer center={[selectedEvent.latitude, selectedEvent.longitude]} zoom={14} style={{ height: '100%', width: '100%' }}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  url={`https://{s}.basemaps.cartocdn.com/${theme?.includes('light') ? 'light_all' : 'dark_all'}/{z}/{x}/{y}{r}.png`}
+                />
                 <Marker position={[selectedEvent.latitude, selectedEvent.longitude]} icon={eventIcon} />
               </MapContainer>
               <button onClick={() => setSelectedEvent(null)} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', padding: 8, cursor: 'pointer', zIndex: 1000 }}><X size={20} color="#fff" /></button>
@@ -868,7 +897,7 @@ export const ClassifiedsView: React.FC = () => {
                   <h3 style={{ margin: 0 }}>Event Catalog</h3>
                   {user?.id === selectedEvent.user_id && (
                     <button 
-                      onClick={() => { setSelectedEventId(selectedEvent.id); setPostType('item'); setIsPosting(true); }}
+                      onClick={() => { setSelectedEvent(null); setSelectedEventId(selectedEvent.id); setPostType('item'); setIsPosting(true); }}
                       style={{ background: 'var(--brand-color)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: '0.85rem', cursor: 'pointer' }}
                     >
                       + Add Item
@@ -1039,16 +1068,24 @@ export const ClassifiedsView: React.FC = () => {
           mapViewType === 'map' ? (
             <div style={{ height: '100%', borderRadius: 12, overflow: 'hidden' }}>
               <MapContainer center={[30.0802, -94.1266]} zoom={10} style={{ height: '100%', width: '100%' }}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  url={`https://{s}.basemaps.cartocdn.com/${theme?.includes('light') ? 'light_all' : 'dark_all'}/{z}/{x}/{y}{r}.png`}
+                />
                 {mapFilter === 'events' ? events.map(ev => (
                   <Marker key={ev.id} position={[ev.latitude, ev.longitude]} icon={eventIcon}>
                     <Popup>
                       <div style={{ textAlign: 'center' }}>
                         <h3 style={{ margin: '0 0 4px' }}>{ev.title}</h3>
                         <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 8 }}>{new Date(ev.start_date).toLocaleDateString()}</div>
-                        <button onClick={() => { setSelectedEvent(ev); fetchEventItems(ev.id); }} style={{ background: 'var(--brand-color)', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 4, cursor: 'pointer' }}>
-                          View Details
-                        </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <button onClick={() => { setSelectedEvent(ev); fetchEventItems(ev.id); }} style={{ background: 'var(--brand-color)', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 4, cursor: 'pointer', width: '100%' }}>
+                            View Details
+                          </button>
+                          <a href={`https://www.google.com/maps/search/?api=1&query=${ev.latitude},${ev.longitude}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: 'transparent', color: 'var(--brand-color)', border: '1px solid var(--brand-color)', padding: '6px 12px', borderRadius: 4, textDecoration: 'none', fontSize: '0.85rem' }}>
+                            <Navigation size={14} /> Get Directions
+                          </a>
+                        </div>
                       </div>
                     </Popup>
                   </Marker>

@@ -65,6 +65,7 @@ const LabsView         = lazy(() => import('./components/LabsView').then(m => ({
 const AppsView         = lazy(() => import('./components/apps/AppsView').then(m => ({ default: m.AppsView })));
 const ContactsView     = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const PhoneView        = lazy(() => import('./components/PhoneView').then(m => ({ default: m.PhoneView })));
+const AdminMessagesView = lazy(() => import('./components/AdminMessagesView').then(m => ({ default: m.AdminMessagesView })));
 const Overview         = lazy(() => import('./components/Overview').then(m => ({ default: m.Overview })));
 const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
@@ -214,7 +215,15 @@ const App: React.FC = () => {
     const handleNavigateToProduct = (e: CustomEvent) => {
       setActiveProduct(e.detail);
     };
+    const handleOpenClassified = (e: CustomEvent) => {
+      localStorage.setItem('pendingClassifiedItem', JSON.stringify(e.detail));
+      if (env !== 'social' && env !== 'classifieds') {
+        setEnv('social');
+      }
+      setActiveTab(1);
+    };
     window.addEventListener('NAVIGATE_TO_PRODUCT', handleNavigateToProduct as EventListener);
+    window.addEventListener('OPEN_CLASSIFIED_ITEM', handleOpenClassified as EventListener);
 
     // Global Flash Liquidation Realtime Listener
     const flashChannel = supabase
@@ -236,9 +245,10 @@ const App: React.FC = () => {
 
     return () => {
       window.removeEventListener('NAVIGATE_TO_PRODUCT', handleNavigateToProduct as EventListener);
+      window.removeEventListener('OPEN_CLASSIFIED_ITEM', handleOpenClassified as EventListener);
       supabase.removeChannel(flashChannel);
     };
-  }, [info]);
+  }, [info, env, setActiveTab, setEnv]);
 
 
 
@@ -344,9 +354,9 @@ const App: React.FC = () => {
     }
 
     if (env === 'home') {
-      return <HomeView user={user} scope={scope} onNavigate={(envStr) => {
+      return <HomeView user={user} scope={scope} onNavigate={(envStr, tab) => {
         setEnv(envStr as any);
-        setActiveTab(0);
+        setActiveTab(tab ?? 0);
       }} />;
     }
 
@@ -376,7 +386,7 @@ const App: React.FC = () => {
           showFAB={false}
         />;
         case 1: return <ClassifiedsView />;
-        case 2: return <UserDirectory scope={scope} />;
+        case 2: return <UserDirectory scope={scope} onNavigateToProfile={setActiveProfileId} />;
         case 3: return <GroupDirectory scope={scope} onNavigateToGroup={setActiveGroupId} />;
         case 4: return <MessagesView user={user} />;
         case 5: return <SavedView />;
@@ -445,11 +455,19 @@ const App: React.FC = () => {
       return <MessagesView user={user} />;
     }
     
+    if (env === 'notifications') {
+      return <NotificationsView user={user} />;
+    }
+    
     if (env === 'dashboard' || env === 'admin') {
       window.location.href = 'https://www.setx.io/dashboard';
       return null;
     }
     
+    if (env === 'admin_messages') {
+      return <AdminMessagesView />;
+    }
+
     return <ComingSoon title="Unknown View" />;
   };
 

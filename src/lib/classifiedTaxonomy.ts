@@ -86,6 +86,14 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
           { name: 'Tractors', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'hours', label: 'Hours', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Construction (Skid Steers, etc)', filters: [{ id: 'make', label: 'Make', type: 'text' }, { id: 'type', label: 'Equipment Type', type: 'text' }, { id: 'hours', label: 'Hours', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
+      },
+      {
+        name: 'Automotive Accessories',
+        types: [
+          { name: 'Car Audio & Electronics', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Exterior Parts', filters: [{ id: 'part_type', label: 'Part Type', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Interior Accessories', filters: [{ id: 'part_type', label: 'Part Type', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
       }
     ]
   },
@@ -198,6 +206,14 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
         types: [
           { name: 'Televisions', filters: [{ id: 'size', label: 'Screen Size', type: 'text' }, { id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Home Audio / Soundbars', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      },
+      {
+        name: 'Audio & Headphones',
+        types: [
+          { name: 'Speakers & Subwoofers', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Headphones & Earbuds', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'type', label: 'Over-Ear/In-Ear', type: 'select', options: ['Over-Ear', 'In-Ear', 'On-Ear'] }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Receivers & Amplifiers', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       },
       {
@@ -458,6 +474,37 @@ export const CATEGORY_TAXONOMY: CategoryConfig[] = [
           { name: 'Baseball & Softball', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Basketball', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
           { name: 'Football', filters: [{ id: 'brand', label: 'Brand', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
+        ]
+      }
+    ]
+  },
+  {
+    name: 'Event Ticketing & Supplies',
+    subcategories: [
+      {
+        name: 'Tickets & Passes',
+        types: [
+          { name: 'Concerts & Live Music', filters: [{ id: 'date', label: 'Event Date', type: 'text' }, { id: 'seat', label: 'Seat/Section', type: 'text' }] },
+          { name: 'Sports Tickets', filters: [{ id: 'date', label: 'Event Date', type: 'text' }, { id: 'seat', label: 'Seat/Section', type: 'text' }] },
+          { name: 'Festivals & Fairs', filters: [{ id: 'date', label: 'Event Date', type: 'text' }] },
+          { name: 'Other Tickets', filters: [{ id: 'date', label: 'Event Date', type: 'text' }] }
+        ]
+      },
+      {
+        name: 'Vendor & Booth Space',
+        types: [
+          { name: 'Food & Beverage Space', filters: [{ id: 'size', label: 'Booth Size', type: 'text' }] },
+          { name: 'Retail & Craft Space', filters: [{ id: 'size', label: 'Booth Size', type: 'text' }] },
+          { name: 'Sponsorships', filters: [{ id: 'level', label: 'Sponsorship Level', type: 'text' }] }
+        ]
+      },
+      {
+        name: 'Event Equipment & Rentals',
+        types: [
+          { name: 'Tents & Canopies', filters: [{ id: 'size', label: 'Size', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Tables & Seating', filters: [{ id: 'quantity', label: 'Quantity Available', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'A/V & Lighting', filters: [{ id: 'type', label: 'Equipment Type', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] },
+          { name: 'Inflatables & Games', filters: [{ id: 'type', label: 'Type', type: 'text' }, { id: 'condition', label: 'Condition', type: 'select', options: COMMON_CONDITIONS }] }
         ]
       }
     ]

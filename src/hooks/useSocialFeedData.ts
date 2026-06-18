@@ -149,6 +149,11 @@ export const useSocialFeedData = (
         .order('created_at', { ascending: false });
     }
 
+    const generalCategories = ['Everybody', 'Hot', 'Following', 'Groups', 'Classifieds', 'Vehicles', 'Real Estate'];
+    if (!filterUserId && !filterGroupId && !generalCategories.includes(activeCategory)) {
+      query = query.or('type.neq.standard,author.role.not.in.(citizen,v_citizen,guest)');
+    }
+
     if (filterUserId) {
       query = query.eq('profile_id', filterUserId);
     } else if (filterGroupId) {
@@ -175,8 +180,8 @@ export const useSocialFeedData = (
                    .filter('author.role', 'in', '(media,news,journalist,v_media,v_news,v_journalist,admin)');
     }
     else if (activeCategory === 'Events') {
-      query = query.or(`category.eq.Events,type.eq.event`);
-      query = query.filter('author.role', 'in', '(venue,v_venue,non_profit,v_non_profit,church,v_church,official,v_official,admin)');
+      query = query.eq('type', 'event');
+      query = query.filter('author.role', 'in', '(venue,v_venue,non_profit,v_non_profit,church,v_church,official,v_official,admin,artist,v_artist)');
     }
     else if (activeCategory === 'Faith') {
       query = query.or(`category.eq.Faith,type.in.(prayer_request,bible_verse,testament,bible_question)`);
@@ -240,6 +245,10 @@ export const useSocialFeedData = (
       
       query = query.order('created_at', { ascending: false }).limit(50);
     }
+    else if (['Classifieds', 'Vehicles', 'Real Estate'].includes(activeCategory)) {
+      // Don't fetch from posts table for classified-only feeds
+      query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+    }
 
     let alertQuery = supabase
       .from('posts')
@@ -274,6 +283,42 @@ export const useSocialFeedData = (
     }
 
     const { data: postData, error: postError } = await query;
+
+    let classifieds: any[] = [];
+    if (['Everybody', 'Classifieds', 'Vehicles', 'Real Estate', 'Events'].includes(activeCategory)) {
+      let classQuery = supabase.from('classified_items').select('*, author:profiles!classified_items_user_id_fkey(id, name, avatar_url, role, community, county, state, country, is_verified, email)').neq('status', 'deleted').neq('status', 'sold').neq('status', 'rented');
+      
+      if (activeCategory === 'Vehicles') {
+        classQuery = classQuery.eq('category', 'Vehicles & Powersports');
+      } else if (activeCategory === 'Real Estate') {
+        classQuery = classQuery.eq('category', 'Property Rentals & Home Sales');
+      } else if (activeCategory === 'Events') {
+        classQuery = classQuery.eq('item_details->>type', 'Garage Sales');
+      } else if (activeCategory === 'Classifieds' || activeCategory === 'Everybody') {
+        // Exclude Vehicles and Real Estate from the main Classifieds/Everybody feeds
+        classQuery = classQuery.not('category', 'in', '("Vehicles & Powersports","Property Rentals & Home Sales")');
+      }
+      
+      const { data: classData } = await classQuery.order('created_at', { ascending: false }).limit(30);
+      
+      if (classData) {
+        classifieds = classData.map((item: any) => ({
+          id: item.id,
+          profile_id: item.user_id,
+          type: 'classified',
+          content: `[${item.category}] ${item.title}\n\n${item.description}\n\nPrice: $${item.price}`,
+          media_urls: item.images,
+          created_at: item.created_at,
+          author: item.author,
+          comments_count: 0,
+          views: item.views,
+          priority: 0,
+          hot_score: item.views || 0,
+        }));
+      }
+    }
+    
+    let allPosts = [...(postData || []), ...classifieds];
 
     const { data: activeAds } = await supabase
       .from('platform_ads')
@@ -313,7 +358,7 @@ export const useSocialFeedData = (
     }
 
     let filteredPosts = weightByCounty(
-      (postData as any[]) || [],
+      allPosts,
       user?.county,
       'author.county'
     );
@@ -330,24 +375,7 @@ export const useSocialFeedData = (
       });
     }
 
-    // MOCK: Inject linked_products to test Shoppable Feed UI
-    filteredPosts = filteredPosts.map((p: any, i: number) => {
-      // Pick the first couple posts with media to have a shoppable product overlay
-      if (i < 3 && p.media_urls?.length > 0) {
-        return {
-          ...p,
-          linked_products: [{
-            id: 'mock-123',
-            name: 'Local Artisan Coffee Blend',
-            price: 14.99,
-            image_urls: ['https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=200'],
-            eligible_for_sameday: true,
-            store_name: 'Beaumont Roasters'
-          }]
-        };
-      }
-      return p;
-    });
+    // Removed mock linked_products injection
 
     let currentEscalation = null;
 

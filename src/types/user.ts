@@ -18,6 +18,7 @@ export type User = {
   // Messaging preferences (real DB columns not yet in generated types)
   enable_read_receipts?: boolean;
   enable_typing_indicators?: boolean;
+  translation_language?: string;
 };
 
 

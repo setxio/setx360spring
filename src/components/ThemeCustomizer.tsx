@@ -47,29 +47,6 @@ export const ThemeCustomizer: React.FC = () => {
         ))}
       </div>
 
-      <div className="customizer-header" style={{ marginTop: '24px' }}>
-        <Monitor size={20} color="var(--primary)" />
-        <h3>Interface Style</h3>
-      </div>
-
-      <div className="theme-presets">
-        <button 
-          className={`preset-btn ${layout === 'classic' ? 'active' : ''}`}
-          onClick={() => setLayout('classic')}
-        >
-          <LayoutGrid size={16} />
-          <span>Classic 360</span>
-          {layout === 'classic' && <Check size={12} className="check-icon" />}
-        </button>
-        <button 
-          className={`preset-btn ${layout === 'minimal' ? 'active' : ''}`}
-          onClick={() => setLayout('minimal')}
-        >
-          <Smartphone size={16} />
-          <span>Minimalist</span>
-          {layout === 'minimal' && <Check size={12} className="check-icon" />}
-        </button>
-      </div>
     </div>
   );
 };

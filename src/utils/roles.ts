@@ -1,12 +1,12 @@
 export const PROFESSIONAL_ROLES = [
-  'business', 'media', 'official', 'non_profit', 'church', 'chamber', 'venue',
-  'v_business', 'v_media', 'v_official', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue'
+  'business', 'media', 'official', 'non_profit', 'church', 'chamber', 'venue', 'artist',
+  'v_business', 'v_media', 'v_official', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue', 'v_artist'
 ];
 
 export const VENDOR_ROLES = ['business', 'v_business'];
 export const OFFICIAL_ROLES = ['official', 'v_official'];
 export const VERIFIED_ROLES = [
-  'v_business', 'v_media', 'v_official', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue', 'admin'
+  'v_business', 'v_media', 'v_official', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue', 'v_artist', 'admin'
 ];
 
 export const isProfessional = (role: string) => PROFESSIONAL_ROLES.includes(role);

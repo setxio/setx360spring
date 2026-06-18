@@ -69,7 +69,8 @@ export const SignUpFlow: React.FC = () => {
     official_type: 'city' as 'city' | 'chamber',
     creator_type: '',
     artist_name: '',
-    artist_genre: ''
+    artist_genre: '',
+    translation_language: 'en'
   });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
@@ -208,6 +209,7 @@ export const SignUpFlow: React.FC = () => {
           verification_status: ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(baseRole) ? 'pending' : 'verified',
           phone: '', 
           website: '',
+          translation_language: formData.translation_language,
           tos_accepted_at: new Date().toISOString()
         }
       }
@@ -621,6 +623,23 @@ export const SignUpFlow: React.FC = () => {
                 </div>
               </div>
 
+              <div className="input-group">
+                <label>Preferred Translation Language</label>
+                <select 
+                  value={formData.translation_language}
+                  onChange={e => setFormData({ ...formData, translation_language: e.target.value })}
+                >
+                  <option value="en">English (Default)</option>
+                  <option value="es">Spanish (Español)</option>
+                  <option value="vi">Vietnamese (Tiếng Việt)</option>
+                  <option value="fr">French (Français)</option>
+                  <option value="de">German (Deutsch)</option>
+                  <option value="zh">Chinese (中文)</option>
+                  <option value="ar">Arabic (العربية)</option>
+                  <option value="hi">Hindi (हिन्दी)</option>
+                </select>
+              </div>
+
               {error && <p className="error-text" style={{ color: 'var(--accent)', fontSize: '0.8rem', textAlign: 'center', marginBottom: '10px' }}>{error}</p>}
 
               <button 
@@ -857,9 +876,7 @@ export const SignUpFlow: React.FC = () => {
                   style={{ marginTop: 3 }}
                 />
                 <label htmlFor="tos-agree">
-                  I agree to the <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Terms of Service</span>, <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Privacy Policy</span>, and <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Copyright Guidelines</span>.
-                  <br /><br />
-                  <strong style={{ color: 'var(--text)' }}>Conduct-Inferred Consent:</strong> By creating an account, claiming your digital identity tag, or participating in the SETX 360 pre-formation platform, you explicitly grant mutual consent to join the SETX 360 Decentralized Unincorporated Nonprofit Association (DUNA). This membership is conditionally structured to automatically activate upon the official enactment of Chapter 253 of the Texas Business Organizations Code (HB 4518). You agree that your participation constitutes conduct inferring consent to be a foundational voting member on Day 1 of the DUNA's legal recognition.
+                  I agree to the <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Terms of Service</span>, <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Privacy Policy</span>, <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>Copyright Guidelines</span>, and <span className="legal-link" style={{ color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setShowLegal(true)}>DUNA Mutual Consent</span>.
                 </label>
               </div>
 
@@ -916,7 +933,10 @@ export const SignUpFlow: React.FC = () => {
                 </div>
               </div>
 
-              <button className="primary-btn" onClick={() => window.location.reload()}>
+              <button className="primary-btn" onClick={() => {
+                localStorage.setItem('ecity_env', 'home');
+                window.location.href = '/?env=home';
+              }}>
                 Continue to App
               </button>
             </div>

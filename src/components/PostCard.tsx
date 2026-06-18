@@ -26,6 +26,7 @@ interface PostCardProps {
   onDelete: (postId: string) => void;
   onRepost: (postId: string) => void;
   onShare: (postId: string) => void;
+  onEdit?: (postId: string) => void;
   onNavigateToPost?: (postId: string, commentId?: string) => void;
   onNavigateToProfile?: (profileId: string) => void;
   isBookmarked?: boolean;
@@ -42,6 +43,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   onDelete, 
   onRepost, 
   onShare,
+  onEdit,
   onNavigateToPost,
   onNavigateToProfile,
   isBookmarked = false,
@@ -108,7 +110,13 @@ export const PostCard: React.FC<PostCardProps> = ({
   return (
     <div 
       className={`premium-card post-card ${isEvent ? 'event-highlight' : ''}`} 
-      onClick={() => onNavigateToPost?.(contentPost.id)}
+      onClick={() => {
+        if (contentPost.type === 'classified') {
+          window.dispatchEvent(new CustomEvent('OPEN_CLASSIFIED_ITEM', { detail: contentPost }));
+        } else {
+          onNavigateToPost?.(contentPost.id);
+        }
+      }}
       style={{ 
         cursor: onNavigateToPost ? 'pointer' : 'default',
         border: isEvent ? '2px solid var(--secondary)' : 'none'
@@ -176,6 +184,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           authorName={isQuotePost ? post.author?.name : (contentPost.author?.name || 'User')}
           onHide={() => setIsHidden(true)}
           onDelete={() => onDelete(post.id)}
+          onEdit={() => onEdit?.(contentPost.id)}
           onSave={() => onToggleBookmark?.(contentPost.id)}
           onReport={() => setShowFlagModal(true)}
         />

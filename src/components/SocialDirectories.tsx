@@ -15,11 +15,18 @@ export const UserDirectory: React.FC<{
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+  
+  // New Friend Request States
+  const [activeTab, setActiveTab] = useState<'directory' | 'friends' | 'requests'>('directory');
+  const [friendRequests, setFriendRequests] = useState<any[]>([]);
+  const [friendsMap, setFriendsMap] = useState<Record<string, boolean>>({});
+  const [sentRequestsMap, setSentRequestsMap] = useState<Record<string, boolean>>({});
+  
   const { info } = useToast();
 
   useEffect(() => {
     fetchInitialData();
-  }, [scope]);
+  }, [scope, activeTab]);
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -40,9 +47,10 @@ export const UserDirectory: React.FC<{
       }
     }
 
-    const [usersRes, followsRes] = await Promise.all([
+    const [usersRes, followsRes, requestsRes] = await Promise.all([
       usersQuery,
-      user ? supabase.from('follows').select('following_id').eq('follower_id', user.id) : Promise.resolve({ data: [] })
+      user ? supabase.from('follows').select('following_id').eq('follower_id', user.id) : Promise.resolve({ data: [] }),
+      user ? supabase.from('friend_requests').select('*, sender:sender_id(*), receiver:receiver_id(*)').or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`) : Promise.resolve({ data: [] })
     ]);
 
     if (usersRes.data) setUsers(usersRes.data);
@@ -52,43 +60,77 @@ export const UserDirectory: React.FC<{
       followsRes.data.forEach(f => map[f.following_id] = true);
       setFollowingMap(map);
     }
+    
+    if (requestsRes.data) {
+      const fMap: Record<string, boolean> = {};
+      const sMap: Record<string, boolean> = {};
+      
+      requestsRes.data.forEach(req => {
+        if (req.status === 'accepted') {
+          fMap[req.sender_id === user?.id ? req.receiver_id : req.sender_id] = true;
+        } else if (req.status === 'pending') {
+          if (req.sender_id === user?.id) {
+            sMap[req.receiver_id] = true;
+          }
+        }
+      });
+      setFriendsMap(fMap);
+      setSentRequestsMap(sMap);
+      setFriendRequests(requestsRes.data);
+    }
     setLoading(false);
   };
 
   const handleFollow = async (targetId: string) => {
     if (!currentUser) return info('Please sign in to follow users.');
-    
     const isFollowing = followingMap[targetId];
-    
-    // Optimistic UI
     setFollowingMap(prev => ({ ...prev, [targetId]: !isFollowing }));
-
     if (isFollowing) {
-      const { error } = await supabase.from('follows')
-        .delete()
-        .eq('follower_id', currentUser.id)
-        .eq('following_id', targetId);
-      if (error) {
-        console.error(error);
-        setFollowingMap(prev => ({ ...prev, [targetId]: true })); // Revert
-      }
+      await supabase.from('follows').delete().eq('follower_id', currentUser.id).eq('following_id', targetId);
     } else {
-      const { error } = await supabase.from('follows')
-        .insert({ follower_id: currentUser.id, following_id: targetId });
-      if (error) {
-        console.error(error);
-        setFollowingMap(prev => ({ ...prev, [targetId]: false })); // Revert
+      await supabase.from('follows').insert({ follower_id: currentUser.id, following_id: targetId });
+    }
+  };
+
+  const handleFriendRequest = async (targetId: string, action: 'send' | 'accept' | 'decline' | 'remove') => {
+    if (!currentUser) return info('Please sign in first.');
+    
+    if (action === 'send') {
+      setSentRequestsMap(prev => ({ ...prev, [targetId]: true }));
+      await supabase.from('friend_requests').insert({ sender_id: currentUser.id, receiver_id: targetId });
+      info('Friend request sent!');
+    } else if (action === 'accept') {
+      // Find the pending request
+      const req = friendRequests.find(r => r.sender_id === targetId && r.receiver_id === currentUser.id && r.status === 'pending');
+      if (req) {
+        setFriendsMap(prev => ({ ...prev, [targetId]: true }));
+        await supabase.from('friend_requests').update({ status: 'accepted' }).eq('id', req.id);
+        // Automatically follow them back
+        if (!followingMap[targetId]) {
+          await handleFollow(targetId);
+        }
+        info('Friend request accepted!');
+        fetchInitialData();
+      }
+    } else if (action === 'decline' || action === 'remove') {
+      // For both decline and remove, we just delete the request record to keep it clean
+      const req = friendRequests.find(r => 
+        (r.sender_id === targetId && r.receiver_id === currentUser.id) || 
+        (r.sender_id === currentUser.id && r.receiver_id === targetId)
+      );
+      if (req) {
+        setFriendsMap(prev => ({ ...prev, [targetId]: false }));
+        setSentRequestsMap(prev => ({ ...prev, [targetId]: false }));
+        await supabase.from('friend_requests').delete().eq('id', req.id);
+        info(action === 'decline' ? 'Request declined' : 'Friend removed');
+        fetchInitialData();
       }
     }
   };
 
   const handleUserClick = (targetId: string) => {
     if (currentUser?.id && currentUser.id !== targetId) {
-      supabase.rpc('log_social_interaction', { 
-        actor_id: currentUser.id, 
-        target_id: targetId,
-        boost_amount: 1 
-      });
+      supabase.rpc('log_social_interaction', { actor_id: currentUser.id, target_id: targetId, boost_amount: 1 });
     }
     onNavigateToProfile?.(targetId);
   };
@@ -98,15 +140,18 @@ export const UserDirectory: React.FC<{
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Suggested: non-followed users from same community (max 6)
-  const suggestedUsers = !searchTerm
-    ? users.filter(u => u.id !== currentUser?.id && !followingMap[u.id]).slice(0, 6)
-    : [];
+  const displayedUsers = activeTab === 'directory' 
+    ? filteredUsers
+    : activeTab === 'friends' 
+      ? filteredUsers.filter(u => friendsMap[u.id])
+      : []; // Requests are handled separately below
+
+  const pendingIncomingRequests = friendRequests.filter(r => r.receiver_id === currentUser?.id && r.status === 'pending');
 
   return (
     <div className="directory-view">
-      <div className="search-header glass">
-        <div className="search-input-wrapper">
+      <div className="search-header glass" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+        <div className="search-input-wrapper" style={{ marginBottom: '12px' }}>
           <Search size={20} className="search-icon" />
           <input
             type="text"
@@ -116,40 +161,56 @@ export const UserDirectory: React.FC<{
             className="directory-search-input"
           />
         </div>
-      </div>
-
-      {/* Suggested Users Strip */}
-      {suggestedUsers.length > 0 && (
-        <div style={{ padding: '12px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              👥 People in Your Area
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '8px' }}>
-            {suggestedUsers.map(u => (
-              <div key={u.id} style={{ flexShrink: 0, width: 100, textAlign: 'center', background: 'var(--bg-soft)', borderRadius: '16px', padding: '12px 8px', border: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => handleUserClick(u.id)}>
-                <img src={getAvatarUrl(u)} alt={u.name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', marginBottom: '6px' }} />
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{u.community || 'Local'}</div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleFollow(u.id); }}
-                  style={{ fontSize: '0.72rem', fontWeight: 700, padding: '4px 12px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer' }}
-                >
-                  + Follow
-                </button>
-              </div>
-            ))}
-          </div>
-          <div style={{ height: '1px', background: 'var(--border)', margin: '8px 0' }} />
+        
+        <div className="directory-filters" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {(['directory', 'friends', 'requests'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '6px 16px',
+                borderRadius: '20px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: activeTab === tab ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                color: 'white',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              {tab === 'directory' && 'Directory'}
+              {tab === 'friends' && 'Friends'}
+              {tab === 'requests' && <>Requests {pendingIncomingRequests.length > 0 && <span style={{ background: '#ef4444', color: 'white', borderRadius: '10px', padding: '0 6px', fontSize: '0.7rem' }}>{pendingIncomingRequests.length}</span>}</>}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       <div className="directory-list">
         {loading ? (
           <div className="loader-container"><Loader2 className="animate-spin" /></div>
-        ) : filteredUsers.length > 0 ? (
-          filteredUsers.map(user => (
+        ) : activeTab === 'requests' ? (
+          pendingIncomingRequests.length > 0 ? (
+            pendingIncomingRequests.map(req => (
+              <div key={req.id} className="premium-card user-card" style={{ cursor: 'pointer' }} onClick={() => handleUserClick(req.sender.id)}>
+                <img src={getAvatarUrl(req.sender)} alt={req.sender.name} className="user-avatar" />
+                <div className="user-info">
+                  <h4 className="user-name">{req.sender.name}</h4>
+                  <p className="user-handle">Wants to be friends</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                  <button onClick={(e) => { e.stopPropagation(); handleFriendRequest(req.sender.id, 'accept'); }} style={{ padding: '6px 12px', borderRadius: '8px', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Accept</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleFriendRequest(req.sender.id, 'decline'); }} style={{ padding: '6px 12px', borderRadius: '8px', background: 'var(--bg-soft)', color: 'var(--text)', border: '1px solid var(--border)', cursor: 'pointer', fontWeight: 600 }}>Decline</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-results premium-card"><p>No pending friend requests</p></div>
+          )
+        ) : displayedUsers.length > 0 ? (
+          displayedUsers.map(user => (
             <div key={user.id} className="premium-card user-card" style={{ cursor: 'pointer' }} onClick={() => handleUserClick(user.id)}>
               <img src={getAvatarUrl(user)} alt={user.name} className="user-avatar" />
               <div className="user-info">
@@ -158,13 +219,29 @@ export const UserDirectory: React.FC<{
                 <span className="user-mutuals">{user.community || 'SETX 360'}</span>
               </div>
               {currentUser?.id !== user.id && (
-                <button 
-                  className={`follow-btn ${followingMap[user.id] ? 'following' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleFollow(user.id); }}
-                  style={followingMap[user.id] ? { background: 'var(--bg-soft)', color: 'var(--text-muted)' } : {}}
-                >
-                  {followingMap[user.id] ? 'Following' : <><UserPlus size={16} /> Follow</>}
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                  <button 
+                    className={`follow-btn ${followingMap[user.id] ? 'following' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); handleFollow(user.id); }}
+                    style={followingMap[user.id] ? { background: 'var(--bg-soft)', color: 'var(--text-muted)' } : {}}
+                  >
+                    {followingMap[user.id] ? 'Following' : 'Follow'}
+                  </button>
+                  
+                  {friendsMap[user.id] ? (
+                    <button onClick={(e) => { e.stopPropagation(); handleFriendRequest(user.id, 'remove'); }} style={{ padding: '6px 12px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-soft)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+                      Friends ✓
+                    </button>
+                  ) : sentRequestsMap[user.id] ? (
+                    <button disabled style={{ padding: '6px 12px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-soft)', color: 'var(--text-muted)', cursor: 'not-allowed', fontSize: '0.8rem', fontWeight: 600 }}>
+                      Requested
+                    </button>
+                  ) : (
+                    <button onClick={(e) => { e.stopPropagation(); handleFriendRequest(user.id, 'send'); }} style={{ padding: '6px 12px', borderRadius: '12px', border: 'none', background: 'var(--primary)', color: 'white', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+                      Add Friend
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           ))

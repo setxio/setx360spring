@@ -5,6 +5,7 @@ import {
   Search as SearchIcon,
   Bell,
   LogOut,
+  Power,
   Moon,
   Sun,
   Loader2,
@@ -70,11 +71,14 @@ import {
   SkipForward,
   SkipBack,
   Plus,
-  Library
+  Library,
+  Bug
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VerificationModal } from './VerificationModal';
+import { BugReportModal } from './BugReportModal';
 import { useApp, type Env } from '../context/AppContext';
+import { ThemeTopBar } from './ThemeTopBar';
 import { Avatar } from './Avatar';
 import { SignUpFlow } from './SignUpFlow';
 import { GlobalChatBubbles } from './GlobalChatBubbles';
@@ -100,13 +104,29 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
   updateAvailable,
   onUpdate
 }) => {
-  const { user, env, theme, activeTab, unreadCount, localSearchQuery, setEnv, setActiveTab, setLocalSearchQuery, toggleTheme, logout, isSetxIO } = useApp();
+  const { 
+    user, 
+    env, 
+    theme, 
+    unreadCount, 
+    activeTab,
+    setActiveTab,
+    localSearchQuery,
+    setLocalSearchQuery,
+    masterSearchQuery,
+    setMasterSearchQuery,
+    setEnv, 
+    toggleTheme, 
+    logout, 
+    isSetxIO 
+  } = useApp();
   const { currentSong, isPlaying, togglePlay, setIsPlaying } = useApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isBugReportOpen, setIsBugReportOpen] = useState(false);
   const [isLocalSearchExpanded, setIsLocalSearchExpanded] = useState(false);
   
 
@@ -416,6 +436,14 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
 
   // Removed activeNavIndex reordering logic as it's no longer needed for platform-specific menus
 
+  const getHeaderLogo = () => {
+    if (theme.startsWith('io-')) return '/logo-io.png';
+    if (theme.startsWith('neo')) return '/logo-neo.png';
+    if (theme.startsWith('twilight')) return '/logo-twilight.png';
+    if (theme.startsWith('efutura')) return '/logo-efutura.png';
+    return theme.includes('light') ? '/logo-setx-blue.png' : '/logo-setx-transparent.png';
+  };
+
   const handleNavClick = (id: Env) => {
     setEnv(id);
     setActiveTab(0);
@@ -435,46 +463,40 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
     }}>
       {/* Top Header */}
       {!isSetxIO && env !== 'home' && (
-        <header style={{
-          height: '64px',
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid var(--glass-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 20px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer' }}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: theme.includes('light') ? '#000' : '#fff' }}>
-              SETX <span style={{ 
-                color: theme.startsWith('io-') ? '#7000f4' : (
-                  env === 'discover' ? '#06b6d4' : 
-                  env === 'social'   ? '#3b82f6' : 
-                  env === 'events'   ? '#facc15' : 
-                  env === 'news'     ? '#1e40af' : 
-                  env === 'faith'    ? '#8b5cf6' : 
-                  env === 'market'   ? '#10b981' : 
-                  env === 'eats'     ? '#f97316' : 
-                  env === 'services' ? '#334155' : 
-                  env === 'jobs'     ? '#172554' : 
-                  'var(--primary)'
-                ),
-                transition: 'color 0.3s ease'
-              }}>360</span>
-            </h1>
-          </div>
+        <div style={{ position: 'sticky', top: 0, zIndex: 100 }}>
+          <ThemeTopBar key={env + '-' + theme} />
+          <header style={{
+            height: '64px',
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid var(--glass-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 20px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text)', cursor: 'pointer', padding: 0 }}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+              <h1 onClick={() => { setEnv('discover'); setActiveTab(0); }} style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: theme.includes('light') ? '#000' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                SETX <span style={{ 
+                  color: 'var(--primary)',
+                  transition: 'color 0.3s ease'
+                }}>360</span>
+              </h1>
+            </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ position: 'relative', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', cursor: 'pointer', boxShadow: theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none' }}>
+                <img src={getHeaderLogo()} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, justifyContent: 'flex-end' }}>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <AnimatePresence>
                 {isLocalSearchExpanded && (
@@ -483,10 +505,18 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
                     animate={{ width: 200, opacity: 1 }}
                     exit={{ width: 0, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    className="master-search-input"
                     type="text"
-                    value={localSearchQuery}
-                    onChange={(e) => setLocalSearchQuery(e.target.value)}
-                    placeholder={`Search ${env}...`}
+                    value={masterSearchQuery}
+                    onChange={(e) => setMasterSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && masterSearchQuery.trim()) {
+                        setEnv('search');
+                        setActiveTab(0);
+                        setIsLocalSearchExpanded(false);
+                      }
+                    }}
+                    placeholder={`Master Search SETX...`}
                     style={{
                       position: 'absolute',
                       right: '48px',
@@ -531,15 +561,17 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
 
             {user && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', cursor: 'pointer' }}>
                   <Bell size={22} color="var(--text-muted)" />
                   {unreadCount > 0 && <span style={{ position: 'absolute', top: -2, right: -2, background: 'red', color: 'white', fontSize: '10px', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadCount}</span>}
                 </div>
+
                 <Avatar url={user.avatar_url} name={user.name} size={36} />
               </div>
             )}
           </div>
         </header>
+        </div>
       )}
 
       {/* Mobile/Side Menu */}
@@ -718,6 +750,19 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
                   </div>
                 );
               })()}
+
+              <div style={{ marginTop: '16px' }}>
+                <button
+                  onClick={() => {
+                    setIsBugReportOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.05)', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease' }}
+                >
+                  <Bug size={20} />
+                  <span>Report a Bug</span>
+                </button>
+              </div>
             </div>
 
             <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
@@ -779,20 +824,6 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         )}
       </AnimatePresence>
 
-
-
-      <AnimatePresence>
-        {updateAvailable && (
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="update-toast glass" style={{ position: 'fixed', bottom: '100px', left: '20px', right: '20px', zIndex: 2000, padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(112, 0, 244, 0.95)', color: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Sparkles size={20} />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>A new version of SETX 360 is ready!</span>
-            </div>
-            <button onClick={onUpdate} style={{ background: 'white', color: '#7000f4', border: 'none', padding: '8px 16px', borderRadius: '12px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer' }}>Update Now</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Floating Action Button for Posting */}
       {!isSetxIO && user && env === 'social' && (
         <button 
@@ -801,6 +832,14 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         >
           <Plus size={28} />
         </button>
+      )}
+
+      {isVerifying && (
+        <VerificationModal onClose={() => setIsVerifying(false)} user={user} />
+      )}
+
+      {isBugReportOpen && (
+        <BugReportModal onClose={() => setIsBugReportOpen(false)} user={user} platform={env} />
       )}
 
       {isCreatePostOpen && (

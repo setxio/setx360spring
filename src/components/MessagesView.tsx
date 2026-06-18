@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from './Avatar';
 import { EmptyState } from './EmptyState';
 import { useApp } from '../context/AppContext';
-import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus, Check, CheckCheck, Mic, MicOff, X } from 'lucide-react';
+import { Search, MessageSquare, ArrowLeft, Send, Image as ImageIcon, Loader2, Plus, Check, CheckCheck, Mic, MicOff, X, History, Users, MapPin, Briefcase, Landmark } from 'lucide-react';
 import './MessagesView.css';
 
 interface MessagesViewProps {
@@ -29,9 +29,13 @@ interface Conversation {
   lastMessage: string;
   lastTimestamp: string;
   unreadCount: number;
+  role?: string | null;
+  isInteraction?: boolean;
+  isFriend?: boolean;
 }
 
 export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
+  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic'>('recent');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -317,7 +321,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
   // Rebuild conversations list whenever allMessages changes
   useEffect(() => {
     const buildConversations = async () => {
-      const convMap = new Map<string, { msg: MessageData, unread: number }>();
+      const convMap = new Map<string, { msg: MessageData, unread: number, isInteraction: boolean }>();
       allMessages.forEach(msg => {
         const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
         const currentStored = convMap.get(otherId);
@@ -327,48 +331,93 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
           unread++;
         }
 
+        let isInteraction = currentStored?.isInteraction || msg.content.includes('[Classifieds]') || msg.content.includes('[Gig]');
+
         if (!currentStored || new Date(msg.created_at) > new Date(currentStored.msg.created_at)) {
-          convMap.set(otherId, { msg, unread });
+          convMap.set(otherId, { msg, unread, isInteraction });
         } else {
-          convMap.set(otherId, { msg: currentStored.msg, unread });
+          convMap.set(otherId, { msg: currentStored.msg, unread, isInteraction });
         }
       });
 
       const uniqueOtherIds = Array.from(convMap.keys());
-      if (uniqueOtherIds.length === 0) {
-        setConversations([]);
-        return;
+      
+      let convList: Conversation[] = [];
+
+      if (uniqueOtherIds.length > 0) {
+        // Fetch profiles for users we have messages with
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url, role')
+          .in('id', uniqueOtherIds);
+          
+        const { data: civicDirs } = await supabase
+          .from('civic_directory')
+          .select('id, title, department')
+          .in('id', uniqueOtherIds);
+
+        if (profiles) {
+          convList = uniqueOtherIds.map(otherId => {
+            const profile = profiles.find(p => p.id === otherId);
+            const civic = civicDirs?.find(c => c.id === otherId);
+            const { msg: lastMsg, unread, isInteraction } = convMap.get(otherId)!;
+            return {
+              otherId,
+              name: civic?.title || profile?.name || 'Unknown User',
+              avatar: profile?.avatar_url || undefined,
+              lastMessage: lastMsg.content,
+              lastTimestamp: new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              unreadCount: unread,
+              role: civic ? 'civic' : (profile?.role || null),
+              isInteraction
+            };
+          });
+
+          // Sort conversations by latest message timestamp mostly
+          convList.sort((a, b) => {
+            const msgA = convMap.get(a.otherId)?.msg;
+            const msgB = convMap.get(b.otherId)?.msg;
+            if (msgA && msgB) return new Date(msgB.created_at).getTime() - new Date(msgA.created_at).getTime();
+            return 0;
+          });
+        }
       }
 
-      // Fetch profiles for these users
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, name, avatar_url')
-        .in('id', uniqueOtherIds);
+      // Fetch friends to append any friends we haven't messaged yet
+      if (user) {
+        const { data: friendsReqs } = await supabase
+          .from('friend_requests')
+          .select('*, sender:sender_id(id, name, avatar_url), receiver:receiver_id(id, name, avatar_url)')
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+          .eq('status', 'accepted');
 
-      if (profiles) {
-        const convList = uniqueOtherIds.map(otherId => {
-          const profile = profiles.find(p => p.id === otherId);
-          const { msg: lastMsg, unread } = convMap.get(otherId)!;
-          return {
-            otherId,
-            name: profile?.name || 'Unknown User',
-            avatar: profile?.avatar_url || undefined,
-            lastMessage: lastMsg.content,
-            lastTimestamp: new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            unreadCount: unread
-          };
-        });
-
-        // Sort conversations by latest message timestamp mostly
-        convList.sort((a, b) => {
-          const msgA = convMap.get(a.otherId)!.msg;
-          const msgB = convMap.get(b.otherId)!.msg;
-          return new Date(msgB.created_at).getTime() - new Date(msgA.created_at).getTime();
-        });
-
-        setConversations(convList);
+        const friendIds = new Set<string>();
+        if (friendsReqs) {
+          friendsReqs.forEach(req => {
+            friendIds.add(req.sender_id === user.id ? req.receiver_id : req.sender_id);
+          });
+          
+          const friendsList = friendsReqs.map(req => req.sender_id === user.id ? req.receiver : req.sender);
+          friendsList.forEach(friend => {
+            const existingConv = convList.find(c => c.otherId === friend.id);
+            if (!existingConv) {
+              convList.push({
+                otherId: friend.id,
+                name: friend.name,
+                avatar: friend.avatar_url,
+                lastMessage: 'Start a conversation...',
+                lastTimestamp: '',
+                unreadCount: 0,
+                isFriend: true
+              });
+            } else {
+              existingConv.isFriend = true;
+            }
+          });
+        }
       }
+
+      setConversations(convList);
     };
     buildConversations();
   }, [allMessages, user.id]);
@@ -429,6 +478,15 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     }
   };
 
+  const filteredConversations = conversations.filter(c => {
+    if (activeTab === 'recent') return true;
+    if (activeTab === 'friends') return c.isFriend;
+    if (activeTab === 'interactions') return c.isInteraction;
+    if (activeTab === 'businesses') return ['vendor', 'business', 'restaurant', 'store'].includes(c.role || '');
+    if (activeTab === 'civic') return c.role === 'civic';
+    return true;
+  });
+
   const activeConversation = conversations.find(c => c.otherId === activeChatId);
   const currentChatMessages = allMessages.filter(
     m => (m.sender_id === user.id && m.receiver_id === activeChatId) || 
@@ -442,7 +500,26 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
       <div className="messages-sidebar">
         <div className="messages-header">
           <h2>Messages</h2>
-          <div className="search-conversations">
+          
+          <nav className="contacts-tabs no-scrollbar" style={{ marginTop: '12px', display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '8px' }}>
+            <button className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`} onClick={() => setActiveTab('recent')}>
+              <History size={14} /> <span style={{fontSize:'0.8rem'}}>Recent</span>
+            </button>
+            <button className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => setActiveTab('friends')}>
+              <Users size={14} /> <span style={{fontSize:'0.8rem'}}>Friends</span>
+            </button>
+            <button className={`tab-btn ${activeTab === 'interactions' ? 'active' : ''}`} onClick={() => setActiveTab('interactions')}>
+              <MapPin size={14} /> <span style={{fontSize:'0.8rem'}}>Interactions</span>
+            </button>
+            <button className={`tab-btn ${activeTab === 'businesses' ? 'active' : ''}`} onClick={() => setActiveTab('businesses')}>
+              <Briefcase size={14} /> <span style={{fontSize:'0.8rem'}}>Businesses</span>
+            </button>
+            <button className={`tab-btn ${activeTab === 'civic' ? 'active' : ''}`} onClick={() => setActiveTab('civic')}>
+              <Landmark size={14} /> <span style={{fontSize:'0.8rem'}}>Civic</span>
+            </button>
+          </nav>
+
+          <div className="search-conversations" style={{ marginTop: '8px' }}>
             <Search size={18} />
             <input 
               type="text" 
@@ -478,14 +555,14 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
         <div className="conversation-list">
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><Loader2 className="animate-spin" color="var(--primary)" /></div>
-          ) : conversations.length === 0 ? (
+          ) : filteredConversations.length === 0 ? (
             <EmptyState 
               icon={MessageSquare}
               title="No Messages"
-              message="Start a conversation with neighbors or local businesses. Your chats will appear here."
+              message="No conversations found in this section."
             />
           ) : (
-            conversations.map((conv) => (
+            filteredConversations.map((conv) => (
               <div 
                 key={conv.otherId} 
                 className={`conversation-item ${activeChatId === conv.otherId ? 'active' : ''}`}

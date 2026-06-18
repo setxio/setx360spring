@@ -691,3 +691,31 @@ body {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
 }
+
+@media (max-width: 768px) {
+  .master-search-input {
+    position: fixed !important;
+    top: 64px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 50px !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    z-index: 90 !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+}
+/* Hide Google Translate Toolbar */
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+body {
+  top: 0px !important; 
+}
+#google_translate_element {
+  display: none !important;
+}

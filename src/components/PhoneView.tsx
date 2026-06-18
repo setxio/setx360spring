@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Phone, Delete, Users, Clock } from 'lucide-react';
+import { ContactsPlatform } from './ContactsPlatform';
 import './PhoneView.css';
 
 interface PhoneViewProps {
@@ -56,7 +57,7 @@ export const PhoneView: React.FC<PhoneViewProps> = ({ user }) => {
         </button>
       </div>
 
-      <div className="phone-content">
+      <div className="phone-content" style={activeTab === 'contacts' ? { overflow: 'hidden' } : {}}>
         {activeTab === 'keypad' && (
           <div className="keypad-container">
             <div className="number-display">
@@ -91,16 +92,15 @@ export const PhoneView: React.FC<PhoneViewProps> = ({ user }) => {
         )}
 
         {activeTab === 'recents' && (
-          <div className="recents-container">
-            <h2 className="phone-section-title">Recent Calls</h2>
-            <div className="phone-empty-state">No recent calls</div>
+          <div className="recents-container" style={{ height: '100%', overflow: 'hidden' }}>
+            <ContactsPlatform hideHeader={true} hideRecentTab={false} />
+            <div className="phone-empty-state" style={{ display: 'none' }}>No recent calls</div>
           </div>
         )}
 
         {activeTab === 'contacts' && (
-          <div className="contacts-container">
-            <h2 className="phone-section-title">Contacts</h2>
-            <div className="phone-empty-state">View your contacts in the Contacts App</div>
+          <div className="contacts-container" style={{ height: '100%', overflow: 'hidden' }}>
+            <ContactsPlatform hideHeader={true} hideRecentTab={true} />
           </div>
         )}
       </div>

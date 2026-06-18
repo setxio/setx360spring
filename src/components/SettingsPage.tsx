@@ -9,7 +9,8 @@ import {
   ChevronRight,
   Download,
   Bell,
-  RefreshCw
+  RefreshCw,
+  Globe
 } from 'lucide-react';
 import './SettingsPage.css';
 
@@ -17,7 +18,7 @@ import { ThemeCustomizer } from './ThemeCustomizer';
 import { LegalNotice } from './LegalNotice';
 import { PushNotificationManager } from './PushNotificationManager';
 
-import { type Theme } from '../context/AppContext';
+import { type Theme, useApp } from '../context/AppContext';
 
 interface SettingsPageProps {
   user: User;
@@ -27,6 +28,7 @@ interface SettingsPageProps {
 }
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
+  const { translationLanguage, setTranslationLanguage } = useApp();
   const [isUpdating, setIsUpdating] = useState(false);
   const { success, error: toastError, info } = useToast();
   const [preferences, setPreferences] = useState({
@@ -369,6 +371,46 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
                 onClick={() => !isUpdating && handleToggle('show_followers')}
               ></div>
             </div>
+          </div>
+        </section>
+
+        {/* Language & Localization Section */}
+        <section className="settings-card">
+          <h2 className="section-title"><Globe size={20} /> Language & Localization</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: -8, marginBottom: 16 }}>
+            Set your preferred language for translations across the app.
+          </p>
+          <div className="input-group">
+            <select 
+              value={translationLanguage}
+              onChange={async (e) => {
+                const newLang = e.target.value;
+                setTranslationLanguage(newLang);
+                setIsUpdating(true);
+                const { error } = await supabase
+                  .from('profiles')
+                  .update({ translation_language: newLang })
+                  .eq('id', user.id);
+                setIsUpdating(false);
+                if (error) {
+                  toastError('Failed to save language preference.');
+                } else {
+                  success('Language preference updated. Reloading...');
+                  setTimeout(() => window.location.reload(), 1000);
+                }
+              }}
+              disabled={isUpdating}
+              style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--bg-dark)', border: '1px solid var(--border)', color: 'var(--text)' }}
+            >
+              <option value="en">English (Default)</option>
+              <option value="es">Spanish (Español)</option>
+              <option value="vi">Vietnamese (Tiếng Việt)</option>
+              <option value="fr">French (Français)</option>
+              <option value="de">German (Deutsch)</option>
+              <option value="zh">Chinese (中文)</option>
+              <option value="ar">Arabic (العربية)</option>
+              <option value="hi">Hindi (हिन्दी)</option>
+            </select>
           </div>
         </section>
 

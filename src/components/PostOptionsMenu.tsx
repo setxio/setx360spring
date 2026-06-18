@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   MoreHorizontal, X, Bookmark, Bell, Code, Flag, 
-  Clock, UserMinus, UserX, Trash2, PlusCircle, MinusCircle, Info 
+  Clock, UserMinus, UserX, Trash2, PlusCircle, MinusCircle, Info, Edit 
 } from 'lucide-react';
 import './PostOptionsMenu.css';
 
@@ -12,6 +12,7 @@ interface PostOptionsMenuProps {
   onDelete?: () => void;
   onSave?: () => void;
   onReport?: () => void;
+  onEdit?: () => void;
 }
 
 export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
@@ -20,7 +21,8 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
   onHide,
   onDelete,
   onSave,
-  onReport
+  onReport,
+  onEdit
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -117,13 +119,22 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
           <div className="dropdown-divider" />
 
           {isAuthor ? (
-            <div className="dropdown-item danger" onClick={(e) => handleAction(e, onDelete || (() => {}))}>
-              <div className="item-icon"><Trash2 size={18} /></div>
-              <div className="item-text">
-                <strong>Delete post</strong>
-                <span>Permanently remove this post from your timeline.</span>
+            <>
+              <div className="dropdown-item" onClick={(e) => handleAction(e, onEdit || (() => {}))}>
+                <div className="item-icon"><Edit size={18} /></div>
+                <div className="item-text">
+                  <strong>Edit post</strong>
+                  <span>Modify the content or media of this post.</span>
+                </div>
               </div>
-            </div>
+              <div className="dropdown-item danger" onClick={(e) => handleAction(e, onDelete || (() => {}))}>
+                <div className="item-icon"><Trash2 size={18} /></div>
+                <div className="item-text">
+                  <strong>Delete post</strong>
+                  <span>Permanently remove this post from your timeline.</span>
+                </div>
+              </div>
+            </>
           ) : (
             <>
               <div className="dropdown-item" onClick={(e) => handleAction(e, onHide)}>

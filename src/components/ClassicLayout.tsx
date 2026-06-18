@@ -64,7 +64,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Award
+  Award,
+  Bug
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp, type Env } from '../context/AppContext';
@@ -72,6 +73,7 @@ import { ThemeTopBar } from './ThemeTopBar';
 import { Avatar } from './Avatar';
 import { SignUpFlow } from './SignUpFlow';
 import { VerificationModal } from './VerificationModal';
+import { BugReportModal } from './BugReportModal';
 import { TevisChat } from './TevisChat';
 import { GlobalChatBubbles } from './GlobalChatBubbles';
 import { OnboardingOverlay } from './OnboardingOverlay';
@@ -123,6 +125,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isTevisOpen, setIsTevisOpen] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isBugReportOpen, setIsBugReportOpen] = useState(false);
 
   const envSwitcherRef = React.useRef<HTMLDivElement>(null);
   const isInternalScroll = React.useRef(false);
@@ -454,6 +457,9 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
               {user ? (
                 <>
+                  <button onClick={() => setIsBugReportOpen(true)} title="Report Bug" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '6px 8px', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center' }}>
+                    <Bug size={18} />
+                  </button>
                   <button onClick={toggleTheme} title="Toggle theme" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '6px 8px', cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center' }}>
                     {theme.includes('light') ? <Moon size={18} /> : <Sun size={18} />}
                   </button>
@@ -525,6 +531,10 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
 
       {isVerifying && (
         <VerificationModal user={user} onClose={() => { setIsVerifying(false); refreshUser(); }} />
+      )}
+      
+      {isBugReportOpen && (
+        <BugReportModal onClose={() => setIsBugReportOpen(false)} user={user} platform={env} />
       )}
 
       <main className="content-area" style={{ paddingTop: (!user && !isSetxIO && env !== 'labs') ? '40px' : '0' }}>

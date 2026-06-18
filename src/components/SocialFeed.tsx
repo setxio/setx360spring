@@ -8,6 +8,7 @@ import { queryKeys } from '../lib/queryKeys';
 import { FeedFilters } from './FeedFilters';
 import { RepostModal } from './RepostModal';
 import { CreatePostModal } from './CreatePostModal';
+import { EditPostModal } from './EditPostModal';
 import { AdCreationModal } from './AdCreationModal';
 import { PostCard } from './PostCard';
 import { AdCard } from './AdCard';
@@ -43,6 +44,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   const [activeType, setActiveType] = useState('all');
   const feedTopRef = React.useRef<HTMLDivElement>(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
   const [isPromoting, setIsPromoting] = useState(false);
   const [repostTarget, setRepostTarget] = useState<any>(null);
   const [activeSharePost, setActiveSharePost] = useState<any>(null);
@@ -133,6 +135,14 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     }
   };
 
+  const handleEdit = (postId: string) => {
+    const postToEdit = posts.find(p => p.id === postId || (p.type === 'repost' && p.original_post?.id === postId));
+    const target = postToEdit?.type === 'repost' && postToEdit.original_post ? postToEdit.original_post : postToEdit;
+    if (target) {
+      setEditingPost(target);
+    }
+  };
+
   const handleShareNow = (text: string) => {
     success("Shared successfully!");
   };
@@ -216,6 +226,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
           onDelete={handleDelete}
           onRepost={() => handleRepost(contentPost)}
           onShare={handleShare}
+          onEdit={handleEdit}
           onNavigateToPost={onNavigateToPost}
           onNavigateToProfile={onNavigateToProfile}
         />
@@ -371,6 +382,17 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
                 setIsPosting(false);
                 refetchFeed();
               }} 
+            />
+          )}
+
+          {editingPost && (
+            <EditPostModal 
+              post={editingPost}
+              user={user}
+              onClose={() => {
+                setEditingPost(null);
+                refetchFeed();
+              }}
             />
           )}
 

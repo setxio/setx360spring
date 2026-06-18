@@ -8,11 +8,14 @@ import './ContactsPlatform.css';
 
 interface ContactsPlatformProps {
   onBack?: () => void;
+  hideHeader?: boolean;
+  hideRecentTab?: boolean;
+  hideTabs?: boolean;
 }
 
-export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack }) => {
+export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hideHeader, hideRecentTab, hideTabs }) => {
   const { user } = useApp();
-  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic'>('friends');
+  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic'>(hideRecentTab ? 'friends' : 'recent');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Data states
@@ -33,9 +36,22 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack }) =>
     setLoading(true);
     try {
       if (activeTab === 'friends') {
-        // Fetch friends (mocking for now, could be replaced with actual follows/friends table)
-        const { data } = await supabase.from('profiles').select('*').limit(10);
-        setFriends(data || []);
+        if (user) {
+          const { data } = await supabase
+            .from('friend_requests')
+            .select('*, sender:sender_id(*), receiver:receiver_id(*)')
+            .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+            .eq('status', 'accepted');
+            
+          if (data) {
+            const mappedFriends = data.map(req => req.sender_id === user.id ? req.receiver : req.sender);
+            setFriends(mappedFriends);
+          } else {
+            setFriends([]);
+          }
+        } else {
+          setFriends([]);
+        }
       } else if (activeTab === 'businesses') {
         // Fetch businesses (profiles with specific roles)
         const { data } = await supabase
@@ -131,14 +147,15 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack }) =>
 
   return (
     <div className="contacts-platform">
-      <header className="contacts-header glass">
-        {onBack && (
-          <button className="back-btn" onClick={onBack}>
-            <ArrowLeft size={24} />
-          </button>
-        )}
-        <div className="header-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <h1>Contacts</h1>
+      {!hideHeader && (
+        <header className="contacts-header glass">
+          {onBack && (
+            <button className="back-btn" onClick={onBack}>
+              <ArrowLeft size={24} />
+            </button>
+          )}
+          <div className="header-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <h1>Contacts</h1>
           <button 
             className="sync-contacts-btn" 
             onClick={handleSyncContacts}
@@ -173,13 +190,17 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack }) =>
           />
         </div>
 
-        <nav className="contacts-tabs no-scrollbar">
-          <button className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`} onClick={() => setActiveTab('recent')}>
-            <History size={16} /> Recent
-          </button>
-          <button className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => setActiveTab('friends')}>
-            <Users size={16} /> Friends
-          </button>
+        {!hideTabs && (
+          <nav className="contacts-tabs no-scrollbar">
+            {!hideRecentTab && (
+              <button className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`} onClick={() => setActiveTab('recent')}>
+                <History size={16} /> Recent
+              </button>
+            )}
+            <button className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => setActiveTab('friends')}>
+              <Users size={16} /> Friends
+            </button>
+
           <button className={`tab-btn ${activeTab === 'interactions' ? 'active' : ''}`} onClick={() => setActiveTab('interactions')}>
             <MapPin size={16} /> Interactions
           </button>
@@ -190,7 +211,44 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack }) =>
             <Landmark size={16} /> Civic
           </button>
         </nav>
-      </header>
+        )}
+        </header>
+      )}
+      {hideHeader && (
+        <div style={{ padding: '0 16px', marginTop: '16px' }}>
+          <div className="contacts-search-wrap" style={{ marginBottom: '16px' }}>
+            <Search size={20} className="search-icon" />
+            <input 
+              type="text" 
+              placeholder="Search contacts..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {!hideTabs && (
+            <nav className="contacts-tabs no-scrollbar" style={{ marginBottom: '0', paddingBottom: '8px' }}>
+              {!hideRecentTab && (
+                <button className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`} onClick={() => setActiveTab('recent')}>
+                  <History size={16} /> Recent
+                </button>
+              )}
+              <button className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => setActiveTab('friends')}>
+                <Users size={16} /> Friends
+              </button>
+              <button className={`tab-btn ${activeTab === 'interactions' ? 'active' : ''}`} onClick={() => setActiveTab('interactions')}>
+                <MapPin size={16} /> Interactions
+              </button>
+              <button className={`tab-btn ${activeTab === 'businesses' ? 'active' : ''}`} onClick={() => setActiveTab('businesses')}>
+                <Briefcase size={16} /> Businesses
+              </button>
+              <button className={`tab-btn ${activeTab === 'civic' ? 'active' : ''}`} onClick={() => setActiveTab('civic')}>
+                <Landmark size={16} /> Civic
+              </button>
+            </nav>
+          )}
+        </div>
+      )}
 
       <main className="contacts-main-content no-scrollbar">
         {activeTab === 'recent' && renderList(recent, 'recent')}

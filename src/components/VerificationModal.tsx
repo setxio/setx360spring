@@ -9,7 +9,8 @@ interface VerificationModalProps {
 
 export const VerificationModal: React.FC<VerificationModalProps> = ({ onClose, user }) => {
   const [role, setRole] = useState(user.role === 'visitor' ? 'resident' : user.role);
-  const [notes, setNotes] = useState('');
+  const [address, setAddress] = useState('');
+  const [idFile, setIdFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -24,23 +25,47 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ onClose, u
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const { error } = await supabase
-      .from('verifications')
-      .insert([{
-        profile_id: user.id || (await supabase.auth.getUser()).data.user?.id,
-        requested_role: role,
-        notes: notes,
-        status: 'pending'
-      }]);
+    let documentUrl = null;
 
-    if (error) {
-      console.error('Error submitting verification:', error);
-      alert('Failed to submit request.');
-    } else {
+    try {
+      const actualUserId = user.id || (await supabase.auth.getUser()).data.user?.id;
+
+      if (idFile) {
+        const fileExt = idFile.name.split('.').pop();
+        const fileName = `${actualUserId}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('identity_documents')
+          .upload(fileName, idFile);
+          
+        if (uploadError) throw uploadError;
+        
+        // We just store the path, admins will use createSignedUrl or getPublicUrl depending on bucket privacy.
+        // Since it's private, we'll store the path to generate signed URLs later.
+        documentUrl = fileName;
+      }
+
+      const { error } = await supabase
+        .from('verifications')
+        .insert([{
+          profile_id: actualUserId,
+          requested_role: role,
+          physical_address: address,
+          document_url: documentUrl,
+          status: 'pending'
+        }]);
+
+      if (error) throw error;
       setIsSuccess(true);
+    } catch (error) {
+      console.error('Error submitting verification:', error);
+      alert('Failed to submit request. Ensure you attached a valid file.');
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
+
+
 
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
@@ -128,16 +153,36 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ onClose, u
             </select>
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Proof / Notes (Optional)</label>
-            <textarea
-              placeholder="Business address, social handle, or any details that help us verify you..."
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Full Physical Address</label>
+            <input
+              type="text"
+              placeholder="123 Main St, Beaumont, TX 77701"
+              value={address}
+              onChange={e => setAddress(e.target.value)}
               disabled={isSubmitting}
-              rows={3}
-              style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--text, #fff)', fontSize: '0.9rem', resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+              style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--text, #fff)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }}
             />
+            <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', opacity: 0.8 }}>
+              This data is kept on file for shipping and billing purposes.
+            </p>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Upload Government ID / Proof</label>
+            <div style={{ border: '1px dashed rgba(255,255,255,0.2)', padding: '16px', borderRadius: '10px', textAlign: 'center', background: 'rgba(255,255,255,0.02)' }}>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={e => setIdFile(e.target.files?.[0] || null)}
+                disabled={isSubmitting}
+                style={{ width: '100%', color: 'var(--text-muted)', fontSize: '0.9rem' }}
+              />
+              {idFile && <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: 'var(--primary)' }}>{idFile.name}</p>}
+            </div>
+            <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', opacity: 0.8 }}>
+              Your ID is securely stored and will be <strong>permanently deleted</strong> from our servers immediately after an admin approves or denies your request.
+            </p>
           </div>
         </div>
 

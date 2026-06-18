@@ -1,0 +1,1950 @@
+================
+Created At: 2026-06-13T16:14:43Z
+Completed At: 2026-06-13T16:14:43Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 679
+Total Bytes: 32296
+Showing lines 1 to 679
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const RECENT_ALBUMS = [
+19:   { id: 'a1', title: 'Midnight Pulse', artist: 'Neo Waves', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=300' },
+20:   { id: 'a2', title: 'Urban Jungle', artist: 'Street Spirit', cover: 'https://images.unsplash.com/photo-1514525253361-bee8d40026bc?auto=format&fit=crop&q=80&w=300' },
+21:   { id: 'a3', title: 'Lofi Horizons', artist: 'Chill Bound', cover: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9
+<truncated 32040 bytes>
+=> setIsAddToPlaylistOpen(true)}>
+641:               <ListMusic size={20} />
+642:               <span>Add to playlist</span>
+643:             </div>
+644:           </div>
+645:         </div>
+646:       )}
+647: 
+648:       {/* Add to Playlist Selection Menu */}
+649:       {optionsSong && isAddToPlaylistOpen && (
+650:         <div className="music-modal-overlay" onClick={() => { setIsAddToPlaylistOpen(false); setOptionsSong(null); }}>
+651:           <div className="music-options-menu" onClick={e => e.stopPropagation()} style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+652:             <div className="music-options-header" style={{ justifyContent: 'space-between' }}>
+653:               <h3 style={{ margin: 0 }}>Add to Playlist</h3>
+654:               <button className="music-create-btn" style={{ padding: '6px 12px' }} onClick={() => { setIsAddToPlaylistOpen(false); setIsCreateModalOpen(true); }}>
+655:                 <Plus size={16} /> New
+656:               </button>
+657:             </div>
+658:             {playlists.length === 0 ? (
+659:               <div style={{ padding: 24, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+660:                 You don't have any playlists yet.
+661:               </div>
+662:             ) : (
+663:               playlists.map(pl => (
+664:                 <div key={pl.id} className="music-options-item" onClick={() => handleAddSongToPlaylist(pl.id)}>
+665:                   <div style={{ width: 40, height: 40, background: '#333', borderRadius: 4, overflow: 'hidden' }}>
+666:                     {pl.cover_url ? <img src={pl.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+667:                   </div>
+668:                   <span>{pl.title}</span>
+669:                 </div>
+670:               ))
+671:             )}
+672:           </div>
+673:         </div>
+674:       )}
+675: 
+676:     </div>
+677:   );
+678: };
+679: 
+The above content shows the entire, complete file contents of the requested file.
+
+================
+Created At: 2026-06-13T16:19:53Z
+Completed At: 2026-06-13T16:19:54Z
+File Path: `file:///C:/Users/montg/.gemini/antigravity-ide/brain/7cc7c221-540b-4f1b-a92f-86b1842b0e9d/task.md`
+Total Lines: 10
+Total Bytes: 569
+Showing lines 1 to 10
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: # Artist Dashboard, Music Platform Integration, and Post Editing
+2: 
+3: - [ ] Write SQL migration for `album_name` to `supabase_platform_updates.sql`
+4: - [ ] Add artist roles to `src/utils/roles.ts` in SETX 360
+5: - [ ] Update `CreatorMediaManager.tsx` in Partner CSM (Album Name & Cover Art)
+6: - [ ] Update `CreatorEventsManager.tsx` in Partner CSM (Auto-post to social feed)
+7: - [ ] Implement Next Gig Popup in `MusicView.tsx` in SETX 360
+8: - [ ] Create `EditPostModal.tsx` in SETX 360
+9: - [ ] Update `PostOptionsMenu.tsx`, `PostCard.tsx`, and `SocialFeed.tsx` to support editing posts
+10: 
+The above content shows the entire, complete file contents of the requested file.
+
+================
+Created At: 2026-06-13T16:22:08Z
+Completed At: 2026-06-13T16:22:08Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 679
+Total Bytes: 32296
+Showing lines 1 to 679
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const RECENT_ALBUMS = [
+19:   { id: 'a1', title: 'Midnight Pulse', artist: 'Neo Waves', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=300' },
+20:   { id: 'a2', title: 'Urban Jungle', artist: 'Street Spirit', cover: 'https://images.unsplash.com/photo-1514525253361-bee8d40026bc?auto=format&fit=crop&q=80&w=300' },
+21:   { id: 'a3', title: 'Lofi Horizons', artist: 'Chill Bound', cover: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9
+<truncated 32040 bytes>
+=> setIsAddToPlaylistOpen(true)}>
+641:               <ListMusic size={20} />
+642:               <span>Add to playlist</span>
+643:             </div>
+644:           </div>
+645:         </div>
+646:       )}
+647: 
+648:       {/* Add to Playlist Selection Menu */}
+649:       {optionsSong && isAddToPlaylistOpen && (
+650:         <div className="music-modal-overlay" onClick={() => { setIsAddToPlaylistOpen(false); setOptionsSong(null); }}>
+651:           <div className="music-options-menu" onClick={e => e.stopPropagation()} style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+652:             <div className="music-options-header" style={{ justifyContent: 'space-between' }}>
+653:               <h3 style={{ margin: 0 }}>Add to Playlist</h3>
+654:               <button className="music-create-btn" style={{ padding: '6px 12px' }} onClick={() => { setIsAddToPlaylistOpen(false); setIsCreateModalOpen(true); }}>
+655:                 <Plus size={16} /> New
+656:               </button>
+657:             </div>
+658:             {playlists.length === 0 ? (
+659:               <div style={{ padding: 24, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+660:                 You don't have any playlists yet.
+661:               </div>
+662:             ) : (
+663:               playlists.map(pl => (
+664:                 <div key={pl.id} className="music-options-item" onClick={() => handleAddSongToPlaylist(pl.id)}>
+665:                   <div style={{ width: 40, height: 40, background: '#333', borderRadius: 4, overflow: 'hidden' }}>
+666:                     {pl.cover_url ? <img src={pl.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+667:                   </div>
+668:                   <span>{pl.title}</span>
+669:                 </div>
+670:               ))
+671:             )}
+672:           </div>
+673:         </div>
+674:       )}
+675: 
+676:     </div>
+677:   );
+678: };
+679: 
+The above content shows the entire, complete file contents of the requested file.
+
+================
+Created At: 2026-06-13T16:38:05Z
+Completed At: 2026-06-13T16:38:05Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 740
+Total Bytes: 35414
+Showing lines 1 to 740
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const RECENT_ALBUMS = [
+19:   { id: 'a1', title: 'Midnight Pulse', artist: 'Neo Waves', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=300' },
+20:   { id: 'a2', title: 'Urban Jungle', artist: 'Street Spirit', cover: 'https://images.unsplash.com/photo-1514525253361-bee8d40026bc?auto=format&fit=crop&q=80&w=300' },
+21:   { id: 'a3', title: 'Lofi Horizons', artist: 'Chill Bound', cover: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9
+<truncated 35463 bytes>
+: '50%',
+709:             transform: 'translateX(-50%)',
+710:             background: 'var(--card-bg)',
+711:             border: '1px solid rgba(255,255,255,0.1)',
+712:             padding: '20px',
+713:             borderRadius: '16px',
+714:             boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+715:             width: '90%',
+716:             maxWidth: '360px',
+717:             animation: 'fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+718:           }}>
+719:             <button style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => setGigPopup(null)}>
+720:               <X size={16} />
+721:             </button>
+722:             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+723:               <div style={{ background: 'var(--primary)', color: '#fff', padding: '6px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+724:                 Next Gig
+725:               </div>
+726:               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{gigPopup.artist_name}</span>
+727:             </div>
+728:             <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem' }}>{gigPopup.title}</h4>
+729:             <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+730:               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>📍 {gigPopup.location}</span>
+731:               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>🕒 {new Date(gigPopup.event_date).toLocaleDateString()} @ {new Date(gigPopup.event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+732:             </div>
+733:           </div>
+734:         </div>
+735:       )}
+736: 
+737:     </div>
+738:   );
+739: };
+740: 
+The above content shows the entire, complete file contents of the requested file.
+
+================
+Created At: 2026-06-13T16:59:42Z
+Completed At: 2026-06-13T16:59:42Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 850
+Total Bytes: 42821
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users, Calendar } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const RECENT_ALBUMS = [
+19:   { id: 'a1', title: 'Midnight Pulse', artist: 'Neo Waves', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=300' },
+20:   { id: 'a2', title: 'Urban Jungle', artist: 'Street Spirit', cover: 'https://images.unsplash.com/photo-1514525253361-bee8d40026bc?auto=format&fit=crop&q=80&w=300' },
+21:   { id: 'a3', title: 'Lofi Horizons', artist: 'Chill Bound', cover: 'https://images.unsplash.com/photo-1493225255756-d9
+<truncated 40139 bytes>
+     </div>
+772:             <div className="music-options-item" onClick={() => setIsAddToPlaylistOpen(true)}>
+773:               <ListMusic size={20} />
+774:               <span>Add to playlist</span>
+775:             </div>
+776:           </div>
+777:         </div>
+778:       )}
+779: 
+780:       {/* Add to Playlist Selection Menu */}
+781:       {optionsSong && isAddToPlaylistOpen && (
+782:         <div className="music-modal-overlay" onClick={() => { setIsAddToPlaylistOpen(false); setOptionsSong(null); }}>
+783:           <div className="music-options-menu" onClick={e => e.stopPropagation()} style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+784:             <div className="music-options-header" style={{ justifyContent: 'space-between' }}>
+785:               <h3 style={{ margin: 0 }}>Add to Playlist</h3>
+786:               <button className="music-create-btn" style={{ padding: '6px 12px' }} onClick={() => { setIsAddToPlaylistOpen(false); setIsCreateModalOpen(true); }}>
+787:                 <Plus size={16} /> New
+788:               </button>
+789:             </div>
+790:             {playlists.length === 0 ? (
+791:               <div style={{ padding: 24, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+792:                 You don't have any playlists yet.
+793:               </div>
+794:             ) : (
+795:               playlists.map(pl => (
+796:                 <div key={pl.id} className="music-options-item" onClick={() => handleAddSongToPlaylist(pl.id)}>
+797:                   <div style={{ width: 40, height: 40, background: '#333', borderRadius: 4, overflow: 'hidden' }}>
+798:                     {pl.cover_url ? <img src={pl.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+799:                   </div>
+800:                   <span>{pl.title}</span>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:04:39Z
+Completed At: 2026-06-13T17:04:39Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 935
+Total Bytes: 47197
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users, Calendar } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const TRADITIONAL_GENRES = [
+19:   { name: 'Rock', color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+20:   { name: 'Metal', color: 'linear-gradient(135deg, #000000 0%, #434343 100%)' },
+21:   { name: 'Rap', color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+22:   { name: 'R&B', color: 'linear-gradient(135deg, #654ea3 0%, #eaafc8 100%)' },
+23:   { name: 'Yacht Rock', color: 'linear-gradient(135deg, #2980B9 0%, #6DD5FA 50%, #FFFFFF 100%)' },
+24:   { name: 'Ca
+<truncated 40229 bytes>
+
+758: 
+759:   // ─── Utilities / Modals ───
+760:   return (
+761:     <div className="music-container">
+762:       {/* Header & Tabs */}
+763:       <nav className="music-navbar">
+764:         <div className="music-logo">
+765:           <Headphones size={28} />
+766:           <span>SETX Music</span>
+767:         </div>
+768:         
+769:         <div className="music-tabs">
+770:           {(['home', 'explore', 'library'] as MusicTab[]).map(tab => (
+771:             <button 
+772:               key={tab}
+773:               className={`music-tab-btn ${activeTab === tab ? 'active' : ''}`}
+774:               onClick={() => {
+775:                 setActiveTab(tab);
+776:                 if (tab === 'home') setGlobalActiveTab(0);
+777:                 if (tab === 'explore') setGlobalActiveTab(1);
+778:                 if (tab === 'library') setGlobalActiveTab(2);
+779:               }}
+780:             >
+781:               {tab.charAt(0).toUpperCase() + tab.slice(1)}
+782:             </button>
+783:           ))}
+784:         </div>
+785: 
+786:         <div className="music-nav-actions">
+787:           <Search size={22} className="music-action-icon" onClick={() => setIsSearchActive(true)} />
+788:           <Cast size={22} className="music-action-icon" />
+789:           {user?.avatar_url ? (
+790:             <img src={user.avatar_url} alt="Profile" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+791:           ) : (
+792:             <UserCircle size={26} className="music-action-icon" />
+793:           )}
+794:         </div>
+795:       </nav>
+796: 
+797:       {/* Render Active View */}
+798:       {activeTab === 'home' && renderHome()}
+799:       {activeTab === 'explore' && renderExplore()}
+800:       {activeTab === 'library' && renderLibrary()}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:05:08Z
+Completed At: 2026-06-13T17:05:08Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 935
+Total Bytes: 47197
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users, Calendar } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const TRADITIONAL_GENRES = [
+19:   { name: 'Rock', color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+20:   { name: 'Metal', color: 'linear-gradient(135deg, #000000 0%, #434343 100%)' },
+21:   { name: 'Rap', color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+22:   { name: 'R&B', color: 'linear-gradient(135deg, #654ea3 0%, #eaafc8 100%)' },
+23:   { name: 'Yacht Rock', color: 'linear-gradient(135deg, #2980B9 0%, #6DD5FA 50%, #FFFFFF 100%)' },
+24:   { name: 'Ca
+<truncated 40229 bytes>
+
+758: 
+759:   // ─── Utilities / Modals ───
+760:   return (
+761:     <div className="music-container">
+762:       {/* Header & Tabs */}
+763:       <nav className="music-navbar">
+764:         <div className="music-logo">
+765:           <Headphones size={28} />
+766:           <span>SETX Music</span>
+767:         </div>
+768:         
+769:         <div className="music-tabs">
+770:           {(['home', 'explore', 'library'] as MusicTab[]).map(tab => (
+771:             <button 
+772:               key={tab}
+773:               className={`music-tab-btn ${activeTab === tab ? 'active' : ''}`}
+774:               onClick={() => {
+775:                 setActiveTab(tab);
+776:                 if (tab === 'home') setGlobalActiveTab(0);
+777:                 if (tab === 'explore') setGlobalActiveTab(1);
+778:                 if (tab === 'library') setGlobalActiveTab(2);
+779:               }}
+780:             >
+781:               {tab.charAt(0).toUpperCase() + tab.slice(1)}
+782:             </button>
+783:           ))}
+784:         </div>
+785: 
+786:         <div className="music-nav-actions">
+787:           <Search size={22} className="music-action-icon" onClick={() => setIsSearchActive(true)} />
+788:           <Cast size={22} className="music-action-icon" />
+789:           {user?.avatar_url ? (
+790:             <img src={user.avatar_url} alt="Profile" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+791:           ) : (
+792:             <UserCircle size={26} className="music-action-icon" />
+793:           )}
+794:         </div>
+795:       </nav>
+796: 
+797:       {/* Render Active View */}
+798:       {activeTab === 'home' && renderHome()}
+799:       {activeTab === 'explore' && renderExplore()}
+800:       {activeTab === 'library' && renderLibrary()}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:07:25Z
+Completed At: 2026-06-13T17:07:25Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1033
+Total Bytes: 50959
+Showing lines 150 to 200
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+150:       setPlaylistTracks([]);
+151:     }
+152:   };
+153: 
+154:   const handleCreatePlaylist = async () => {
+155:     if (!newPlaylistTitle.trim() || !user?.id) return;
+156:     const { data, error } = await supabase.from('media_playlists').insert({
+157:       user_id: user.id,
+158:       title: newPlaylistTitle.trim(),
+159:       visibility: newPlaylistVisibility
+160:     }).select().single();
+161:     
+162:     if (!error && data) {
+163:       setPlaylists([data, ...playlists]);
+164:       setIsCreateModalOpen(false);
+165:       setNewPlaylistTitle('');
+166:       setNewPlaylistVisibility('private');
+167:     }
+168:   };
+169: 
+170:   const handleAddSongToPlaylist = async (playlistId: string) => {
+171:     if (!optionsSong) return;
+172:     await supabase.from('media_playlist_tracks').insert({
+173:       playlist_id: playlistId,
+174:       track_id: optionsSong.id
+175:     });
+176:     
+177:     // Attempt to update playlist cover with song cover if empty
+178:     const playlist = playlists.find(p => p.id === playlistId);
+179:     if (playlist && !playlist.cover_url) {
+180:       await supabase.from('media_playlists').update({ cover_url: optionsSong.cover }).eq('id', playlistId);
+181:       fetchPlaylists();
+182:     }
+183:     
+184:     setIsAddToPlaylistOpen(false);
+185:     setOptionsSong(null);
+186:   };
+187: 
+188:   const handleSongSelect = async (song: any, contextQueue?: any[]) => {
+189:     let targetQueue = contextQueue?.map(s => ({ ...s, artist: s.artist_name }));
+190:     
+191:     // SMART QUEUE LOGIC: If context is full tracks (Quick Picks), build genre-based queue
+192:     if (contextQueue === tracks) {
+193:       targetQueue = tracks
+194:         .filter(t => t.genre === song.genre || t.id === song.id)
+195:         .map(s => ({ ...s, artist: s.artist_name }));
+196:     }
+197: 
+198:     playSong({ ...song, artist: song.artist_name }, targetQueue);
+199: 
+200:     // Track Listening History
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:30:42Z
+Completed At: 2026-06-13T17:30:42Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1058
+Total Bytes: 52088
+Showing lines 370 to 400
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+370:         ))}
+371:       </div>
+372: 
+373:       <section className="music-section">
+374:         <div className="section-header">
+375:           <div>
+376:             <p className="section-subtitle">Start Radio From a Song</p>
+377:             <h3 className="section-title">Quick Picks</h3>
+378:           </div>
+379:         </div>
+380:         <div className="list-grid">
+381:           {quickPicks.map((song) => (
+382:             <div 
+383:               key={song.id} 
+384:               className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`}
+385:               onClick={() => handleSongSelect(song, tracks)}
+386:             >
+387:               <div className="song-row-cover-wrap">
+388:                 <img src={song.cover} alt={song.title} className="song-row-cover" />
+389:                 <div className="song-row-play">
+390:                   <Play size={20} fill="#fff" color="#fff" />
+391:                 </div>
+392:               </div>
+393:               <div className="song-row-info">
+394:                 <h4 className="song-row-title">{song.title}</h4>
+395:                 <p 
+396:                   className="song-row-artist" 
+397:                   onClick={(e) => { e.stopPropagation(); setActiveArtist(song.artist_name); }}
+398:                   style={{ cursor: 'pointer' }}
+399:                 >
+400:                   {song.isExplicit && <span className="explicit-badge">E</span>}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:30:47Z
+Completed At: 2026-06-13T17:30:47Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1058
+Total Bytes: 52088
+Showing lines 180 to 230
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+180:       await supabase.from('media_playlists').update({ cover_url: optionsSong.cover }).eq('id', playlistId);
+181:       fetchPlaylists();
+182:     }
+183:     
+184:     setIsAddToPlaylistOpen(false);
+185:     setOptionsSong(null);
+186:   };
+187: 
+188:   const handleSongSelect = async (song: any, contextQueue?: any[]) => {
+189:     let targetQueue = contextQueue?.map(s => ({ ...s, artist: s.artist_name }));
+190:     
+191:     // SMART QUEUE LOGIC: If context is full tracks (Quick Picks), build genre-based queue
+192:     if (contextQueue === tracks) {
+193:       const genreTracks = tracks.filter(t => t.genre === song.genre && t.id !== song.id);
+194:       
+195:       const playedIds = new Set(listeningHistory.map((s: any) => s.id));
+196:       const playedTracks = genreTracks.filter(t => playedIds.has(t.id));
+197:       const unplayedTracks = genreTracks.filter(t => !playedIds.has(t.id));
+198: 
+199:       const shuffle = (array: any[]) => [...array].sort(() => 0.5 - Math.random());
+200:       const shuffledPlayed = shuffle(playedTracks);
+201:       const shuffledUnplayed = shuffle(unplayedTracks);
+202: 
+203:       const queueSize = 20;
+204:       let numPlayed = Math.floor(queueSize * 0.6); // 60%
+205:       let numUnplayed = queueSize - numPlayed;     // 40%
+206: 
+207:       if (shuffledPlayed.length < numPlayed) {
+208:         numPlayed = shuffledPlayed.length;
+209:         numUnplayed = Math.min(queueSize - numPlayed, shuffledUnplayed.length);
+210:       } else if (shuffledUnplayed.length < numUnplayed) {
+211:         numUnplayed = shuffledUnplayed.length;
+212:         numPlayed = Math.min(queueSize - numUnplayed, shuffledPlayed.length);
+213:       }
+214: 
+215:       const finalQueue = shuffle([
+216:         ...shuffledPlayed.slice(0, numPlayed),
+217:         ...shuffledUnplayed.slice(0, numUnplayed)
+218:       ]);
+219: 
+220:       targetQueue = [song, ...finalQueue].map(s => ({ ...s, artist: s.artist_name }));
+221:     }
+222: 
+223:     playSong({ ...song, artist: song.artist_name }, targetQueue);
+224: 
+225:     // Track Listening History
+226:     setListeningHistory(prev => {
+227:       const newHistory = [song, ...prev.filter(s => s.id !== song.id)].slice(0, 20);
+228:       localStorage.setItem('music_listening_history', JSON.stringify(newHistory));
+229:       return newHistory;
+230:     });
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:30:56Z
+Completed At: 2026-06-13T17:30:56Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1058
+Total Bytes: 52088
+Showing lines 375 to 430
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+375:           <div>
+376:             <p className="section-subtitle">Start Radio From a Song</p>
+377:             <h3 className="section-title">Quick Picks</h3>
+378:           </div>
+379:         </div>
+380:         <div className="list-grid">
+381:           {quickPicks.map((song) => (
+382:             <div 
+383:               key={song.id} 
+384:               className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`}
+385:               onClick={() => handleSongSelect(song, tracks)}
+386:             >
+387:               <div className="song-row-cover-wrap">
+388:                 <img src={song.cover} alt={song.title} className="song-row-cover" />
+389:                 <div className="song-row-play">
+390:                   <Play size={20} fill="#fff" color="#fff" />
+391:                 </div>
+392:               </div>
+393:               <div className="song-row-info">
+394:                 <h4 className="song-row-title">{song.title}</h4>
+395:                 <p 
+396:                   className="song-row-artist" 
+397:                   onClick={(e) => { e.stopPropagation(); setActiveArtist(song.artist_name); }}
+398:                   style={{ cursor: 'pointer' }}
+399:                 >
+400:                   {song.isExplicit && <span className="explicit-badge">E</span>}
+401:                   <span style={{ transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
+402:                     {song.artist_name}
+403:                   </span>
+404:                 </p>
+405:               </div>
+406:               <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
+407:                 <Plus size={18} />
+408:               </button>
+409:             </div>
+410:           ))}
+411:         </div>
+412:       </section>
+413: 
+414:       {listeningHistory.length > 0 ? (
+415:         <section className="music-section">
+416:           <div className="section-header">
+417:             <h3 className="section-title">Play again</h3>
+418:             <button className="section-more-btn">More</button>
+419:           </div>
+420:           <div className="horizontal-scroll">
+421:             {listeningHistory.map((song, idx) => (
+422:               <div key={`${song.id}-${idx}`} className="album-card" onClick={() => handleSongSelect(song, listeningHistory)}>
+423:                 <div className="album-cover-wrap">
+424:                   <img src={song.cover} alt={song.title} className="album-cover" />
+425:                   <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+426:                 </div>
+427:                 <div>
+428:                   <h4 className="album-title">{song.title}</h4>
+429:                   <p className="album-artist">{song.artist_name}</p>
+430:                 </div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:31:03Z
+Completed At: 2026-06-13T17:31:03Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1058
+Total Bytes: 52088
+Showing lines 188 to 235
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+188:   const handleSongSelect = async (song: any, contextQueue?: any[]) => {
+189:     let targetQueue = contextQueue?.map(s => ({ ...s, artist: s.artist_name }));
+190:     
+191:     // SMART QUEUE LOGIC: If context is full tracks (Quick Picks), build genre-based queue
+192:     if (contextQueue === tracks) {
+193:       const genreTracks = tracks.filter(t => t.genre === song.genre && t.id !== song.id);
+194:       
+195:       const playedIds = new Set(listeningHistory.map((s: any) => s.id));
+196:       const playedTracks = genreTracks.filter(t => playedIds.has(t.id));
+197:       const unplayedTracks = genreTracks.filter(t => !playedIds.has(t.id));
+198: 
+199:       const shuffle = (array: any[]) => [...array].sort(() => 0.5 - Math.random());
+200:       const shuffledPlayed = shuffle(playedTracks);
+201:       const shuffledUnplayed = shuffle(unplayedTracks);
+202: 
+203:       const queueSize = 20;
+204:       let numPlayed = Math.floor(queueSize * 0.6); // 60%
+205:       let numUnplayed = queueSize - numPlayed;     // 40%
+206: 
+207:       if (shuffledPlayed.length < numPlayed) {
+208:         numPlayed = shuffledPlayed.length;
+209:         numUnplayed = Math.min(queueSize - numPlayed, shuffledUnplayed.length);
+210:       } else if (shuffledUnplayed.length < numUnplayed) {
+211:         numUnplayed = shuffledUnplayed.length;
+212:         numPlayed = Math.min(queueSize - numUnplayed, shuffledPlayed.length);
+213:       }
+214: 
+215:       const finalQueue = shuffle([
+216:         ...shuffledPlayed.slice(0, numPlayed),
+217:         ...shuffledUnplayed.slice(0, numUnplayed)
+218:       ]);
+219: 
+220:       targetQueue = [song, ...finalQueue].map(s => ({ ...s, artist: s.artist_name }));
+221:     }
+222: 
+223:     playSong({ ...song, artist: song.artist_name }, targetQueue);
+224: 
+225:     // Track Listening History
+226:     setListeningHistory(prev => {
+227:       const newHistory = [song, ...prev.filter(s => s.id !== song.id)].slice(0, 20);
+228:       localStorage.setItem('music_listening_history', JSON.stringify(newHistory));
+229:       return newHistory;
+230:     });
+231: 
+232:     // Track Genre Preferences
+233:     if (song.genre) {
+234:       setGenrePreferences(prev => {
+235:         const newPrefs = { ...prev, [song.genre]: (prev[song.genre] || 0) + 1 };
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:31:31Z
+Completed At: 2026-06-13T17:31:31Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1058
+Total Bytes: 52088
+Showing lines 380 to 412
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+380:         <div className="list-grid">
+381:           {quickPicks.map((song) => (
+382:             <div 
+383:               key={song.id} 
+384:               className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`}
+385:               onClick={() => handleSongSelect(song, tracks)}
+386:             >
+387:               <div className="song-row-cover-wrap">
+388:                 <img src={song.cover} alt={song.title} className="song-row-cover" />
+389:                 <div className="song-row-play">
+390:                   <Play size={20} fill="#fff" color="#fff" />
+391:                 </div>
+392:               </div>
+393:               <div className="song-row-info">
+394:                 <h4 className="song-row-title">{song.title}</h4>
+395:                 <p 
+396:                   className="song-row-artist" 
+397:                   onClick={(e) => { e.stopPropagation(); setActiveArtist(song.artist_name); }}
+398:                   style={{ cursor: 'pointer' }}
+399:                 >
+400:                   {song.isExplicit && <span className="explicit-badge">E</span>}
+401:                   <span style={{ transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
+402:                     {song.artist_name}
+403:                   </span>
+404:                 </p>
+405:               </div>
+406:               <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
+407:                 <Plus size={18} />
+408:               </button>
+409:             </div>
+410:           ))}
+411:         </div>
+412:       </section>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:31:52Z
+Completed At: 2026-06-13T17:31:52Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1058
+Total Bytes: 52088
+Showing lines 60 to 80
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+60:   { id: 's5', title: 'Neon Nightscape', artist_name: 'Vibe Logic', duration: '5:53', cover: 'https://images.unsplash.com/photo-1621360811013-c76831f162cb?auto=format&fit=crop&q=80&w=300', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', isExplicit: false }
+61: ];
+62: 
+63: type MusicTab = 'home' | 'explore' | 'library';
+64: 
+65: export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) => {
+66:   const { 
+67:     currentSong, playSong, activeTab: globalActiveTab, setActiveTab: setGlobalActiveTab,
+68:     musicSearchQuery: searchQuery, setMusicSearchQuery: setSearchQuery,
+69:     musicIsSearchActive: isSearchActive, setMusicIsSearchActive: setIsSearchActive,
+70:     musicActiveArtist: activeArtist, setMusicActiveArtist: setActiveArtist,
+71:     musicActivePlaylist: activePlaylist, setMusicActivePlaylist: setActivePlaylist
+72:   } = useApp();
+73:   
+74:   const [activeTab, setActiveTab] = useState<MusicTab>('home');
+75:   const [activeFilter, setActiveFilter] = useState('All');
+76:   const [tracks, setTracks] = useState<any[]>([]);
+77: 
+78:   // Phase 3 Playlist State
+79:   const [playlists, setPlaylists] = useState<any[]>([]);
+80:   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:39:51Z
+Completed At: 2026-06-13T17:39:51Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1054
+Total Bytes: 51769
+Showing lines 500 to 530
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+500:                 <h4 className="album-title">{artist.name}</h4>
+501:                 <p className="album-artist">Artist</p>
+502:               </div>
+503:             </div>
+504:           ))}
+505:         </div>
+506:       </section>
+507: 
+508:       <section className="music-section">
+509:         <div className="section-header">
+510:           <h3 className="section-title">Genres</h3>
+511:         </div>
+512:         <div className="moods-grid">
+513:           {TRADITIONAL_GENRES.map(genre => (
+514:             <div key={genre.name} className="mood-card" style={{ background: genre.color }}>
+515:               <h4 className="mood-title">{genre.name}</h4>
+516:             </div>
+517:           ))}
+518:         </div>
+519:       </section>
+520: 
+521:       <section className="music-section" style={{ marginTop: 24 }}>
+522:         <div className="section-header">
+523:           <h3 className="section-title">Podcasts</h3>
+524:         </div>
+525:         <div className="horizontal-scroll">
+526:           {PODCASTS.map(pod => (
+527:             <div key={pod.id} className="album-card">
+528:               <div className="album-cover-wrap" style={{ borderRadius: 12, overflow: 'hidden' }}>
+529:                 <img src={pod.cover} alt={pod.title} className="album-cover" />
+530:                 <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:40:05Z
+Completed At: 2026-06-13T17:40:05Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1054
+Total Bytes: 51769
+Showing lines 550 to 600
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+550:           ))}
+551:         </div>
+552:       </section>
+553:     </div>
+554:   );
+555: 
+556:   const renderLibrary = () => (
+557:     <div className="music-content">
+558:       <div className="filter-chips">
+559:         {['Playlists', 'Songs', 'Albums', 'Artists'].map(f => (
+560:           <button 
+561:             key={f} 
+562:             className={`filter-chip ${activeFilter === f ? 'active' : ''}`}
+563:             onClick={() => setActiveFilter(f)}
+564:           >
+565:             {f}
+566:           </button>
+567:         ))}
+568:       </div>
+569: 
+570:       <section className="music-section" style={{ marginTop: 16 }}>
+571:         <div className="section-header" style={{ marginBottom: 12 }}>
+572:           <button className="music-create-btn" onClick={() => setIsCreateModalOpen(true)}>
+573:             <Plus size={20} /> New Playlist
+574:           </button>
+575:         </div>
+576: 
+577:         <div className="horizontal-scroll">
+578:           <div className="album-card">
+579:             <div className="album-cover-wrap" style={{ background: 'linear-gradient(135deg, #111, #333)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+580:               <Play size={48} color="rgba(255,255,255,0.2)" />
+581:             </div>
+582:             <div>
+583:               <h4 className="album-title">Your Likes</h4>
+584:               <p className="album-artist">Auto playlist</p>
+585:             </div>
+586:           </div>
+587:           
+588:           {playlists.map(pl => (
+589:             <div key={pl.id} className="album-card" onClick={() => loadPlaylistDetails(pl)}>
+590:               <div className="album-cover-wrap" style={{ background: '#222', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+591:                 {pl.cover_url ? (
+592:                   <img src={pl.cover_url} alt={pl.title} className="album-cover" />
+593:                 ) : (
+594:                   <Music2 size={40} color="rgba(255,255,255,0.2)" />
+595:                 )}
+596:               </div>
+597:               <h4 className="album-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+598:                 {pl.title}
+599:                 {pl.visibility === 'private' && <Lock size={12} color="rgba(255,255,255,0.5)" />}
+600:                 {pl.visibility === 'friends' && <Users size={12} color="rgba(255,255,255,0.5)" />}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T17:43:18Z
+Completed At: 2026-06-13T17:43:18Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1054
+Total Bytes: 51769
+Showing lines 15 to 40
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const TRADITIONAL_GENRES = [
+19:   { name: 'Rock', color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+20:   { name: 'Metal', color: 'linear-gradient(135deg, #000000 0%, #434343 100%)' },
+21:   { name: 'Rap', color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+22:   { name: 'R&B', color: 'linear-gradient(135deg, #654ea3 0%, #eaafc8 100%)' },
+23:   { name: 'Yacht Rock', color: 'linear-gradient(135deg, #2980B9 0%, #6DD5FA 50%, #FFFFFF 100%)' },
+24:   { name: 'Cajun', color: 'linear-gradient(135deg, #ff9966 0%, #ff5e62 100%)' },
+25:   { name: 'Country', color: 'linear-gradient(135deg, #F09819 0%, #EDDE5D 100%)' },
+26:   { name: 'Blues', color: 'linear-gradient(135deg, #005C97 0%, #363795 100%)' },
+27:   { name: 'Jazz', color: 'linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)' },
+28:   { name: 'Hip-Hop', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' },
+29:   { name: 'Punk', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+30:   { name: 'Electronic', color: 'linear-gradient(135deg, #12c2e9 0%, #c471ed 50%, #f64f59 100%)' },
+31:   { name: 'Rockabilly', color: 'linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%)' },
+32:   { name: 'Indie & Alternative', color: 'linear-gradient(135deg, #4b6cb7 0%, #182848 100%)' }
+33: ];
+34: 
+35: const PODCASTS = [
+36:   { id: 'p1', title: 'The Daily Tech', host: 'Tech Network', cover: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=300' },
+37:   { id: 'p2', title: 'True Crime Uncovered', host: 'Crime Network', cover: 'https://images.unsplash.com/photo-1588693959661-d7037f4014d5?auto=format&fit=crop&q=80&w=300' },
+38:   { id: 'p3', title: 'Mindful Mornings', host: 'Wellness Co.', cover: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&q=80&w=300' }
+39: ];
+40: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T18:59:47Z
+Completed At: 2026-06-13T18:59:47Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1078
+Total Bytes: 52976
+Showing lines 450 to 500
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+450:               <div key={album.id} className="album-card">
+451:                 <div className="album-cover-wrap">
+452:                   <img src={album.cover} alt={album.title} className="album-cover" />
+453:                   <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+454:                 </div>
+455:                 <div>
+456:                   <h4 className="album-title">{album.title}</h4>
+457:                   <p className="album-artist">{album.artist}</p>
+458:                 </div>
+459:               </div>
+460:             ))}
+461:           </div>
+462:         </section>
+463:       )}
+464: 
+465:       <section className="music-section">
+466:         <div className="section-header">
+467:           <h3 className="section-title">Mixed for you</h3>
+468:         </div>
+469:         <div className="horizontal-scroll">
+470:           {dynamicMixes.map(mix => (
+471:             <div key={mix.id} className="album-card">
+472:               <div className="album-cover-wrap">
+473:                 <img src={mix.cover} alt={mix.title} className="album-cover" />
+474:                 <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+475:               </div>
+476:               <div>
+477:                 <h4 className="album-title">{mix.title}</h4>
+478:                 <p className="album-artist">{mix.artist}</p>
+479:               </div>
+480:             </div>
+481:           ))}
+482:         </div>
+483:       </section>
+484:     </div>
+485:   );
+486: 
+487:   const renderExplore = () => (
+488:     <div className="music-content">
+489:       <div className="horizontal-scroll" style={{ paddingBottom: '24px' }}>
+490:         <div className="album-card" style={{ width: 'auto', gap: 16, flexDirection: 'row', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '16px 24px', borderRadius: 12 }}>
+491:           <Music2 size={32} color="var(--primary)" />
+492:           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>New Releases</h3>
+493:         </div>
+494:         <div className="album-card" style={{ width: 'auto', gap: 16, flexDirection: 'row', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '16px 24px', borderRadius: 12 }}>
+495:           <Activity size={32} color="#f43f5e" />
+496:           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Charts</h3>
+497:         </div>
+498:       </div>
+499: 
+500:       <section className="music-section">
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:02:10Z
+Completed At: 2026-06-13T19:02:10Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1078
+Total Bytes: 52976
+Showing lines 30 to 60
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+30:   { name: 'Electronic', color: 'linear-gradient(135deg, #12c2e9 0%, #c471ed 50%, #f64f59 100%)' },
+31:   { name: 'Rockabilly', color: 'linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%)' },
+32:   { name: 'Indie & Alternative', color: 'linear-gradient(135deg, #4b6cb7 0%, #182848 100%)' }
+33: ];
+34: 
+35: const MASTER_MOODS = [
+36:   { name: 'Chill', color: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)' },
+37:   { name: 'Focus', color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+38:   { name: 'Workout', color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+39:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' },
+40:   { name: 'Late Night', color: 'linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)' },
+41:   { name: 'Upbeat', color: 'linear-gradient(135deg, #FF4E50 0%, #F9D423 100%)' },
+42:   { name: 'Melancholy', color: 'linear-gradient(135deg, #654ea3 0%, #eaafc8 100%)' },
+43:   { name: 'Aggressive', color: 'linear-gradient(135deg, #000000 0%, #434343 100%)' }
+44: ];
+45: 
+46: const PODCASTS = [
+47:   { id: 'p1', title: 'The Daily Tech', host: 'Tech Network', cover: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=300' },
+48:   { id: 'p2', title: 'True Crime Uncovered', host: 'Crime Network', cover: 'https://images.unsplash.com/photo-1588693959661-d7037f4014d5?auto=format&fit=crop&q=80&w=300' },
+49:   { id: 'p3', title: 'Mindful Mornings', host: 'Wellness Co.', cover: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&q=80&w=300' }
+50: ];
+51: 
+52: const RECENT_ALBUMS = [
+53:   { id: 'a1', title: 'Midnight Pulse', artist: 'Neo Waves', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=300' },
+54:   { id: 'a2', title: 'Urban Jungle', artist: 'Street Spirit', cover: 'https://images.unsplash.com/photo-1514525253361-bee8d40026bc?auto=format&fit=crop&q=80&w=300' },
+55:   { id: 'a3', title: 'Lofi Horizons', artist: 'Chill Bound', cover: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&q=80&w=300' },
+56:   { id: 'a4', title: 'Electric Dreams', artist: 'Synth Soul', cover: 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300' },
+57:   { id: 'a5', title: 'Neon Nightscape', artist: 'Vibe Logic', cover: 'https://images.unsplash.com/photo-1621360811013-c76831f162cb?auto=format&fit=crop&q=80&w=300' }
+58: ];
+59: 
+60: const MIXES = [
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:02:15Z
+Completed At: 2026-06-13T19:02:15Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1078
+Total Bytes: 52976
+Showing lines 110 to 140
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+110: 
+111:   useEffect(() => {
+112:     try {
+113:       const storedHistory = localStorage.getItem('music_listening_history');
+114:       if (storedHistory) setListeningHistory(JSON.parse(storedHistory));
+115: 
+116:       const storedGenres = localStorage.getItem('music_genre_preferences');
+117:       if (storedGenres) setGenrePreferences(JSON.parse(storedGenres));
+118:     } catch (e) {
+119:       console.error('Failed to parse listening history', e);
+120:     }
+121:   }, []);
+122: 
+123:   useEffect(() => {
+124:     if (globalActiveTab === 0) setActiveTab('home');
+125:     if (globalActiveTab === 1) setActiveTab('explore');
+126:     if (globalActiveTab === 2) setActiveTab('library');
+127:   }, [globalActiveTab]);
+128: 
+129:   useEffect(() => {
+130:     fetchTracks();
+131:     if (user?.id) fetchPlaylists();
+132:   }, [user]);
+133: 
+134:   const fetchTracks = async () => {
+135:     const { data } = await supabase.from('media_tracks').select('*').order('created_at', { ascending: false });
+136:     if (data && data.length > 0) {
+137:       setTracks(data.map(d => ({
+138:         ...d,
+139:         artist_name: d.artist_name || d.artist || 'Unknown Artist',
+140:         cover: d.cover || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300'
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:02:20Z
+Completed At: 2026-06-13T19:02:20Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1078
+Total Bytes: 52976
+Showing lines 70 to 100
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+70:   { id: 's4', title: 'Cyber City', artist_name: 'Synth Soul', duration: '5:02', cover: 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', isExplicit: true },
+71:   { id: 's5', title: 'Neon Nightscape', artist_name: 'Vibe Logic', duration: '5:53', cover: 'https://images.unsplash.com/photo-1621360811013-c76831f162cb?auto=format&fit=crop&q=80&w=300', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', isExplicit: false }
+72: ];
+73: 
+74: type MusicTab = 'home' | 'explore' | 'library';
+75: 
+76: export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) => {
+77:   const { 
+78:     currentSong, playSong, activeTab: globalActiveTab, setActiveTab: setGlobalActiveTab,
+79:     musicSearchQuery: searchQuery, setMusicSearchQuery: setSearchQuery,
+80:     musicIsSearchActive: isSearchActive, setMusicIsSearchActive: setIsSearchActive,
+81:     musicActiveArtist: activeArtist, setMusicActiveArtist: setActiveArtist,
+82:     musicActivePlaylist: activePlaylist, setMusicActivePlaylist: setActivePlaylist
+83:   } = useApp();
+84:   
+85:   const [activeTab, setActiveTab] = useState<MusicTab>('home');
+86:   const [activeFilter, setActiveFilter] = useState('All');
+87:   const [tracks, setTracks] = useState<any[]>([]);
+88: 
+89:   // Phase 3 Playlist State
+90:   const [playlists, setPlaylists] = useState<any[]>([]);
+91:   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+92:   const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
+93:   const [newPlaylistVisibility, setNewPlaylistVisibility] = useState('private');
+94:   
+95:   const [optionsSong, setOptionsSong] = useState<any | null>(null);
+96:   const [isAddToPlaylistOpen, setIsAddToPlaylistOpen] = useState(false);
+97:   
+98:   const [playlistTracks, setPlaylistTracks] = useState<any[]>([]);
+99: 
+100:   const [gigPopup, setGigPopup] = useState<any | null>(null);
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:02:52Z
+Completed At: 2026-06-13T19:02:52Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1086
+Total Bytes: 53577
+Showing lines 1000 to 1085
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1000:           <div className="music-options-menu" onClick={e => e.stopPropagation()}>
+1001:             <div className="music-options-header">
+1002:               <img src={optionsSong.cover} alt="" style={{ width: 48, height: 48, borderRadius: 4, marginRight: 12 }} />
+1003:               <div>
+1004:                 <h4 style={{ margin: 0, fontSize: 16 }}>{optionsSong.title}</h4>
+1005:                 <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>{optionsSong.artist_name}</p>
+1006:               </div>
+1007:             </div>
+1008:             <div className="music-options-item" onClick={() => setIsAddToPlaylistOpen(true)}>
+1009:               <ListMusic size={20} />
+1010:               <span>Add to playlist</span>
+1011:             </div>
+1012:           </div>
+1013:         </div>
+1014:       )}
+1015: 
+1016:       {/* Add to Playlist Selection Menu */}
+1017:       {optionsSong && isAddToPlaylistOpen && (
+1018:         <div className="music-modal-overlay" onClick={() => { setIsAddToPlaylistOpen(false); setOptionsSong(null); }}>
+1019:           <div className="music-options-menu" onClick={e => e.stopPropagation()} style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+1020:             <div className="music-options-header" style={{ justifyContent: 'space-between' }}>
+1021:               <h3 style={{ margin: 0 }}>Add to Playlist</h3>
+1022:               <button className="music-create-btn" style={{ padding: '6px 12px' }} onClick={() => { setIsAddToPlaylistOpen(false); setIsCreateModalOpen(true); }}>
+102
+<truncated 2439 bytes>
+fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+1063:                 {gigPopup ? 'Next Gig' : 'Show Details'}
+1064:               </div>
+1065:               <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{(gigPopup || selectedEventPopup).artist_name || activeArtist}</span>
+1066:             </div>
+1067:             <h4 style={{ margin: '0 0 12px 0', fontSize: '1.25rem' }}>{(gigPopup || selectedEventPopup).title}</h4>
+1068:             <div style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+1069:               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Calendar size={16} color="var(--primary)" /> {new Date((gigPopup || selectedEventPopup).event_date).toLocaleDateString()}</span>
+1070:               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>🕒 {new Date((gigPopup || selectedEventPopup).event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+1071:               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>📍 {(gigPopup || selectedEventPopup).location}</span>
+1072:               {(gigPopup || selectedEventPopup).ticket_price > 0 && (
+1073:                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>🎟️ Tickets: ${(gigPopup || selectedEventPopup).ticket_price}</span>
+1074:               )}
+1075:             </div>
+1076:             <button className="primary-btn" style={{ width: '100%', height: 44, borderRadius: 8, fontWeight: 700 }} onClick={() => { setGigPopup(null); setSelectedEventPopup(null); }}>
+1077:               Get Tickets
+1078:             </button>
+1079:           </div>
+1080:         </div>
+1081:       )}
+1082: 
+1083:     </div>
+1084:   );
+1085: };
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:03:22Z
+Completed At: 2026-06-13T19:03:22Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1090
+Total Bytes: 53817
+Showing lines 880 to 950
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+880:                 {searchResults.songs.map((song) => (
+881:                   <div key={song.id} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, searchResults.songs)} style={{ width: '100%' }}>
+882:                     <div className="song-row-cover-wrap">
+883:                       <img src={song.cover} alt={song.title} className="song-row-cover" />
+884:                       <div className="song-row-play"><Play size={20} fill="#fff" color="#fff" /></div>
+885:                     </div>
+886:                     <div className="song-row-info">
+887:                       <h4 className="song-row-title">{song.title}</h4>
+888:                       <p className="song-row-artist">{song.artist_name}</p>
+889:                     </div>
+890:                     <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
+891:                       <Plus size={18} />
+892:                     </button>
+893:                   </div>
+894:                 ))}
+895:               </div>
+896:             </section>
+897:           )}
+898:         </div>
+899:       </div>
+900:     );
+901:   };
+902: 
+903:   // ─── Utilities / Modals ───
+904:   return (
+905:     <div className="music-container">
+906:       {/* Header & Tabs */}
+907:       <nav className="music-navbar">
+908:         <div className="music-logo">
+909:           <Headphones size={28} />
+910:           <span>SETX Music</span>
+911:         </div>
+912:         
+913:         <div className="music-tabs">
+914:           {(['home', 'explore', 'library'] as MusicTab[]).map(tab => (
+915:             <button 
+916:               key={tab}
+917:               className={`music-tab-btn ${activeTab === tab ? 'active' : ''}`}
+918:               onClick={() => {
+919:                 setActiveTab(tab);
+920:                 if (tab === 'home') setGlobalActiveTab(0);
+921:                 if (tab === 'explore') setGlobalActiveTab(1);
+922:                 if (tab === 'library') setGlobalActiveTab(2);
+923:               }}
+924:             >
+925:               {tab.charAt(0).toUpperCase() + tab.slice(1)}
+926:             </button>
+927:           ))}
+928:         </div>
+929: 
+930:         <div className="music-nav-actions">
+931:           <Search size={22} className="music-action-icon" onClick={() => setIsSearchActive(true)} />
+932:           <Cast size={22} className="music-action-icon" />
+933:           {user?.avatar_url ? (
+934:             <img src={user.avatar_url} alt="Profile" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+935:           ) : (
+936:             <UserCircle size={26} className="music-action-icon" />
+937:           )}
+938:         </div>
+939:       </nav>
+940: 
+941:       {/* Render Active View */}
+942:       {globalActiveTab === 0 && renderHome()}
+943:       {globalActiveTab === 1 && renderExplore()}
+944:       {globalActiveTab === 2 && renderLibrary()}
+945: 
+946:       {/* Render Artist Profile Overlay */}
+947:       {activeArtist && !isSearchActive && renderArtistProfile()}
+948:       
+949:       {/* Render Sub-Views inside Explore */}
+950:       {globalActiveTab === 1 && activeExploreView === 'new-releases' && renderNewReleasesOverlay()}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:05:11Z
+Completed At: 2026-06-13T19:05:11Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1213
+Total Bytes: 61115
+Showing lines 1 to 20
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users, Calendar } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const TRADITIONAL_GENRES = [
+19:   { name: 'Rock', color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+20:   { name: 'Metal', color: 'linear-gradient(135deg, #000000 0%, #434343 100%)' },
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:07:11Z
+Completed At: 2026-06-13T19:07:11Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1213
+Total Bytes: 61128
+Showing lines 1050 to 1085
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1050:           ))}
+1051:         </div>
+1052: 
+1053:         <div className="music-nav-actions">
+1054:           <Search size={22} className="music-action-icon" onClick={() => setIsSearchActive(true)} />
+1055:           <Cast size={22} className="music-action-icon" />
+1056:           {user?.avatar_url ? (
+1057:             <img src={user.avatar_url} alt="Profile" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+1058:           ) : (
+1059:             <UserCircle size={26} className="music-action-icon" />
+1060:           )}
+1061:         </div>
+1062:       </nav>
+1063: 
+1064:       {/* Render Active View */}
+1065:       {globalActiveTab === 0 && renderHome()}
+1066:       {globalActiveTab === 1 && renderExplore()}
+1067:       {globalActiveTab === 2 && renderLibrary()}
+1068: 
+1069:       {/* Render Artist Profile Overlay */}
+1070:       {activeArtist && !isSearchActive && renderArtistProfile()}
+1071:       
+1072:       {/* Render Sub-Views inside Explore */}
+1073:       {globalActiveTab === 1 && activeExploreView === 'new-releases' && renderNewReleasesOverlay()}
+1074:       {globalActiveTab === 1 && activeExploreView === 'charts' && renderChartsOverlay()}
+1075:       
+1076:       {/* Absolute Overlays */}
+1077:       {renderArtistOverlay()}
+1078:       {renderPlaylistOverlay()}
+1079:       {renderSearchOverlay()}
+1080: 
+1081:       {/* Create Playlist Modal */}
+1082:       {isCreateModalOpen && (
+1083:         <div className="music-modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
+1084:           <div className="music-modal" onClick={e => e.stopPropagation()}>
+1085:             <h3>New Playlist</h3>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:12:41Z
+Completed At: 2026-06-13T19:12:41Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1212
+Total Bytes: 61020
+Showing lines 1070 to 1190
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1070:       
+1071:       {/* Render Sub-Views inside Explore */}
+1072:       {globalActiveTab === 1 && activeExploreView === 'new-releases' && renderNewReleasesOverlay()}
+1073:       {globalActiveTab === 1 && activeExploreView === 'charts' && renderChartsOverlay()}
+1074:       
+1075:       {/* Absolute Overlays */}
+1076:       {renderArtistOverlay()}
+1077:       {renderPlaylistOverlay()}
+1078:       {renderSearchOverlay()}
+1079: 
+1080:       {/* Create Playlist Modal */}
+1081:       {isCreateModalOpen && (
+1082:         <div className="music-modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
+1083:           <div className="music-modal" onClick={e => e.stopPropagation()}>
+1084:             <h3>New Playlist</h3>
+1085:             <input 
+1086:               autoFocus
+1087:               type="text" 
+1088:               placeholder="Playlist name..." 
+1089:               value={newPlaylistTitle} 
+1090:               onChange={e => setNewPlaylistTitle(e.target.value)} 
+1091:             />
+1092:             <select 
+1093:               value={newPlaylistVisibility}
+1094:               onChange={e => setNewPlaylistVisibility(e.target.value)}
+1095:               style={{
+1096:                 width: '100%',
+1097:                 background: 'rgba(255,255,255,0.1)',
+1098:                 border: '1px solid rgba(255,255,255,0.2)',
+1099:                 color: '#fff',
+1100:                 padding: '12px 16px',
+1101:                 borderRadius: '12px',
+1102:                 marginBottom: '16px',
+1103:            
+<truncated 3642 bytes>
+6:       {/* Render Sub-Views inside Explore */}
+1167:       {globalActiveTab === 1 && activeExploreView === 'new-releases' && renderNewReleasesOverlay()}
+1168:       {globalActiveTab === 1 && activeExploreView === 'charts' && renderChartsOverlay()}
+1169: 
+1170:       {/* Next Gig / Event Details Popup */}
+1171:       {(gigPopup || selectedEventPopup) && (
+1172:         <div className="music-modal-overlay gig-popup-overlay" onClick={() => { setGigPopup(null); setSelectedEventPopup(null); }} style={{ background: 'rgba(0,0,0,0.5)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+1173:           <div className="gig-popup-card" onClick={e => e.stopPropagation()} style={{ 
+1174:             background: 'var(--card-bg)',
+1175:             border: '1px solid rgba(255,255,255,0.1)',
+1176:             padding: '24px',
+1177:             borderRadius: '16px',
+1178:             boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+1179:             width: '90%',
+1180:             maxWidth: '360px',
+1181:             animation: 'fadeInUp 0.3s ease-out',
+1182:             position: 'relative'
+1183:           }}>
+1184:             <button style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => { setGigPopup(null); setSelectedEventPopup(null); }}>
+1185:               <X size={18} />
+1186:             </button>
+1187:             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+1188:               <div style={{ background: 'var(--primary)', color: '#fff', padding: '6px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+1189:                 {gigPopup ? 'Next Gig' : 'Show Details'}
+1190:               </div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:22:06Z
+Completed At: 2026-06-13T19:22:06Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1203
+Total Bytes: 60785
+Showing lines 1075 to 1115
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1075:       
+1076:       {/* Absolute Overlays */}
+1077:       {renderArtistOverlay()}
+1078:       {renderPlaylistOverlay()}
+1079:       {renderSearchOverlay()}
+1080: 
+1081:               onChange={e => setNewPlaylistVisibility(e.target.value)}
+1082:               style={{
+1083:                 width: '100%',
+1084:                 background: 'rgba(255,255,255,0.1)',
+1085:                 border: '1px solid rgba(255,255,255,0.2)',
+1086:                 color: '#fff',
+1087:                 padding: '12px 16px',
+1088:                 borderRadius: '12px',
+1089:                 marginBottom: '16px',
+1090:                 outline: 'none',
+1091:                 fontSize: '16px'
+1092:               }}
+1093:             >
+1094:               <option value="private" style={{ color: '#000' }}>🔒 Private (Only you)</option>
+1095:               <option value="friends" style={{ color: '#000' }}>👥 Friends Only</option>
+1096:               <option value="public" style={{ color: '#000' }}>🌍 Public</option>
+1097:             </select>
+1098:             <div className="music-modal-actions">
+1099:               <button className="music-modal-btn cancel" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
+1100:               <button className="music-modal-btn primary" onClick={handleCreatePlaylist} disabled={!newPlaylistTitle.trim()}>Create</button>
+1101:             </div>
+1102:           </div>
+1103:         </div>,
+1104:         document.body
+1105:       )}
+1106: 
+1107:       {/* Options Menu Bottom Sheet */}
+1108:       {optionsSong && !isAddToPlaylistOpen && typeof document !== 'undefined' && createPortal(
+1109:         <div className="music-modal-overlay" onClick={() => setOptionsSong(null)}>
+1110:           <div className="music-options-menu" onClick={e => e.stopPropagation()}>
+1111:             <div className="music-options-header">
+1112:               <img src={optionsSong.cover} alt="" style={{ width: 48, height: 48, borderRadius: 4, marginRight: 12 }} />
+1113:               <div>
+1114:                 <h4 style={{ margin: 0, fontSize: 16 }}>{optionsSong.title}</h4>
+1115:                 <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>{optionsSong.artist_name}</p>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:53:42Z
+Completed At: 2026-06-13T19:53:42Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1216
+Total Bytes: 61385
+Showing lines 1075 to 1120
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1075:       
+1076:       {/* Absolute Overlays */}
+1077:       {renderArtistOverlay()}
+1078:       {renderPlaylistOverlay()}
+1079:       {renderSearchOverlay()}
+1080: 
+1081:               {/* Create Playlist Modal */}
+1082:       {isCreateModalOpen && typeof document !== 'undefined' && createPortal(
+1083:         <div className="music-modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
+1084:           <div className="music-modal" onClick={e => e.stopPropagation()}>
+1085:             <h3>New Playlist</h3>
+1086:             <input 
+1087:               type="text" 
+1088:               placeholder="Playlist name..." 
+1089:               value={newPlaylistTitle} 
+1090:               onChange={e => setNewPlaylistTitle(e.target.value)} 
+1091:             />
+1092:             <select 
+1093:               value={newPlaylistVisibility}
+1094:               onChange={e => setNewPlaylistVisibility(e.target.value)}
+1095:               style={{
+1096:                 width: '100%',
+1097:                 background: 'rgba(255,255,255,0.1)',
+1098:                 border: '1px solid rgba(255,255,255,0.2)',
+1099:                 color: '#fff',
+1100:                 padding: '12px 16px',
+1101:                 borderRadius: '12px',
+1102:                 marginBottom: '16px',
+1103:                 outline: 'none',
+1104:                 fontSize: '16px'
+1105:               }}
+1106:             >
+1107:               <option value="private" style={{ color: '#000' }}>🔒 Private (Only you)</option>
+1108:               <option value="friends" style={{ color: '#000' }}>👥 Friends Only</option>
+1109:               <option value="public" style={{ color: '#000' }}>🌍 Public</option>
+1110:             </select>
+1111:             <div className="music-modal-actions">
+1112:               <button className="music-modal-btn cancel" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
+1113:               <button className="music-modal-btn primary" onClick={handleCreatePlaylist} disabled={!newPlaylistTitle.trim()}>Create</button>
+1114:             </div>
+1115:           </div>
+1116:         </div>,
+1117:         document.body
+1118:       )}
+1119: 
+1120:       {/* Options Menu Bottom Sheet */}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:53:55Z
+Completed At: 2026-06-13T19:53:55Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1216
+Total Bytes: 61385
+Showing lines 700 to 740
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+700:                         </div>
+701:                       </div>
+702:                     ))}
+703:                   </div>
+704:                 </section>
+705:               )}
+706: 
+707:               {artistAlbums.length > 0 && (
+708:                 <section className="music-section" style={{ marginTop: 24 }}>
+709:                   <div className="section-header"><h3 className="section-title">Albums</h3></div>
+710:                   <div className="horizontal-scroll">
+711:                     {artistAlbums.map((album, idx) => (
+712:                       <div key={idx} className="album-card">
+713:                         <div className="album-cover-wrap">
+714:                           <img src={album.cover} alt={album.title} className="album-cover" />
+715:                           <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+716:                         </div>
+717:                         <div>
+718:                           <h4 className="album-title">{album.title}</h4>
+719:                           <p className="album-artist">Album</p>
+720:                         </div>
+721:                       </div>
+722:                     ))}
+723:                   </div>
+724:                 </section>
+725:               )}
+726: 
+727:               {artistEPs.length > 0 && (
+728:                 <section className="music-section" style={{ marginTop: 24 }}>
+729:                   <div className="section-header"><h3 className="section-title">EPs</h3></div>
+730:                   <div className="horizontal-scroll">
+731:                     {artistEPs.map((album, idx) => (
+732:                       <div key={idx} className="album-card">
+733:                         <div className="album-cover-wrap">
+734:                           <img src={album.cover} alt={album.title} className="album-cover" />
+735:                           <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+736:                         </div>
+737:                         <div>
+738:                           <h4 className="album-title">{album.title}</h4>
+739:                           <p className="album-artist">EP</p>
+740:                         </div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:54:18Z
+Completed At: 2026-06-13T19:54:18Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1216
+Total Bytes: 61385
+Showing lines 150 to 200
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+150:     if (!user?.id) return;
+151:     const { data } = await supabase.from('media_playlists').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+152:     if (data) setPlaylists(data);
+153:   };
+154: 
+155:   const loadPlaylistDetails = async (playlist: any) => {
+156:     setActivePlaylist(playlist);
+157:     const { data: mappings } = await supabase.from('media_playlist_tracks').select('track_id').eq('playlist_id', playlist.id);
+158:     if (mappings && mappings.length > 0) {
+159:       const trackIds = mappings.map(m => m.track_id);
+160:       const pt = tracks.filter(t => trackIds.includes(t.id));
+161:       setPlaylistTracks(pt);
+162:     } else {
+163:       setPlaylistTracks([]);
+164:     }
+165:   };
+166: 
+167:   const handleCreatePlaylist = async () => {
+168:     if (!newPlaylistTitle.trim() || !user?.id) return;
+169:     const { data, error } = await supabase.from('media_playlists').insert({
+170:       user_id: user.id,
+171:       title: newPlaylistTitle.trim(),
+172:       visibility: newPlaylistVisibility
+173:     }).select().single();
+174:     
+175:     if (!error && data) {
+176:       setPlaylists([data, ...playlists]);
+177:       setIsCreateModalOpen(false);
+178:       setNewPlaylistTitle('');
+179:       setNewPlaylistVisibility('private');
+180:     }
+181:   };
+182: 
+183:   const handleAddSongToPlaylist = async (playlistId: string) => {
+184:     if (!optionsSong) return;
+185:     await supabase.from('media_playlist_tracks').insert({
+186:       playlist_id: playlistId,
+187:       track_id: optionsSong.id
+188:     });
+189:     
+190:     // Attempt to update playlist cover with song cover if empty
+191:     const playlist = playlists.find(p => p.id === playlistId);
+192:     if (playlist && !playlist.cover_url) {
+193:       await supabase.from('media_playlists').update({ cover_url: optionsSong.cover }).eq('id', playlistId);
+194:       fetchPlaylists();
+195:     }
+196:     
+197:     setIsAddToPlaylistOpen(false);
+198:     setOptionsSong(null);
+199:   };
+200: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:54:33Z
+Completed At: 2026-06-13T19:54:33Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1216
+Total Bytes: 61385
+Showing lines 183 to 200
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+183:   const handleAddSongToPlaylist = async (playlistId: string) => {
+184:     if (!optionsSong) return;
+185:     await supabase.from('media_playlist_tracks').insert({
+186:       playlist_id: playlistId,
+187:       track_id: optionsSong.id
+188:     });
+189:     
+190:     // Attempt to update playlist cover with song cover if empty
+191:     const playlist = playlists.find(p => p.id === playlistId);
+192:     if (playlist && !playlist.cover_url) {
+193:       await supabase.from('media_playlists').update({ cover_url: optionsSong.cover }).eq('id', playlistId);
+194:       fetchPlaylists();
+195:     }
+196:     
+197:     setIsAddToPlaylistOpen(false);
+198:     setOptionsSong(null);
+199:   };
+200: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:57:40Z
+Completed At: 2026-06-13T19:57:41Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/temp_music_utf8.tsx`
+Total Lines: 679
+Total Bytes: 32428
+Showing lines 1 to 679
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+2: import type { User } from '../types/user';
+3: import React, { useState, useEffect, useMemo } from 'react';
+4: import { useApp } from '../context/AppContext';
+5: import { supabase } from '../lib/supabase';
+6: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users } from 'lucide-react';
+7: import './MusicView.css';
+8: 
+9: const MOODS = [
+10:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+11:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+12:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+13:   { name: 'Commute', color: 'linear-gradient(135deg, #FDC830 0%, #F37335 100%)' },
+14:   { name: 'Sleep', color: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)' },
+15:   { name: 'Party', color: 'linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%)' }
+16: ];
+17: 
+18: const RECENT_ALBUMS = [
+19:   { id: 'a1', title: 'Midnight Pulse', artist: 'Neo Waves', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=300' },
+20:   { id: 'a2', title: 'Urban Jungle', artist: 'Street Spirit', cover: 'https://images.unsplash.com/photo-1514525253361-bee8d40026bc?auto=format&fit=crop&q=80&w=300' },
+21:   { id: 'a3', title: 'Lofi Horizons', artist: 'Chill Bound', cover: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=for
+<truncated 32163 bytes>
+=> setIsAddToPlaylistOpen(true)}>
+641:               <ListMusic size={20} />
+642:               <span>Add to playlist</span>
+643:             </div>
+644:           </div>
+645:         </div>
+646:       )}
+647: 
+648:       {/* Add to Playlist Selection Menu */}
+649:       {optionsSong && isAddToPlaylistOpen && (
+650:         <div className="music-modal-overlay" onClick={() => { setIsAddToPlaylistOpen(false); setOptionsSong(null); }}>
+651:           <div className="music-options-menu" onClick={e => e.stopPropagation()} style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+652:             <div className="music-options-header" style={{ justifyContent: 'space-between' }}>
+653:               <h3 style={{ margin: 0 }}>Add to Playlist</h3>
+654:               <button className="music-create-btn" style={{ padding: '6px 12px' }} onClick={() => { setIsAddToPlaylistOpen(false); setIsCreateModalOpen(true); }}>
+655:                 <Plus size={16} /> New
+656:               </button>
+657:             </div>
+658:             {playlists.length === 0 ? (
+659:               <div style={{ padding: 24, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+660:                 You don't have any playlists yet.
+661:               </div>
+662:             ) : (
+663:               playlists.map(pl => (
+664:                 <div key={pl.id} className="music-options-item" onClick={() => handleAddSongToPlaylist(pl.id)}>
+665:                   <div style={{ width: 40, height: 40, background: '#333', borderRadius: 4, overflow: 'hidden' }}>
+666:                     {pl.cover_url ? <img src={pl.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+667:                   </div>
+668:                   <span>{pl.title}</span>
+669:                 </div>
+670:               ))
+671:             )}
+672:           </div>
+673:         </div>
+674:       )}
+675: 
+676:     </div>
+677:   );
+678: };
+679: 
+The above content shows the entire, complete file contents of the requested file.
+
+================
+Created At: 2026-06-13T19:59:21Z
+Completed At: 2026-06-13T19:59:21Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1353
+Total Bytes: 69160
+Showing lines 150 to 250
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+150:     if (!user?.id) return;
+151:     const { data } = await supabase.from('media_playlists').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+152:     if (data) setPlaylists(data);
+153:   };
+154: 
+155:   const loadPlaylistDetails = async (playlist: any) => {
+156:     setActivePlaylist(playlist);
+157:     const { data: mappings } = await supabase.from('media_playlist_tracks').select('track_id').eq('playlist_id', playlist.id);
+158:     if (mappings && mappings.length > 0) {
+159:       const trackIds = mappings.map(m => m.track_id);
+160:       const pt = tracks.filter(t => trackIds.includes(t.id));
+161: /* c:\Users\montg\OneDrive\Desktop\SETX 360 Final\src\components\MusicView.tsx */
+162: import type { User } from '../types/user';
+163: import React, { useState, useEffect, useRef, useMemo } from 'react';
+164: import { createPortal } from 'react-dom';
+165: import { useApp } from '../context/AppContext';
+166: import { supabase } from '../lib/supabase';
+167: import { Play, Search, Cast, UserCircle, MoreVertical, Music2, Headphones, Activity, ArrowLeft, X, Plus, ListMusic, Lock, Globe, Users, Calendar, ChevronLeft } from 'lucide-react';
+168: import './MusicView.css';
+169: 
+170: const MOODS = [
+171:   { name: 'Workout', color: 'linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)' },
+172:   { name: 'Chill', color: 'linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%)' },
+173:   { name: 'Focus', color: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)' },
+174:   { name: 'Commute', color: 'linear-gradient(135
+<truncated 4914 bytes>
+ix.com/examples/mp3/SoundHelix-Song-2.mp3', isExplicit: false },
+230:   { id: 's3', title: 'Golden Hour', artist_name: 'Chill Bound', duration: '5:44', cover: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&q=80&w=300', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', isExplicit: false },
+231:   { id: 's4', title: 'Cyber City', artist_name: 'Synth Soul', duration: '5:02', cover: 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', isExplicit: true },
+232:   { id: 's5', title: 'Neon Nightscape', artist_name: 'Vibe Logic', duration: '5:53', cover: 'https://images.unsplash.com/photo-1621360811013-c76831f162cb?auto=format&fit=crop&q=80&w=300', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', isExplicit: false }
+233: ];
+234: 
+235: type MusicTab = 'home' | 'explore' | 'library';
+236: 
+237: export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) => {
+238:   const { 
+239:     currentSong, playSong, activeTab: globalActiveTab, setActiveTab: setGlobalActiveTab,
+240:     musicSearchQuery: searchQuery, setMusicSearchQuery: setSearchQuery,
+241:     musicIsSearchActive: isSearchActive, setMusicIsSearchActive: setIsSearchActive,
+242:     musicActiveArtist: activeArtist, setMusicActiveArtist: setActiveArtist,
+243:     musicActivePlaylist: activePlaylist, setMusicActivePlaylist: setActivePlaylist
+244:   } = useApp();
+245:   
+246:   const [activeExploreView, setActiveExploreView] = useState<'none' | 'new-releases' | 'charts'>('none');
+247:   const [activeTab, setActiveTab] = useState<MusicTab>('home');
+248:   const [activeFilter, setActiveFilter] = useState('All');
+249:   const [tracks, setTracks] = useState<any[]>([]);
+250: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:59:31Z
+Completed At: 2026-06-13T19:59:31Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1353
+Total Bytes: 69160
+Showing lines 800 to 900
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+800:               <p className="album-artist">Playlist</p>
+801:             </div>
+802:           ))}
+803:         </div>
+804:       </section>
+805:     </div>
+806:   );
+807: 
+808:   // ─── Artist Overlay ───
+809:   const renderArtistOverlay = () => {
+810:     if (!activeArtist) return null;
+811:     return (
+812:       <div className="music-overlay">
+813:         <button className="overlay-back-btn" onClick={() => setActiveArtist(null)}>
+814:           <ArrowLeft size={24} />
+815:         </button>
+816:         
+817:         <div className="artist-hero" style={{ '--artist-bg': `url(${artistAlbums[0]?.cover || artistSingles[0]?.cover || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300'})` } as any}>
+818:           <h1 className="artist-hero-title">{activeArtist}</h1>
+819:           <p className="artist-hero-subtitle">{artistTracks.length} tracks • {artistEvents.length} upcoming shows</p>
+820:           
+821:           <div style={{ display: 'flex', gap: 16, marginTop: 16, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 8 }}>
+822:             <button 
+823:               style={{ background: 'none', border: 'none', color: artistActiveTab === 'music' ? '#fff' : 'rgba(255,255,255,0.5)', fontWeight: artistActiveTab === 'music' ? 700 : 400, fontSize: '1rem', cursor: 'pointer', padding: '0 8px', borderBottom: artistActiveTab === 'music' ? '2px solid var(--primary)' : '2px solid transparent' }}
+824:               onClick={() => setArtistActiveTab('music')}
+825:             >Music</b
+<truncated 2748 bytes>
+                           <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+867:                         </div>
+868:                         <div>
+869:                           <h4 className="album-title">{album.title}</h4>
+870:                           <p className="album-artist">Single</p>
+871:                         </div>
+872:                       </div>
+873:                     ))}
+874:                   </div>
+875:                 </section>
+876:               )}
+877: 
+878:               {artistAlbums.length > 0 && (
+879:                 <section className="music-section" style={{ marginTop: 24 }}>
+880:                   <div className="section-header"><h3 className="section-title">Albums</h3></div>
+881:                   <div className="horizontal-scroll">
+882:                     {artistAlbums.map((album, idx) => (
+883:                       <div key={idx} className="album-card">
+884:                         <div className="album-cover-wrap">
+885:                           <img src={album.cover} alt={album.title} className="album-cover" />
+886:                           <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
+887:                         </div>
+888:                         <div>
+889:                           <h4 className="album-title">{album.title}</h4>
+890:                           <p className="album-artist">Album</p>
+891:                         </div>
+892:                       </div>
+893:                     ))}
+894:                   </div>
+895:                 </section>
+896:               )}
+897: 
+898:               {artistEPs.length > 0 && (
+899:                 <section className="music-section" style={{ marginTop: 24 }}>
+900:                   <div className="section-header"><h3 className="section-title">EPs</h3></div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:59:38Z
+Completed At: 2026-06-13T19:59:38Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1353
+Total Bytes: 69160
+Showing lines 835 to 850
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+835:             <>
+836:               <section className="music-section">
+837:                 <div className="section-header">
+838:                   <h3 className="section-title">Top Plays</h3>
+839:                 </div>
+840:                 <div className="song-list" style={{ padding: '0 24px' }}>
+841:                   {artistTracks.slice(0, 5).map((song, idx) => (
+842:                     <div key={song.id} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, artistTracks.slice(0, 5))} style={{ width: '100%' }}>
+843:                       <span style={{ width: 24, fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'right', paddingRight: 12 }}>{idx + 1}</span>
+844:                       <div className="song-row-cover-wrap" style={{ width: 40, height: 40 }}>
+845:                         <img src={song.cover} alt={song.title} className="song-row-cover" />
+846:                       </div>
+847:                       <div className="song-row-info">
+848:                         <h4 className="song-row-title">{song.title}</h4>
+849:                       </div>
+850:                       <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T19:59:52Z
+Completed At: 2026-06-13T19:59:53Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1353
+Total Bytes: 69160
+Showing lines 320 to 340
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+320:       const pt = tracks.filter(t => trackIds.includes(t.id));
+321:       setPlaylistTracks(pt);
+322:     } else {
+323:       setPlaylistTracks([]);
+324:     }
+325:   };
+326: 
+327:   const handleCreatePlaylist = async () => {
+328:     if (!newPlaylistTitle.trim() || !user?.id) return;
+329:     const { data, error } = await supabase.from('media_playlists').insert({
+330:       user_id: user.id,
+331:       title: newPlaylistTitle.trim(),
+332:       visibility: newPlaylistVisibility
+333:     }).select().single();
+334:     
+335:     if (!error && data) {
+336:       setIsCreateModalOpen(false);
+337:       setNewPlaylistTitle('');
+338:       setNewPlaylistVisibility('private');
+339: 
+340:       if (optionsSong) {
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+================
+Created At: 2026-06-13T20:00:00Z
+Completed At: 2026-06-13T20:00:01Z
+File Path: `file:///c:/Users/montg/OneDrive/Desktop/SETX%20360%20Final/src/components/MusicView.tsx`
+Total Lines: 1353
+Total Bytes: 69160
+Showing lines 835 to 850
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+835:             <>
+836:               <section className="music-section">
+837:                 <div className="section-header">
+838:                   <h3 className="section-title">Top Plays</h3>
+839:                 </div>
+840:                 <div className="song-list" style={{ padding: '0 24px' }}>
+841:                   {artistTracks.slice(0, 5).map((song, idx) => (
+842:                     <div key={song.id} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, artistTracks.slice(0, 5))} style={{ width: '100%' }}>
+843:                       <span style={{ width: 24, fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'right', paddingRight: 12 }}>{idx + 1}</span>
+844:                       <div className="song-row-cover-wrap" style={{ width: 40, height: 40 }}>
+845:                         <img src={song.cover} alt={song.title} className="song-row-cover" />
+846:                       </div>
+847:                       <div className="song-row-info">
+848:                         <h4 className="song-row-title">{song.title}</h4>
+849:                       </div>
+850:                       <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+

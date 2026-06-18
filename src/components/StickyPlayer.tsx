@@ -120,7 +120,7 @@ export const StickyPlayer: React.FC = () => {
       {/* Global Audio Element */}
       <audio 
         ref={audioRef}
-        src={currentSong?.audioUrl}
+        src={currentSong?.audioUrl || currentSong?.audio_url}
         onTimeUpdate={handleTimeUpdate}
         onEnded={playNext}
       />

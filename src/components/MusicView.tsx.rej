@@ -1,0 +1,525 @@
+diff a/src/components/MusicView.tsx b/src/components/MusicView.tsx	(rejected hunks)
+@@ -139,27 +369,120 @@ export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) =>
+     setOptionsSong(null);
+   };
+ 
+-  const handleSongSelect = (song: any, contextQueue?: any[]) => {
+-    playSong({ ...song, artist: song.artist_name }, contextQueue?.map(s => ({ ...s, artist: s.artist_name })));
++  const handleSongSelect = async (song: any, contextQueue?: any[]) => {
++    let targetQueue = contextQueue?.map(s => ({ ...s, artist: s.artist_name }));
++    
++    // SMART QUEUE LOGIC: If context is full tracks (Quick Picks), build genre-based queue
++    if (contextQueue === tracks) {
++      const genreTracks = tracks.filter(t => t.genre === song.genre && t.id !== song.id);
++      
++      const playedIds = new Set(listeningHistory.map((s: any) => s.id));
++      const playedTracks = genreTracks.filter(t => playedIds.has(t.id));
++      const unplayedTracks = genreTracks.filter(t => !playedIds.has(t.id));
++
++      const shuffle = (array: any[]) => [...array].sort(() => 0.5 - Math.random());
++      const shuffledPlayed = shuffle(playedTracks);
++      const shuffledUnplayed = shuffle(unplayedTracks);
++
++      const queueSize = 20;
++      let numPlayed = Math.floor(queueSize * 0.6); // 60%
++      let numUnplayed = queueSize - numPlayed;     // 40%
++
++      if (shuffledPlayed.length < numPlayed) {
++        numPlayed = shuffledPlayed.length;
++        numUnplayed = Math.min(queueSize - numPlayed, shuffledUnplayed.length);
++      } else if (shuffledUnplayed.length < numUnplayed) {
++        numUnplayed = shuffledUnplayed.length;
++        numPlayed = Math.min(queueSize - numUnplayed, shuffledPlayed.length);
++      }
++
++      const finalQueue = shuffle([
++        ...shuffledPlayed.slice(0, numPlayed),
++        ...shuffledUnplayed.slice(0, numUnplayed)
++      ]);
++
++      targetQueue = [song, ...finalQueue].map(s => ({ ...s, artist: s.artist_name }));
++    }
++
++    playSong({ ...song, artist: song.artist_name }, targetQueue);
++
++    // Track Listening History
++    setListeningHistory(prev => {
++      const newHistory = [song, ...prev.filter(s => s.id !== song.id)].slice(0, 20);
++      localStorage.setItem('music_listening_history', JSON.stringify(newHistory));
++      return newHistory;
++    });
++
++    // Track Genre Preferences
++    if (song.genre) {
++      setGenrePreferences(prev => {
++        const newPrefs = { ...prev, [song.genre]: (prev[song.genre] || 0) + 1 };
++        localStorage.setItem('music_genre_preferences', JSON.stringify(newPrefs));
++        return newPrefs;
++      });
++    }
++
++    // Next Gig Popup Logic
++    if (song.creator_id) {
++      const lastShown = localStorage.getItem(`artist_gig_popup_${song.creator_id}`);
++      const now = Date.now();
++      
++      // 4 hours cooldown = 14400000 ms
++      if (!lastShown || (now - parseInt(lastShown, 10)) > 14400000) {
++        const { data } = await supabase
++          .from('events')
++          .select('*')
++          .eq('creator_id', song.creator_id)
++          .gte('event_date', new Date().toISOString())
++          .order('event_date', { ascending: true })
++          .limit(1)
++          .maybeSingle();
++          
++        if (data) {
++          setGigPopup({ ...data, artist_name: song.artist_name });
++          localStorage.setItem(`artist_gig_popup_${song.creator_id}`, now.toString());
++        }
++      }
++    }
+   };
+ 
+   // ΓöÇΓöÇΓöÇ Aggregations ΓöÇΓöÇΓöÇ
+   const artistTracks = useMemo(() => {
+     if (!activeArtist) return [];
+-    return tracks.filter(t => t.artist_name.toLowerCase() === activeArtist.toLowerCase());
++    return tracks.filter(t => t.artist_name.toLowerCase() === activeArtist.toLowerCase())
++                 .sort((a, b) => (b.plays || 0) - (a.plays || 0)); // Sort by top plays if available
+   }, [tracks, activeArtist]);
+ 
+-  const artistAlbums = useMemo(() => {
+-    if (!activeArtist) return [];
++  useEffect(() => {
++    if (activeArtist && artistTracks.length > 0) {
++      const creatorId = artistTracks[0]?.creator_id;
++      if (creatorId) {
++        supabase.from('events').select('*').eq('creator_id', creatorId).gte('event_date', new Date().toISOString()).order('event_date', { ascending: true })
++          .then(({ data }) => setArtistEvents(data || []));
++      }
++    } else {
++      setArtistEvents([]);
++    }
++    setArtistActiveTab('music');
++  }, [activeArtist, artistTracks]);
++
++  const { artistAlbums, artistEPs, artistSingles } = useMemo(() => {
++    if (!activeArtist) return { artistAlbums: [], artistEPs: [], artistSingles: [] };
+     const uniqueCovers = new Set();
+-    const albums: any[] = [];
++    const aList: any[] = [];
++    const eList: any[] = [];
++    const sList: any[] = [];
++
+     artistTracks.forEach(t => {
+       if (!uniqueCovers.has(t.cover)) {
+         uniqueCovers.add(t.cover);
+-        albums.push({ title: t.title, artist: t.artist_name, cover: t.cover, id: t.id });
++        const item = { title: t.album_name || t.title, artist: t.artist_name, cover: t.cover, id: t.id };
++        if (t.album_type === 'Album') aList.push(item);
++        else if (t.album_type === 'EP') eList.push(item);
++        else sList.push(item);
+       }
+     });
+-    return albums;
++    return { artistAlbums: aList, artistEPs: eList, artistSingles: sList };
+   }, [artistTracks, activeArtist]);
+ 
+   const searchResults = useMemo(() => {
+@@ -178,6 +501,50 @@ export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) =>
+     };
+   }, [tracks, searchQuery]);
+ 
++  const exploreArtists = useMemo(() => {
++    const uniqueArtists = new Map();
++    tracks.forEach(t => {
++      if (!uniqueArtists.has(t.artist_name)) {
++        uniqueArtists.set(t.artist_name, { name: t.artist_name, cover: t.cover });
++      }
++    });
++    return Array.from(uniqueArtists.values());
++  }, [tracks]);
++
++  // ΓöÇΓöÇΓöÇ Home Page Personalization ΓöÇΓöÇΓöÇ
++  const topGenres = useMemo(() => {
++    return Object.entries(genrePreferences)
++      .sort((a, b) => b[1] - a[1])
++      .map(entry => entry[0])
++      .slice(0, 3);
++  }, [genrePreferences]);
++
++  const quickPicks = useMemo(() => {
++    if (topGenres.length === 0) return tracks.slice(0, 12);
++    return [...tracks]
++      .sort((a, b) => {
++        const aTop = topGenres.includes(a.genre) ? 1 : 0;
++        const bTop = topGenres.includes(b.genre) ? 1 : 0;
++        if (aTop !== bTop) return bTop - aTop;
++        return (b.plays || 0) - (a.plays || 0);
++      })
++      .slice(0, 12);
++  }, [tracks, topGenres]);
++
++  const dynamicMixes = useMemo(() => {
++    if (topGenres.length === 0) return MIXES;
++    return topGenres.map((genre, idx) => {
++      const genreTracks = tracks.filter(t => t.genre === genre);
++      const cover = genreTracks[0]?.cover || MIXES[idx % MIXES.length].cover;
++      return {
++        id: `mix-${genre}`,
++        title: `Your ${genre} Mix`,
++        artist: 'Made for you',
++        cover: cover
++      };
++    });
++  }, [topGenres, tracks]);
++
+   // ΓöÇΓöÇΓöÇ Views ΓöÇΓöÇΓöÇ
+   const renderHome = () => (
+     <div className="music-content">
+@@ -363,53 +814,135 @@ export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) =>
+           <ArrowLeft size={24} />
+         </button>
+         
+-        <div className="artist-hero" style={{ '--artist-bg': `url(${artistAlbums[0]?.cover})` } as any}>
++        <div className="artist-hero" style={{ '--artist-bg': `url(${artistAlbums[0]?.cover || artistSingles[0]?.cover || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300'})` } as any}>
+           <h1 className="artist-hero-title">{activeArtist}</h1>
+-          <p className="artist-hero-subtitle">{artistTracks.length} tracks ΓÇó {artistAlbums.length} albums</p>
++          <p className="artist-hero-subtitle">{artistTracks.length} tracks ΓÇó {artistEvents.length} upcoming shows</p>
++          
++          <div style={{ display: 'flex', gap: 16, marginTop: 16, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 8 }}>
++            <button 
++              style={{ background: 'none', border: 'none', color: artistActiveTab === 'music' ? '#fff' : 'rgba(255,255,255,0.5)', fontWeight: artistActiveTab === 'music' ? 700 : 400, fontSize: '1rem', cursor: 'pointer', padding: '0 8px', borderBottom: artistActiveTab === 'music' ? '2px solid var(--primary)' : '2px solid transparent' }}
++              onClick={() => setArtistActiveTab('music')}
++            >Music</button>
++            <button 
++              style={{ background: 'none', border: 'none', color: artistActiveTab === 'shows' ? '#fff' : 'rgba(255,255,255,0.5)', fontWeight: artistActiveTab === 'shows' ? 700 : 400, fontSize: '1rem', cursor: 'pointer', padding: '0 8px', borderBottom: artistActiveTab === 'shows' ? '2px solid var(--primary)' : '2px solid transparent' }}
++              onClick={() => setArtistActiveTab('shows')}
++            >Upcoming Shows</button>
++          </div>
+         </div>
+ 
+         <div className="music-content" style={{ padding: '24px 0' }}>
+-          <section className="music-section">
+-            <div className="section-header">
+-              <h3 className="section-title">Top Songs</h3>
+-            </div>
+-            <div className="song-list" style={{ padding: '0 24px' }}>
+-              {artistTracks.slice(0, 5).map((song, idx) => (
+-                <div key={song.id} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, artistTracks.slice(0, 5))} style={{ width: '100%' }}>
+-                  <span style={{ width: 24, fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'right', paddingRight: 12 }}>{idx + 1}</span>
+-                  <div className="song-row-cover-wrap" style={{ width: 40, height: 40 }}>
+-                    <img src={song.cover} alt={song.title} className="song-row-cover" />
++          {artistActiveTab === 'music' && (
++            <>
++              <section className="music-section">
++                <div className="section-header">
++                  <h3 className="section-title">Top Plays</h3>
++                </div>
++                <div className="song-list" style={{ padding: '0 24px' }}>
++                  {artistTracks.slice(0, 5).map((song, idx) => (
++                    <div key={song.id} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, artistTracks.slice(0, 5))} style={{ width: '100%' }}>
++                      <span style={{ width: 24, fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'right', paddingRight: 12 }}>{idx + 1}</span>
++                      <div className="song-row-cover-wrap" style={{ width: 40, height: 40 }}>
++                        <img src={song.cover} alt={song.title} className="song-row-cover" />
++                      </div>
++                      <div className="song-row-info">
++                        <h4 className="song-row-title">{song.title}</h4>
++                      </div>
++                      <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
++                        <Plus size={18} />
++                      </button>
++                    </div>
++                  ))}
++                </div>
++              </section>
++
++              {artistSingles.length > 0 && (
++                <section className="music-section" style={{ marginTop: 24 }}>
++                  <div className="section-header"><h3 className="section-title">Singles</h3></div>
++                  <div className="horizontal-scroll">
++                    {artistSingles.map((album, idx) => (
++                      <div key={idx} className="album-card">
++                        <div className="album-cover-wrap">
++                          <img src={album.cover} alt={album.title} className="album-cover" />
++                          <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
++                        </div>
++                        <div>
++                          <h4 className="album-title">{album.title}</h4>
++                          <p className="album-artist">Single</p>
++                        </div>
++                      </div>
++                    ))}
+                   </div>
+-                  <div className="song-row-info">
+-                    <h4 className="song-row-title">{song.title}</h4>
++                </section>
++              )}
++
++              {artistAlbums.length > 0 && (
++                <section className="music-section" style={{ marginTop: 24 }}>
++                  <div className="section-header"><h3 className="section-title">Albums</h3></div>
++                  <div className="horizontal-scroll">
++                    {artistAlbums.map((album, idx) => (
++                      <div key={idx} className="album-card">
++                        <div className="album-cover-wrap">
++                          <img src={album.cover} alt={album.title} className="album-cover" />
++                          <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
++                        </div>
++                        <div>
++                          <h4 className="album-title">{album.title}</h4>
++                          <p className="album-artist">Album</p>
++                        </div>
++                      </div>
++                    ))}
+                   </div>
+-                  <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
+-                    <Plus size={18} />
+-                  </button>
+-                </div>
+-              ))}
+-            </div>
+-          </section>
++                </section>
++              )}
+ 
+-          <section className="music-section" style={{ marginTop: 24 }}>
+-            <div className="section-header">
+-              <h3 className="section-title">Albums & Singles</h3>
+-            </div>
+-            <div className="horizontal-scroll">
+-              {artistAlbums.map((album, idx) => (
+-                <div key={idx} className="album-card">
+-                  <div className="album-cover-wrap">
+-                    <img src={album.cover} alt={album.title} className="album-cover" />
+-                    <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
++              {artistEPs.length > 0 && (
++                <section className="music-section" style={{ marginTop: 24 }}>
++                  <div className="section-header"><h3 className="section-title">EPs</h3></div>
++                  <div className="horizontal-scroll">
++                    {artistEPs.map((album, idx) => (
++                      <div key={idx} className="album-card">
++                        <div className="album-cover-wrap">
++                          <img src={album.cover} alt={album.title} className="album-cover" />
++                          <button className="album-play-btn"><Play size={24} fill="#fff" color="#fff" /></button>
++                        </div>
++                        <div>
++                          <h4 className="album-title">{album.title}</h4>
++                          <p className="album-artist">EP</p>
++                        </div>
++                      </div>
++                    ))}
+                   </div>
+-                  <div>
+-                    <h4 className="album-title">{album.title}</h4>
+-                    <p className="album-artist">Single ΓÇó 2024</p>
++                </section>
++              )}
++            </>
++          )}
++
++          {artistActiveTab === 'shows' && (
++            <section className="music-section">
++              <div className="song-list" style={{ padding: '0 24px' }}>
++                {artistEvents.length === 0 ? (
++                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', marginTop: 40 }}>
++                    <Calendar size={48} style={{ opacity: 0.5, marginBottom: 16 }} />
++                    <p>No upcoming shows scheduled.</p>
+                   </div>
+-                </div>
+-              ))}
+-            </div>
+-          </section>
++                ) : (
++                  artistEvents.map((evt) => (
++                    <div key={evt.id} className="song-row" onClick={() => setSelectedEventPopup(evt)} style={{ width: '100%', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12, marginBottom: 8 }}>
++                      <div style={{ width: 48, height: 48, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
++                        <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--primary)', fontWeight: 700 }}>{new Date(evt.event_date).toLocaleString('default', { month: 'short' })}</span>
++                        <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>{new Date(evt.event_date).getDate()}</span>
++                      </div>
++                      <div className="song-row-info" style={{ marginLeft: 12 }}>
++                        <h4 className="song-row-title">{evt.title}</h4>
++                        <p className="song-row-artist">{evt.location} ΓÇó {new Date(evt.event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
++                      </div>
++                    </div>
++                  ))
++                )}
++              </div>
++            </section>
++          )}
++
+         </div>
+       </div>
+     );
+@@ -539,6 +1072,129 @@ export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) =>
+     );
+   };
+ 
++  const renderNewReleasesOverlay = () => {
++    // 90 days = 90 * 24 * 60 * 60 * 1000 = 7776000000 ms
++    const ninetyDaysAgo = Date.now() - 7776000000;
++    
++    // Sort by created_at DESC
++    const sorted = [...tracks]
++      .filter(t => new Date(t.created_at).getTime() > ninetyDaysAgo)
++      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
++
++    return (
++      <div className="music-overlay fade-in" style={{ padding: '0 0 120px 0' }}>
++        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
++          <button onClick={() => setActiveExploreView('none')} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
++            <ChevronLeft size={28} />
++          </button>
++          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>New Releases</h2>
++        </div>
++        <div style={{ padding: '24px' }}>
++          {sorted.length === 0 ? (
++            <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 40 }}>No new releases in the last 3 months.</p>
++          ) : (
++            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
++              {sorted.map((song) => (
++                <div key={song.id} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, sorted)} style={{ width: '100%', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: 8 }}>
++                  <div className="song-row-cover-wrap">
++                    <img src={song.cover} alt={song.title} className="song-row-cover" />
++                    <div className="song-row-play"><Play size={20} fill="#fff" color="#fff" /></div>
++                  </div>
++                  <div className="song-row-info">
++                    <h4 className="song-row-title">{song.title}</h4>
++                    <p className="song-row-artist">{song.artist_name}</p>
++                  </div>
++                  <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginRight: 16 }}>
++                    {new Date(song.created_at).toLocaleDateString()}
++                  </span>
++                  <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
++                    <Plus size={18} />
++                  </button>
++                </div>
++              ))}
++            </div>
++          )}
++        </div>
++      </div>
++    );
++  };
++
++  const renderChartsOverlay = () => {
++    // Top 50 Overall
++    const topOverall = [...tracks]
++      .sort((a, b) => (b.plays || 0) - (a.plays || 0))
++      .slice(0, 50);
++
++    return (
++      <div className="music-overlay fade-in" style={{ padding: '0 0 120px 0' }}>
++        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
++          <button onClick={() => setActiveExploreView('none')} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
++            <ChevronLeft size={28} />
++          </button>
++          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Charts</h2>
++        </div>
++        <div style={{ padding: '24px' }}>
++          
++          <h3 style={{ margin: '0 0 16px 0', fontSize: 20 }}>Top 50 Overall</h3>
++          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 40 }}>
++            {topOverall.map((song, index) => (
++              <div key={`overall-${song.id}`} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, topOverall)} style={{ width: '100%', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: 8 }}>
++                <div style={{ width: 30, textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, color: index < 3 ? 'var(--primary)' : 'rgba(255,255,255,0.5)' }}>{index + 1}</div>
++                <div className="song-row-cover-wrap">
++                  <img src={song.cover} alt={song.title} className="song-row-cover" />
++                  <div className="song-row-play"><Play size={20} fill="#fff" color="#fff" /></div>
++                </div>
++                <div className="song-row-info">
++                  <h4 className="song-row-title">{song.title}</h4>
++                  <p className="song-row-artist">{song.artist_name}</p>
++                </div>
++                <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginRight: 16 }}>
++                  {song.plays || 0} plays
++                </span>
++                <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
++                  <Plus size={18} />
++                </button>
++              </div>
++            ))}
++          </div>
++
++          {TRADITIONAL_GENRES.map(genre => {
++            const topForGenre = [...tracks]
++              .filter(t => t.genre === genre.name)
++              .sort((a, b) => (b.plays || 0) - (a.plays || 0))
++              .slice(0, 10);
++              
++            if (topForGenre.length === 0) return null;
++
++            return (
++              <div key={`chart-${genre.name}`} style={{ marginBottom: 40 }}>
++                <h3 style={{ margin: '0 0 16px 0', fontSize: 20 }}>Top 10 {genre.name}</h3>
++                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
++                  {topForGenre.map((song, index) => (
++                    <div key={`genre-${song.id}`} className={`song-row ${currentSong?.id === song.id ? 'active' : ''}`} onClick={() => handleSongSelect(song, topForGenre)} style={{ width: '100%', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: 8 }}>
++                      <div style={{ width: 30, textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, color: index < 3 ? 'var(--primary)' : 'rgba(255,255,255,0.5)' }}>{index + 1}</div>
++                      <div className="song-row-cover-wrap">
++                        <img src={song.cover} alt={song.title} className="song-row-cover" />
++                        <div className="song-row-play"><Play size={20} fill="#fff" color="#fff" /></div>
++                      </div>
++                      <div className="song-row-info">
++                        <h4 className="song-row-title">{song.title}</h4>
++                        <p className="song-row-artist">{song.artist_name}</p>
++                      </div>
++                      <button className="song-row-action" onClick={(e) => { e.stopPropagation(); setOptionsSong(song); setIsAddToPlaylistOpen(true); }}>
++                        <Plus size={18} />
++                      </button>
++                    </div>
++                  ))}
++                </div>
++              </div>
++            );
++          })}
++        </div>
++      </div>
++    );
++  };
++
+   // ΓöÇΓöÇΓöÇ Utilities / Modals ΓöÇΓöÇΓöÇ
+   return (
+     <div className="music-container">
+@@ -601,39 +1262,6 @@ export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) =>
+             />
+             <select 
+               value={newPlaylistVisibility}
+-              onChange={e => setNewPlaylistVisibility(e.target.value)}
+-              style={{
+-                width: '100%',
+-                background: 'rgba(255,255,255,0.1)',
+-                border: '1px solid rgba(255,255,255,0.2)',
+-                color: '#fff',
+-                padding: '12px 16px',
+-                borderRadius: '12px',
+-                marginBottom: '16px',
+-                outline: 'none',
+-                fontSize: '16px'
+-              }}
+-            >
+-              <option value="private" style={{ color: '#000' }}>≡ƒöÆ Private (Only you)</option>
+-              <option value="friends" style={{ color: '#000' }}>≡ƒæÑ Friends Only</option>
+-              <option value="public" style={{ color: '#000' }}>≡ƒîì Public</option>
+-            </select>
+-            <div className="music-modal-actions">
+-              <button className="music-modal-btn cancel" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
+-              <button className="music-modal-btn primary" onClick={handleCreatePlaylist} disabled={!newPlaylistTitle.trim()}>Create</button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
+-
+-      {/* Options Menu Bottom Sheet */}
+-      {optionsSong && !isAddToPlaylistOpen && (
+-        <div className="music-modal-overlay" onClick={() => setOptionsSong(null)}>
+-          <div className="music-options-menu" onClick={e => e.stopPropagation()}>
+-            <div className="music-options-header">
+-              <img src={optionsSong.cover} alt="" style={{ width: 48, height: 48, borderRadius: 4, marginRight: 12 }} />
+-              <div>
+-                <h4 style={{ margin: 0, fontSize: 16 }}>{optionsSong.title}</h4>
+                 <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>{optionsSong.artist_name}</p>
+               </div>
+             </div>
