@@ -417,6 +417,53 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
         }
       }
 
+      // Fetch businesses
+      const { data: businesses } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('role', ['vendor', 'business', 'restaurant', 'store'])
+        .limit(20);
+
+      if (businesses) {
+        businesses.forEach(biz => {
+          const existingConv = convList.find(c => c.otherId === biz.id);
+          if (!existingConv) {
+            convList.push({
+              otherId: biz.id,
+              name: biz.name || biz.title || 'Business',
+              avatar: biz.avatar_url,
+              lastMessage: 'Start a conversation...',
+              lastTimestamp: '',
+              unreadCount: 0,
+              role: biz.role
+            });
+          }
+        });
+      }
+
+      // Fetch civic contacts
+      const { data: civicContacts } = await supabase
+        .from('civic_directory')
+        .select('*')
+        .limit(20);
+
+      if (civicContacts) {
+        civicContacts.forEach(civic => {
+          const existingConv = convList.find(c => c.otherId === civic.id);
+          if (!existingConv) {
+            convList.push({
+              otherId: civic.id,
+              name: civic.name || civic.title || 'Civic Entity',
+              avatar: civic.avatar_url,
+              lastMessage: 'Start a conversation...',
+              lastTimestamp: '',
+              unreadCount: 0,
+              role: 'civic'
+            });
+          }
+        });
+      }
+
       setConversations(convList);
     };
     buildConversations();
