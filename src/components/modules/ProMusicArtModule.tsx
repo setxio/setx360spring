@@ -34,6 +34,8 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [trackCoverSource, setTrackCoverSource] = useState<'external' | 'upload'>('external');
   const [trackCoverUrl, setTrackCoverUrl] = useState('');
   const [trackCoverFile, setTrackCoverFile] = useState<File | null>(null);
+  const [trackNumber, setTrackNumber] = useState<number>(1);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   
   // Track metadata
   const [trackGenre, setTrackGenre] = useState('');
@@ -119,22 +121,51 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
     }
   };
 
+  const uploadFileWithProgress = (bucket: string, path: string, file: File, onProgress: (p: number) => void): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
+      
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      if (session?.access_token) xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+      xhr.setRequestHeader('apikey', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+      xhr.setRequestHeader('Cache-Control', '3600');
+      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      xhr.setRequestHeader('x-upsert', 'false');
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+          resolve(data.publicUrl);
+        } else {
+          reject(new Error('Upload failed: ' + xhr.responseText));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Network error during upload'));
+      xhr.send(file);
+    });
+  };
+
   const handleTrackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeContext) return;
     if (!trackTitle.trim()) return alert('Title is required');
 
     setIsSubmitting(true);
+    setUploadProgress(0);
     try {
       // Handle Track Media Upload
       let finalMedia = trackMediaUrl;
       if (trackMediaSource === 'upload' && trackMediaFile) {
         const fileExt = trackMediaFile.name.split('.').pop();
         const fileName = `${activeContext.id}/tracks/${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('portfolio_media').upload(fileName, trackMediaFile);
-        if (uploadError) throw uploadError;
-        const { data: { publicUrl } } = supabase.storage.from('portfolio_media').getPublicUrl(fileName);
-        finalMedia = publicUrl;
+        finalMedia = await uploadFileWithProgress('portfolio_media', fileName, trackMediaFile, setUploadProgress);
       }
 
       // Handle Cover Upload (if single and uploading cover)
@@ -165,6 +196,7 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
         album_id: trackAlbumId || null,
         album_name: finalAlbumName,
         album_type: finalAlbumType,
+        track_number: trackAlbumId ? trackNumber : null,
         title: trackTitle.trim(),
         description: trackDesc.trim() || null,
         media_type: trackMediaSource,
@@ -182,12 +214,13 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
       setIsTrackModalOpen(false);
       setTrackTitle(''); setTrackDesc(''); setTrackMediaUrl(''); setTrackMediaFile(null);
       setTrackCoverUrl(''); setTrackCoverFile(null); setTrackGenre(''); setTrackMoods('');
-      setTrackExplicit(false);
+      setTrackExplicit(false); setTrackNumber(1); setUploadProgress(0);
       fetchData();
     } catch (err: any) {
       alert('Error saving track: ' + err.message);
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -369,12 +402,20 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Title *</label>
                   <input type="text" required value={trackTitle} onChange={e => setTrackTitle(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} placeholder="Track Name" />
                 </div>
-                <div>
-                  <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Album / EP</label>
-                  <select value={trackAlbumId} onChange={e => setTrackAlbumId(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }}>
-                    <option value="">None (Single)</option>
-                    {albums.map(a => <option key={a.id} value={a.id}>{a.title} ({a.album_type})</option>)}
-                  </select>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Album / EP</label>
+                    <select value={trackAlbumId} onChange={e => setTrackAlbumId(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }}>
+                      <option value="">None (Single)</option>
+                      {albums.map(a => <option key={a.id} value={a.id}>{a.title} ({a.album_type})</option>)}
+                    </select>
+                  </div>
+                  {trackAlbumId && (
+                    <div style={{ width: '100px' }}>
+                      <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Order</label>
+                      <input type="number" min="1" required value={trackNumber} onChange={e => setTrackNumber(parseInt(e.target.value))} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} />
+                    </div>
+                  )}
                 </div>
                 
                 <div style={{ display: 'flex', gap: '16px' }}>
@@ -434,8 +475,16 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   </div>
                 </div>
 
-                <button type="submit" disabled={isSubmitting} style={{ marginTop: '16px', padding: '16px', borderRadius: '12px', background: 'var(--primary)', color: '#fff', border: 'none', fontWeight: 700, fontSize: '16px', cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  {isSubmitting ? <Loader2 size={20} className="spin" /> : 'Save Track'}
+                <button type="submit" disabled={isSubmitting} style={{ marginTop: '16px', padding: '16px', borderRadius: '12px', background: 'var(--primary)', color: '#fff', border: 'none', fontWeight: 700, fontSize: '16px', cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', position: 'relative', overflow: 'hidden' }}>
+                  {isSubmitting && uploadProgress > 0 && (
+                    <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${uploadProgress}%`, background: 'rgba(255,255,255,0.2)', transition: 'width 0.2s' }} />
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', zIndex: 1 }}>
+                    {isSubmitting ? <Loader2 size={20} className="spin" /> : 'Save Track'}
+                  </div>
+                  {isSubmitting && uploadProgress > 0 && (
+                    <span style={{ fontSize: '12px', zIndex: 1 }}>Uploading... {uploadProgress}%</span>
+                  )}
                 </button>
               </form>
             </motion.div>
