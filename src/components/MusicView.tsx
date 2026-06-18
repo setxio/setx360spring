@@ -335,12 +335,17 @@ export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) => 
   }, [genrePreferences]);
 
   const quickPicks = useMemo(() => {
-    if (topGenres.length === 0) return tracks.slice(0, 12);
     return [...tracks]
       .sort((a, b) => {
+        // 1. Starred tracks get absolute top priority
+        if (a.is_starred !== b.is_starred) return a.is_starred ? -1 : 1;
+        
+        // 2. Then by user's top genres
         const aTop = topGenres.includes(a.genre) ? 1 : 0;
         const bTop = topGenres.includes(b.genre) ? 1 : 0;
         if (aTop !== bTop) return bTop - aTop;
+        
+        // 3. Then by total plays
         return (b.plays || 0) - (a.plays || 0);
       })
       .slice(0, 12);
