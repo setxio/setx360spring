@@ -185,12 +185,12 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
         title: trackTitle.trim(),
         description: trackDesc.trim() || null,
         media_type: trackMediaSource,
-        audioUrl: finalMedia,
-        cover: finalCover || null,
+        audio_url: finalMedia,
+        album_art_url: finalCover || null,
         genre: trackGenre || null,
         moods: trackMoods ? trackMoods.split(',').map(m => m.trim()) : null,
         energy_level: trackEnergy,
-        isExplicit: trackExplicit,
+        is_explicit: trackExplicit,
         artist_name: activeContext.name,
         creator_id: activeContext.owner_id
       });
