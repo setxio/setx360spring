@@ -7,7 +7,7 @@ import { PageType } from '../types/user';
 import { PAGE_TYPES } from '../utils/roles';
 
 export const PageCreatorView: React.FC = () => {
-  const { user, setEnv, refreshUser, theme } = useApp();
+  const { user, setEnv, refreshUser, theme, setActiveContext } = useApp();
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedType, setSelectedType] = useState<PageType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,8 +69,11 @@ export const PageCreatorView: React.FC = () => {
       // 3. Refresh user context (which fetches their pages)
       await refreshUser();
 
-      // 4. Redirect to home or dashboard
-      setEnv('home');
+      // 4. Auto-select the newly created page
+      setActiveContext(pageData as any);
+
+      // 5. Redirect to page manager to see the new dashboard immediately
+      setEnv('page_manager');
     } catch (err: any) {
       setError(err.message || 'Failed to create page. Please try again.');
     } finally {

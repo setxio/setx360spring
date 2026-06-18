@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 
 export const PageManagerView: React.FC = () => {
-  const { user, activeContext, setEnv, theme } = useApp();
+  const { user, activeContext, userPages, setActiveContext, setEnv, theme } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
 
   if (!user) return null;
@@ -42,9 +42,54 @@ export const PageManagerView: React.FC = () => {
         <h2 style={{ fontSize: '24px', fontWeight: 600, color: bgColors.text, marginBottom: 12 }}>
           Pro Tools Page Manager
         </h2>
-        <p style={{ color: bgColors.subtext, maxWidth: 400, marginBottom: 32 }}>
-          Select a page from your context switcher in the top right corner to manage it, or create a new page to get started.
-        </p>
+        
+        {userPages && userPages.length > 0 ? (
+          <>
+            <p style={{ color: bgColors.subtext, maxWidth: 400, marginBottom: 32 }}>
+              Select a page below to manage it, or create a new one.
+            </p>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '32px' }}>
+              {userPages.map(page => (
+                <motion.div 
+                  key={page.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveContext(page)}
+                  style={{
+                    backgroundColor: bgColors.card,
+                    border: `1px solid ${bgColors.border}`,
+                    borderRadius: '16px',
+                    padding: '16px 24px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}
+                >
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '8px',
+                    backgroundColor: bgColors.border,
+                    backgroundImage: page.avatar_url ? `url(${page.avatar_url})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    {!page.avatar_url && <ImageIcon size={20} color={bgColors.subtext} />}
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: 600, color: bgColors.text }}>{page.name}</div>
+                    <div style={{ fontSize: '12px', color: bgColors.subtext, textTransform: 'capitalize' }}>{page.page_type.replace('_', ' ')}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p style={{ color: bgColors.subtext, maxWidth: 400, marginBottom: 32 }}>
+            You haven't created any pages yet. Create a new page to get started.
+          </p>
+        )}
+
         <button 
           onClick={() => setEnv('page_creator')}
           style={{
