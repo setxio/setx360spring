@@ -121,37 +121,6 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
     }
   };
 
-  const uploadFileWithProgress = (bucket: string, path: string, file: File, onProgress: (p: number) => void): Promise<string> => {
-    return new Promise(async (resolve, reject) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
-      
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', url, true);
-      if (session?.access_token) xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
-      xhr.setRequestHeader('apikey', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-      xhr.setRequestHeader('Cache-Control', '3600');
-      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-      xhr.setRequestHeader('x-upsert', 'false');
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-          resolve(data.publicUrl);
-        } else {
-          reject(new Error('Upload failed: ' + xhr.responseText));
-        }
-      };
-
-      xhr.onerror = () => reject(new Error('Network error during upload'));
-      xhr.send(file);
-    });
-  };
-
   const handleTrackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeContext) return;
@@ -159,13 +128,28 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
     setIsSubmitting(true);
     setUploadProgress(0);
+    
+    // Simulate progress bar so the user knows it's working
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) return 90;
+        return prev + 5;
+      });
+    }, 500);
+
     try {
       // Handle Track Media Upload
       let finalMedia = trackMediaUrl;
       if (trackMediaSource === 'upload' && trackMediaFile) {
         const fileExt = trackMediaFile.name.split('.').pop();
         const fileName = `${activeContext.id}/tracks/${Date.now()}.${fileExt}`;
-        finalMedia = await uploadFileWithProgress('portfolio_media', fileName, trackMediaFile, setUploadProgress);
+        const { error: uploadError } = await supabase.storage.from('portfolio_media').upload(fileName, trackMediaFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('portfolio_media').getPublicUrl(fileName);
+        finalMedia = publicUrl;
       }
 
       // Handle Cover Upload (if single and uploading cover)
@@ -211,16 +195,18 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
       });
 
       if (error) throw error;
+      setUploadProgress(100);
       setIsTrackModalOpen(false);
       setTrackTitle(''); setTrackDesc(''); setTrackMediaUrl(''); setTrackMediaFile(null);
       setTrackCoverUrl(''); setTrackCoverFile(null); setTrackGenre(''); setTrackMoods('');
-      setTrackExplicit(false); setTrackNumber(1); setUploadProgress(0);
+      setTrackExplicit(false); setTrackNumber(1);
+      setTimeout(() => setUploadProgress(0), 500);
       fetchData();
     } catch (err: any) {
       alert('Error saving track: ' + err.message);
     } finally {
+      clearInterval(progressInterval);
       setIsSubmitting(false);
-      setUploadProgress(0);
     }
   };
 
