@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   /* Common Colors */
   --white: #ffffff;
   --black: #000000;
@@ -40,7 +40,7 @@
   
   --safe-area-bottom: env(safe-area-inset-bottom);
 
-  /* TopBar color slots — fallback defaults (Civic Blue / Green) */
+  /* TopBar color slots â€” fallback defaults (Civic Blue / Green) */
   --theme-primary: 221 83% 53%; /* HSL for Primary */
   --theme-secondary: 142 72% 36%; /* HSL for Secondary */
   --theme-tertiary: 199 89% 48%; /* HSL for Tertiary */
@@ -71,7 +71,7 @@
   --carousel-bg: rgba(255, 255, 255, 0.02);
 }
 
-/* ── IO (Modern) Light ────────────────────────────────────── */
+/* â”€â”€ IO (Modern) Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 [data-theme='io-light'] {
   --bg: #ffffff;
   --bg-soft: #f8f8ff; /* Ghost White */
@@ -91,7 +91,7 @@
   --button-style: gradient;
 }
 
-/* ── IO (Modern) Dark ─────────────────────────────────────── */
+/* â”€â”€ IO (Modern) Dark â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 [data-theme='io-dark'] {
   --bg: #000000;
   --bg-soft: #050505; /* Even darker ghost-like black */
@@ -111,7 +111,7 @@
   --button-style: gradient;
 }
 
-/* ── Civic (Classic) Light ─────────────────────────────────── */
+/* â”€â”€ Civic (Classic) Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 [data-theme='civic-classic-light'] {
   --bg: #f8f8ff;
   --bg-soft: #ffffff;
@@ -128,7 +128,7 @@
   --theme-color-4: #16a34a;
 }
 
-/* ── SETX (Civic Styling) Light ────────────────────────────── */
+/* â”€â”€ SETX (Civic Styling) Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 [data-theme='setx-light'] {
   --bg: #f8f8ff;
   --bg-soft: #ffffff;
@@ -145,8 +145,8 @@
   --theme-color-4: #16a34a;
 }
 
-/* ── Civic (Classic) Dark ──────────────────────────────────── */
-/* Distinct blue-toned background — different from generic dark slate */
+/* â”€â”€ Civic (Classic) Dark â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Distinct blue-toned background â€” different from generic dark slate */
 [data-theme='civic-classic-dark'] {
   --bg: #000000;
   --bg-soft: #1c1c1e;
@@ -163,7 +163,7 @@
   --theme-color-4: #6ee7b7;
 }
 
-/* ── SETX (Civic Styling) Dark ─────────────────────────────── */
+/* â”€â”€ SETX (Civic Styling) Dark â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 [data-theme='setx-dark'] {
   --bg: #000000;
   --bg-soft: #0a0a0a;
@@ -180,7 +180,7 @@
   --theme-color-4: #6ee7b7;
 }
 
-/* ── Neo (Electric Future) — Light ──────────────────── */
+/* â”€â”€ Neo (Electric Future) â€” Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Primary: #7000f4 (Purple) | Secondary: #2c69b5 (Blue) */
 [data-theme='neo-light'] {
   --bg: #f8f8ff;
@@ -198,7 +198,7 @@
   --theme-color-4: #7000f4;
 }
 
-/* Neo (Electric Future) — Dark */
+/* Neo (Electric Future) â€” Dark */
 /* Deep black base, electric purple + blue accent */
 [data-theme='neo-dark'] {
   --bg: #000000;
@@ -216,7 +216,7 @@
   --theme-color-4: #7000f4;
 }
 
-/* ── Neo II (Glass) — Light ────────────────────────── */
+/* â”€â”€ Neo II (Glass) â€” Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Same palette as Neo, but light has a cool blue-white tint */
 [data-theme='neo-ii-light'] {
   --bg: #f8f8ff;
@@ -234,7 +234,7 @@
   --theme-color-4: #7000f4;
 }
 
-/* Neo II (Glass) — Dark */
+/* Neo II (Glass) â€” Dark */
 /* Near-black with deep purple tint */
 [data-theme='neo-ii-dark'] {
   --bg: #020205;
@@ -252,7 +252,7 @@
   --theme-color-4: #7000f4;
 }
 
-/* ── Twilight (Texas Sunset) — Light ───────────────── */
+/* â”€â”€ Twilight (Texas Sunset) â€” Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Primary: #ff2e97 (Magenta) | Secondary: #ffb86c (Gold) */
 [data-theme='twilight-light'] {
   --bg: #f8f8ff;
@@ -270,7 +270,7 @@
   --theme-color-4: #4f46e5;
 }
 
-/* Twilight (Texas Sunset) — Dark */
+/* Twilight (Texas Sunset) â€” Dark */
 /* Standard dark base, magenta + gold accents */
 [data-theme='twilight-dark'] {
   --bg: #000000;
@@ -288,7 +288,7 @@
   --theme-color-4: #4f46e5;
 }
 
-/* ── Twilight II (Glass) — Light ──────────────────── */
+/* â”€â”€ Twilight II (Glass) â€” Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Warm white tint, same sunset palette */
 [data-theme='twilight-ii-light'] {
   --bg: #f8f8ff;
@@ -306,7 +306,7 @@
   --theme-color-4: #4f46e5;
 }
 
-/* Twilight II (Glass) — Dark */
+/* Twilight II (Glass) â€” Dark */
 /* Deep plum-black base, glassy warm dark */
 [data-theme='twilight-ii-dark'] {
   --bg: #0a0508;
@@ -324,12 +324,12 @@
   --theme-color-4: #4f46e5;
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* ── Efutura ─────────────────────────────────────────────────── */
-/* Derived from the Efutura logo: purple→violet→blue→cyan sweep   */
-/* ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* â”€â”€ Efutura â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Derived from the Efutura logo: purpleâ†’violetâ†’blueâ†’cyan sweep   */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* Efutura — Light */
+/* Efutura â€” Light */
 /* Soft lavender canvas; darker primaries for readability */
 [data-theme='efutura-light'] {
   --bg: #f8f8ff;
@@ -340,15 +340,15 @@
   --shadow: 0 4px 6px -1px rgb(124 58 237 / 0.1), 0 2px 4px -2px rgb(6 182 212 / 0.06);
   --primary: #7c3aed;
   --secondary: #0891b2;
-  /* TopBar: logo gradient purple → violet → blue → cyan */
+  /* TopBar: logo gradient purple â†’ violet â†’ blue â†’ cyan */
   --theme-color-1: #a855f7;
   --theme-color-2: #7c3aed;
   --theme-color-3: #3b82f6;
   --theme-color-4: #06b6d4;
 }
 
-/* Efutura — Dark */
-/* Pure black canvas — exactly the logo background */
+/* Efutura â€” Dark */
+/* Pure black canvas â€” exactly the logo background */
 [data-theme='efutura-dark'] {
   --bg: #000000;
   --bg-soft: #0a0614;
@@ -358,14 +358,14 @@
   --shadow: 0 10px 25px -3px rgb(168 85 247 / 0.25), 0 4px 10px -4px rgb(6 182 212 / 0.15);
   --primary: #a855f7;
   --secondary: #06b6d4;
-  /* TopBar: logo gradient purple → violet → blue → cyan */
+  /* TopBar: logo gradient purple â†’ violet â†’ blue â†’ cyan */
   --theme-color-1: #a855f7;
   --theme-color-2: #7c3aed;
   --theme-color-3: #3b82f6;
   --theme-color-4: #06b6d4;
 }
 
-/* ─── Porch: Texas Front Porch ─── */
+/* â”€â”€â”€ Porch: Texas Front Porch â”€â”€â”€ */
 [data-theme='porch'] {
   --theme-primary: 12 52% 52%;    /* Terracotta */
   --theme-secondary: 38 62% 54%;  /* Warm Gold */
@@ -377,7 +377,7 @@
   --theme-color-4: #5C3D2E;
 }
 
-/* ─── Spring: Renewal ─── */
+/* â”€â”€â”€ Spring: Renewal â”€â”€â”€ */
 [data-theme='spring'] {
   --theme-primary: 260 70% 50%;   /* Royal Purple */
   --theme-secondary: 290 80% 60%; /* Vibrant Purple */
@@ -389,7 +389,7 @@
   --theme-color-4: #d946ef;
 }
 
-/* ── Summer: Solstice ─── */
+/* â”€â”€ Summer: Solstice â”€â”€â”€ */
 [data-theme='summer'] {
   --theme-primary: 45 93% 47%;    /* Sunflower Yellow */
   --theme-secondary: 199 89% 48%; /* Sky Blue */
@@ -401,7 +401,7 @@
   --theme-color-4: #0ea5e9;
 }
 
-/* ─── Autumn: Harvest ─── */
+/* â”€â”€â”€ Autumn: Harvest â”€â”€â”€ */
 [data-theme='autumn'] {
   --theme-primary: 25 95% 53%;    /* Burnt Orange */
   --theme-secondary: 48 96% 53%;  /* Harvest Gold */
@@ -413,7 +413,7 @@
   --theme-color-4: #facc15;
 }
 
-/* ── Winter: Frost ─── */
+/* â”€â”€ Winter: Frost â”€â”€â”€ */
 [data-theme='winter'] {
   --theme-primary: 213 94% 68%;   /* Ice Blue */
   --theme-secondary: 215 16% 47%; /* Slate Silver */
@@ -425,7 +425,7 @@
   --theme-color-4: #94a3b8;
 }
 
-/* ─── Custom Theme ─── */
+/* â”€â”€â”€ Custom Theme â”€â”€â”€ */
 [data-theme='custom'] {
   --primary: hsl(var(--theme-primary));
   --secondary: hsl(var(--theme-secondary));
@@ -486,7 +486,7 @@ body {
   transition: transform 0.2s ease;
 }
 
-/* ── Text Formatting ─────────────────────────────── */
+/* â”€â”€ Text Formatting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hashtag {
   color: #7000f4; /* Purple */
   font-weight: 600;
@@ -507,7 +507,7 @@ body {
   text-decoration: underline;
 }
 
-/* ── Global Dark Mode Overrides ─────────────────────────────── */
+/* â”€â”€ Global Dark Mode Overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Ensures transparent backgrounds don't inherit light-mode ghost white */
 [data-theme*='dark'] {
   --post-action-bg: rgba(255, 255, 255, 0.02);
@@ -571,7 +571,7 @@ body {
   animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* ── TopBar Scan Animations ──────────────────────────────────── */
+/* â”€â”€ TopBar Scan Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Scan sweeps left-to-right (right half of bar, scanning inward) */
 @keyframes scan-left {
   0%   { background-position: 100% 50%; }
@@ -725,5 +725,4 @@ body {
 #google_translate_element {
   display: none !important;
 }
-. s p i n   {   a n i m a t i o n :   s p i n   1 s   l i n e a r   i n f i n i t e ;   }   @ k e y f r a m e s   s p i n   {   1 0 0 %   {   t r a n s f o r m :   r o t a t e ( 3 6 0 d e g ) ;   }   }  
- 
+.spin { animation: spin 1s linear infinite; } @keyframes spin { 100% { transform: rotate(360deg); } }

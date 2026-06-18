@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, CheckCircle, Store, Music, HeartHandshake, Landmark, Briefcase, Camera, Save, Loader2, Sparkles, Building, Play, Plus, Image as ImageIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
-import { PageType, PAGE_TYPES } from '../types/user';
+import { PageType } from '../types/user';
+import { PAGE_TYPES } from '../utils/roles';
 
 export const PageCreatorView: React.FC = () => {
   const { user, setEnv, refreshUser, theme } = useApp();

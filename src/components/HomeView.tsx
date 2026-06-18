@@ -57,7 +57,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'social_comms', label: 'Social & Comms', items: ['social', 'discover', 'contacts', 'messages', 'phone', 'proplus'] },
     { id: 'market_shops', label: 'Market & Shops', items: ['market', 'wallet', 'classifieds', 'jobs', 'gigs'] },
     { id: 'media_events', label: 'Media & Events', items: ['videos', 'music', 'events', 'eats', 'art', 'faith', 'sports'] },
-    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'care', 'crowdfund', 'charity', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
+    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'page_creator', 'page_manager', 'care', 'crowdfund', 'charity', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
   ];
   // Swipe logic
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -138,6 +138,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'messages', label: 'Messages', icon: <MessageCircle size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f472b6, #db2777)' },
     { id: 'proplus', label: 'Connect', icon: <Star size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #0284c7, #0ea5e9)' },
     { id: 'page_creator', label: 'Create Page', icon: <LayoutGrid size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #10b981, #059669)' },
+    { id: 'page_manager', label: 'Page Manager', icon: <Briefcase size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #6366f1, #4338ca)' },
     { id: 'admin_messages', label: 'Admin Msgs', icon: <MessageSquare size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f43f5e, #be123c)' },
     { id: 'crowdfund', label: 'CrowdFund', icon: <HeartHandshake size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #10b981, #047857)' },
     { id: 'charity', label: 'Charities', icon: <HandHeart size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' },

@@ -64,6 +64,7 @@ const CivicsView       = lazy(() => import('./components/CivicsView').then(m => 
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
 const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
 const PageCreatorView  = lazy(() => import('./components/PageCreatorView').then(m => ({ default: m.PageCreatorView })));
+const PageManagerView  = lazy(() => import('./components/PageManagerView').then(m => ({ default: m.PageManagerView })));
 const AppsView         = lazy(() => import('./components/apps/AppsView').then(m => ({ default: m.AppsView })));
 const ContactsView     = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const PhoneView        = lazy(() => import('./components/PhoneView').then(m => ({ default: m.PhoneView })));
@@ -280,6 +281,10 @@ const App: React.FC = () => {
 
     if (env === 'page_creator') {
       return <PageCreatorView />;
+    }
+
+    if (env === 'page_manager') {
+      return <PageManagerView />;
     }
 
     // Existing authenticated views

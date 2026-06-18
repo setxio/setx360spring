@@ -688,6 +688,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
                     )}
                   </AnimatePresence>
                 </div>
+              </div>
             )}
           </div>
         </header>
