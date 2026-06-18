@@ -6,10 +6,12 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
+import { ProMusicArtModule } from './modules/ProMusicArtModule';
 
 export const PageManagerView: React.FC = () => {
   const { user, activeContext, userPages, setActiveContext, setEnv, theme } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
+  const [activeModule, setActiveModule] = useState<string | null>(null);
 
   if (!user) return null;
 
@@ -158,6 +160,10 @@ export const PageManagerView: React.FC = () => {
 
   const modules = getModules();
 
+  if (activeModule === 'music') {
+    return <ProMusicArtModule onBack={() => setActiveModule(null)} />;
+  }
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'transparent' }}>
       {/* Header */}
@@ -204,6 +210,7 @@ export const PageManagerView: React.FC = () => {
               key={mod.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => setActiveModule(mod.id)}
               style={{
                 backgroundColor: bgColors.card,
                 border: `1px solid ${bgColors.border}`,
