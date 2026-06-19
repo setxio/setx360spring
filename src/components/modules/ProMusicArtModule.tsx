@@ -156,8 +156,7 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
         }
       }
 
-      // 3. Process Tracks
-      const itemsToProcess = trackMediaSource === 'upload' ? trackDrafts : [{ 
+      const itemsToProcess: any[] = trackMediaSource === 'upload' ? trackDrafts : [{ 
         title: trackTitle, 
         order: trackNumber, 
         file: null, 
