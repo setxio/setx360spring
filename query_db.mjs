@@ -10,12 +10,8 @@ async function run() {
   });
   try {
     await client.connect();
-    const res = await client.query(`
-      SELECT column_name, is_nullable, data_type
-      FROM information_schema.columns
-      WHERE table_name = 'media_tracks';
-    `);
-    console.log("Columns:", res.rows);
+    const res = await client.query('SELECT title, album_art_url, album_id FROM media_tracks ORDER BY created_at DESC LIMIT 5');
+    console.log("Recent tracks:", res.rows);
   } catch (err) {
     console.error("Error:", err);
   } finally {

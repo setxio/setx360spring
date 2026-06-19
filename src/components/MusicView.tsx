@@ -128,8 +128,9 @@ export const MusicView: React.FC<{ user: User; scope: string }> = ({ user }) => 
     if (data && data.length > 0) {
       setTracks(data.map(d => ({
         ...d,
+        audioUrl: d.audio_url || d.audioUrl,
         artist_name: d.artist_name || d.artist || 'Unknown Artist',
-        cover: d.cover || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300'
+        cover: d.album_art_url || d.cover || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300'
       })));
     } else {
       setTracks(TOP_SONGS);
