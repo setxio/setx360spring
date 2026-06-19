@@ -703,11 +703,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
               </div>
             </div>
             <div 
-              style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', cursor: 'pointer' }}
+              style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}
               onClick={() => setIsQueueModalOpen(true)}
             >
-              <p style={{ margin: '0 0 4px', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentSong?.title || 'Neon Dreams'}</p>
-              <p style={{ margin: 0, fontSize: '0.75rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentSong?.artist || 'Local Synthwave'}</p>
+              <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-secondary)', backgroundImage: `url(${currentSong?.cover || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=300'})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ margin: '0 0 4px', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600 }}>{currentSong?.title || 'Neon Dreams'}</p>
+                <p style={{ margin: 0, fontSize: '0.75rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentSong?.artist || 'Local Synthwave'}</p>
+              </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
               <Heart size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} />

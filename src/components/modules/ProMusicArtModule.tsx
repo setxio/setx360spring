@@ -30,7 +30,8 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [trackAlbumId, setTrackAlbumId] = useState<string>(''); // empty means single
   const [trackMediaSource, setTrackMediaSource] = useState<'external' | 'upload'>('external');
   const [trackMediaUrl, setTrackMediaUrl] = useState('');
-  const [trackMediaFile, setTrackMediaFile] = useState<File | null>(null);
+  const [trackMediaFiles, setTrackMediaFiles] = useState<File[]>([]);
+  const [trackDrafts, setTrackDrafts] = useState<{ id: string, title: string, order: number, file: File }[]>([]);
   const [trackCoverSource, setTrackCoverSource] = useState<'external' | 'upload'>('external');
   const [trackCoverUrl, setTrackCoverUrl] = useState('');
   const [trackCoverFile, setTrackCoverFile] = useState<File | null>(null);
@@ -125,35 +126,14 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const handleTrackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeContext) return;
-    if (!trackTitle.trim()) return alert('Title is required');
+    if (trackMediaSource === 'external' && !trackTitle.trim()) return alert('Title is required for external tracks');
+    if (trackMediaSource === 'upload' && trackDrafts.length === 0) return alert('Please select at least one file to upload');
 
     setIsSubmitting(true);
     setUploadProgress(0);
-    
-    // Simulate progress bar so the user knows it's working
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 90) return 90;
-        return prev + 5;
-      });
-    }, 500);
 
     try {
-      // Handle Track Media Upload
-      let finalMedia = trackMediaUrl;
-      if (trackMediaSource === 'upload' && trackMediaFile) {
-        const fileExt = trackMediaFile.name.split('.').pop();
-        const fileName = `${activeContext.id}/tracks/${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('portfolio_media').upload(fileName, trackMediaFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
-        if (uploadError) throw uploadError;
-        const { data: { publicUrl } } = supabase.storage.from('portfolio_media').getPublicUrl(fileName);
-        finalMedia = publicUrl;
-      }
-
-      // Handle Cover Upload (if single and uploading cover)
+      // 1. Handle Cover Upload once for the whole batch
       let finalCover = trackCoverUrl;
       if (!trackAlbumId && trackCoverSource === 'upload' && trackCoverFile) {
         const fileExt = trackCoverFile.name.split('.').pop();
@@ -164,7 +144,7 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
         finalCover = publicUrl;
       }
 
-      // If associated with an album, inherit the album's cover, name, and type
+      // 2. Fetch Album details if applicable
       let finalAlbumName = null;
       let finalAlbumType = 'Single';
       if (trackAlbumId) {
@@ -176,29 +156,66 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
         }
       }
 
-      const { error } = await supabase.from('media_tracks').insert({
-        page_id: activeContext.id,
-        album_id: trackAlbumId || null,
-        album_name: finalAlbumName,
-        album_type: finalAlbumType,
-        track_number: trackAlbumId ? trackNumber : null,
-        title: trackTitle.trim(),
-        description: trackDesc.trim() || null,
-        media_type: trackMediaSource,
-        audio_url: finalMedia,
-        album_art_url: finalCover || null,
-        genre: trackGenre || null,
-        moods: trackMoods ? trackMoods.split(',').map(m => m.trim()) : null,
-        energy_level: trackEnergy,
-        is_explicit: trackExplicit,
-        artist_name: activeContext.name,
-        creator_id: activeContext.owner_id
-      });
+      // 3. Process Tracks
+      const itemsToProcess = trackMediaSource === 'upload' ? trackDrafts : [{ 
+        title: trackTitle, 
+        order: trackNumber, 
+        file: null, 
+        mediaUrl: trackMediaUrl 
+      }];
 
-      if (error) throw error;
+      let currentItemIndex = 0;
+
+      for (const item of itemsToProcess) {
+        // Update overall progress
+        const progressBase = (currentItemIndex / itemsToProcess.length) * 100;
+        const progressPerItem = 100 / itemsToProcess.length;
+        setUploadProgress(Math.round(progressBase + (progressPerItem * 0.1)));
+
+        let finalMedia = item.mediaUrl || '';
+        if (trackMediaSource === 'upload' && item.file) {
+          const fileExt = item.file.name.split('.').pop();
+          const fileName = `${activeContext.id}/tracks/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${fileExt}`;
+          
+          setUploadProgress(Math.round(progressBase + (progressPerItem * 0.4)));
+          const { error: uploadError } = await supabase.storage.from('portfolio_media').upload(fileName, item.file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+          if (uploadError) throw uploadError;
+          
+          setUploadProgress(Math.round(progressBase + (progressPerItem * 0.8)));
+          const { data: { publicUrl } } = supabase.storage.from('portfolio_media').getPublicUrl(fileName);
+          finalMedia = publicUrl;
+        }
+
+        const { error } = await supabase.from('media_tracks').insert({
+          page_id: activeContext.id,
+          album_id: trackAlbumId || null,
+          album_name: finalAlbumName,
+          album_type: finalAlbumType,
+          track_number: trackAlbumId ? item.order : null,
+          title: item.title.trim() || 'Untitled Track',
+          description: trackDesc.trim() || null,
+          media_type: trackMediaSource,
+          audio_url: finalMedia,
+          album_art_url: finalCover || null,
+          genre: trackGenre || null,
+          moods: trackMoods ? trackMoods.split(',').map(m => m.trim()) : null,
+          energy_level: trackEnergy,
+          is_explicit: trackExplicit,
+          artist_name: activeContext.name,
+          creator_id: activeContext.owner_id
+        });
+
+        if (error) throw error;
+        currentItemIndex++;
+        setUploadProgress(Math.round((currentItemIndex / itemsToProcess.length) * 100));
+      }
+
       setUploadProgress(100);
       setIsTrackModalOpen(false);
-      setTrackTitle(''); setTrackDesc(''); setTrackMediaUrl(''); setTrackMediaFile(null);
+      setTrackTitle(''); setTrackDesc(''); setTrackMediaUrl(''); setTrackMediaFiles([]); setTrackDrafts([]);
       setTrackCoverUrl(''); setTrackCoverFile(null); setTrackGenre(''); setTrackMoods('');
       setTrackExplicit(false); setTrackNumber(1);
       setActiveTab('tracks');
@@ -207,9 +224,27 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
     } catch (err: any) {
       alert('Error saving track: ' + err.message);
     } finally {
-      clearInterval(progressInterval);
       setIsSubmitting(false);
     }
+  };
+
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setTrackMediaFiles(files);
+    
+    // Auto-generate drafts
+    const drafts = files.map((file, index) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      file,
+      title: file.name.replace(/\.[^/.]+$/, ""), // strip extension
+      order: trackAlbumId ? trackNumber + index : 1
+    }));
+    setTrackDrafts(drafts);
+  };
+
+  const updateDraft = (id: string, field: 'title' | 'order', value: string | number) => {
+    setTrackDrafts(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d));
   };
 
   return (
@@ -386,25 +421,39 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
               <button onClick={() => setIsTrackModalOpen(false)} style={{ position: 'absolute', top: 24, right: 24, background: 'transparent', border: 'none', color: bgColors.subtext, cursor: 'pointer' }}><X size={24} /></button>
               <h3 style={{ margin: '0 0 24px 0', color: bgColors.text, fontSize: '20px' }}>Add Track</h3>
               <form onSubmit={handleTrackSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Title *</label>
-                  <input type="text" required value={trackTitle} onChange={e => setTrackTitle(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} placeholder="Track Name" />
-                </div>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Album / EP</label>
-                    <select value={trackAlbumId} onChange={e => setTrackAlbumId(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }}>
-                      <option value="">None (Single)</option>
-                      {albums.map(a => <option key={a.id} value={a.id}>{a.title} ({a.album_type})</option>)}
-                    </select>
-                  </div>
-                  {trackAlbumId && (
-                    <div style={{ width: '100px' }}>
-                      <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Order</label>
-                      <input type="number" min="1" required value={trackNumber} onChange={e => setTrackNumber(parseInt(e.target.value))} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} />
+                {trackMediaSource === 'external' ? (
+                  <>
+                    <div>
+                      <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Title *</label>
+                      <input type="text" required value={trackTitle} onChange={e => setTrackTitle(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} placeholder="Track Name" />
                     </div>
-                  )}
-                </div>
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Album / EP</label>
+                        <select value={trackAlbumId} onChange={e => setTrackAlbumId(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }}>
+                          <option value="">None (Single)</option>
+                          {albums.map(a => <option key={a.id} value={a.id}>{a.title} ({a.album_type})</option>)}
+                        </select>
+                      </div>
+                      {trackAlbumId && (
+                        <div style={{ width: '100px' }}>
+                          <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Order</label>
+                          <input type="number" min="1" required value={trackNumber} onChange={e => setTrackNumber(parseInt(e.target.value))} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} />
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '8px' }}>Album / EP</label>
+                      <select value={trackAlbumId} onChange={e => setTrackAlbumId(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }}>
+                        <option value="">None (Single)</option>
+                        {albums.map(a => <option key={a.id} value={a.id}>{a.title} ({a.album_type})</option>)}
+                      </select>
+                    </div>
+                  </div>
+                )}
                 
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
@@ -419,10 +468,27 @@ export const ProMusicArtModule: React.FC<{ onBack: () => void }> = ({ onBack }) 
                     {trackMediaSource === 'external' ? (
                       <input type="url" required value={trackMediaUrl} onChange={e => setTrackMediaUrl(e.target.value)} placeholder="https://..." style={{ width: '100%', padding: '12px', borderRadius: '8px', border: `1px solid ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} />
                     ) : (
-                      <input type="file" required accept="audio/*" onChange={e => setTrackMediaFile(e.target.files?.[0] || null)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: `1px dashed ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} />
+                      <input type="file" required multiple accept="audio/*" onChange={handleFilesSelected} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: `1px dashed ${bgColors.border}`, background: bgColors.inputBg, color: bgColors.text, outline: 'none' }} />
                     )}
                   </div>
                 </div>
+
+                {trackMediaSource === 'upload' && trackDrafts.length > 0 && (
+                  <div style={{ background: bgColors.inputBg, padding: '16px', borderRadius: '12px', border: `1px solid ${bgColors.border}`, maxHeight: '200px', overflowY: 'auto' }}>
+                    <label style={{ display: 'block', color: bgColors.text, fontWeight: 600, marginBottom: '12px' }}>Track List ({trackDrafts.length})</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {trackDrafts.map((draft, idx) => (
+                        <div key={draft.id} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          <span style={{ color: bgColors.subtext, fontSize: '12px', width: '20px' }}>{idx + 1}.</span>
+                          <input type="text" value={draft.title} onChange={(e) => updateDraft(draft.id, 'title', e.target.value)} style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: `1px solid ${bgColors.border}`, background: bgColors.card, color: bgColors.text, outline: 'none', fontSize: '14px' }} placeholder="Track Title" />
+                          {trackAlbumId && (
+                            <input type="number" min="1" value={draft.order} onChange={(e) => updateDraft(draft.id, 'order', parseInt(e.target.value))} style={{ width: '70px', padding: '8px', borderRadius: '8px', border: `1px solid ${bgColors.border}`, background: bgColors.card, color: bgColors.text, outline: 'none', fontSize: '14px' }} placeholder="Order" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {!trackAlbumId && (
                   <div>
