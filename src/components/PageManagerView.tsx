@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Briefcase, Store, Calendar, Users, Settings, Image as ImageIcon, 
-  MessageSquare, DollarSign, Activity, AlertTriangle, Megaphone, Plus, LayoutGrid, Music
+  MessageSquare, DollarSign, Activity, AlertTriangle, Megaphone, Plus, LayoutGrid, Music, Trash2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
@@ -113,6 +113,17 @@ export const PageManagerView: React.FC = () => {
     );
   }
 
+  const handleDeletePage = async () => {
+    if (!window.confirm(`Are you sure you want to permanently delete ${activeContext.name}? This will also delete all associated music, products, and data.`)) return;
+    try {
+      const { error } = await supabase.from('pages').delete().eq('id', activeContext.id);
+      if (error) throw error;
+      window.location.reload();
+    } catch (err: any) {
+      alert('Error deleting page: ' + err.message);
+    }
+  };
+
   // Determine modules based on page type
   const getModules = () => {
     const type = activeContext.page_type;
@@ -173,26 +184,34 @@ export const PageManagerView: React.FC = () => {
         backgroundColor: bgColors.card,
         display: 'flex',
         alignItems: 'center',
-        gap: '24px'
+        justifyContent: 'space-between'
       }}>
-        <div style={{
-          width: 80, height: 80, borderRadius: '16px',
-          backgroundColor: bgColors.border,
-          backgroundImage: activeContext.avatar_url ? `url(${activeContext.avatar_url})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          {!activeContext.avatar_url && <ImageIcon size={32} color={bgColors.subtext} />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '16px',
+            backgroundColor: bgColors.border,
+            backgroundImage: activeContext.avatar_url ? `url(${activeContext.avatar_url})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            {!activeContext.avatar_url && <ImageIcon size={32} color={bgColors.subtext} />}
+          </div>
+          <div>
+            <h1 style={{ fontSize: '28px', fontWeight: 700, color: bgColors.text, margin: 0 }}>
+              {activeContext.name}
+            </h1>
+            <p style={{ color: bgColors.subtext, fontSize: '16px', margin: '4px 0 0 0', textTransform: 'capitalize' }}>
+              {activeContext.page_type.replace('_', ' ')} Dashboard
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 style={{ fontSize: '28px', fontWeight: 700, color: bgColors.text, margin: 0 }}>
-            {activeContext.name}
-          </h1>
-          <p style={{ color: bgColors.subtext, fontSize: '16px', margin: '4px 0 0 0', textTransform: 'capitalize' }}>
-            {activeContext.page_type.replace('_', ' ')} Dashboard
-          </p>
-        </div>
+        <button 
+          onClick={handleDeletePage}
+          style={{ background: 'transparent', border: `1px solid #ef4444`, color: '#ef4444', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}
+        >
+          <Trash2 size={18} /> Delete Page
+        </button>
       </div>
 
       {/* Modules Grid */}
