@@ -1,5 +1,6 @@
 import type { User } from '../types/user';
 import { useToast } from '../context/ToastContext';
+import { useApp } from '../context/AppContext';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getGradientAvatar } from '../utils/avatar';
@@ -19,7 +20,11 @@ import {
   Play,
   Pin,
   X,
-  Shield
+  Shield,
+  Facebook,
+  Instagram,
+  Twitter,
+  Youtube
 } from 'lucide-react';
 import { SocialFeed } from './SocialFeed';
 import { PostCard } from './PostCard';
@@ -238,6 +243,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onNavigateToPost,
   onNavigateToProfile
 }) => {
+  const { activeContext } = useApp();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -255,18 +261,35 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [showWeightSelector, setShowWeightSelector] = useState(false);
   const [showBlockMenu, setShowBlockMenu] = useState(false);
 
-  const targetId = profileId || user.id;
-  const isOwnProfile = !profileId || profileId === user.id;
+  const targetId = profileId || activeContext?.id || user.id;
+  const isOwnProfile = !profileId || profileId === (activeContext?.id || user.id);
 
-  const currentRole = profile?.role || user.role;
+  const currentRole = profile?.role || (activeContext ? activeContext.page_type : user.role);
   const isOfficial = checkOfficial(currentRole);
   const isVendor = checkVendor(currentRole);
   const isProfessional = checkProfessional(currentRole);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const [profileRes, followersRes, followingRes, followingMeRes, pinnedRes, followersData, followingData] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', targetId).single(),
+      // Try to fetch from profiles first
+      let profileRes = await supabase.from('profiles').select('*').eq('id', targetId).maybeSingle();
+      
+      // If not found in profiles, it might be a page
+      if (!profileRes.data) {
+        const pageRes = await supabase.from('pages').select('*').eq('id', targetId).maybeSingle();
+        if (pageRes.data) {
+          profileRes.data = {
+            ...pageRes.data,
+            role: pageRes.data.page_type,
+            bio: pageRes.data.about,
+            banner_url: pageRes.data.cover_url,
+            handle: pageRes.data.name.toLowerCase().replace(/\s/g, ''),
+            is_page: true
+          };
+        }
+      }
+
+      const [followersRes, followingRes, followingMeRes, pinnedRes, followersData, followingData] = await Promise.all([
         supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', targetId),
         supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', targetId),
         user.id !== targetId
@@ -380,14 +403,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       .from(bucket)
       .getPublicUrl(fileName);
 
-    const updateColumn = bucket === 'avatars' ? 'avatar_url' : 'banner_url';
+    const updateColumn = bucket === 'avatars' ? 'avatar_url' : (profile?.is_page ? 'cover_url' : 'banner_url');
+    const table = profile?.is_page ? 'pages' : 'profiles';
     const { error: updateError } = await supabase
-      .from('profiles')
+      .from(table)
       .update({ [updateColumn]: publicUrl })
-      .eq('id', user.id);
+      .eq('id', targetId);
 
     if (!updateError) {
-      setProfile({ ...profile, [updateColumn]: publicUrl });
+      setProfile({ ...profile, [updateColumn]: publicUrl, [bucket === 'avatars' ? 'avatar_url' : 'banner_url']: publicUrl });
     }
     setUploading(false);
   };
@@ -499,14 +523,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
       <div className="profile-info-section">
         <div className="name-and-badge">
-          <h1 className="profile-name">{profile?.company || profile?.name || user.name}</h1>
+          <h1 className="profile-name">{profile?.company || profile?.name || (activeContext ? activeContext.name : user.name)}</h1>
           {profile?.is_verified && <ShieldCheck className="verified-tick" size={20} />}
-          <span className={`role-badge-tag ${profile?.role || user.role}`}>
-            {(profile?.role || user.role).replace(/_/g, ' ').toUpperCase()}
+          <span className={`role-badge-tag ${profile?.role || (activeContext ? activeContext.page_type : user.role)}`}>
+            {(profile?.role || (activeContext ? activeContext.page_type : user.role)).replace(/_/g, ' ').toUpperCase()}
           </span>
         </div>
         
-        <p className="profile-handle">@{profile?.handle || (profile?.company || profile?.name || user.name).toLowerCase().replace(/\s/g, '')}</p>
+        <p className="profile-handle">@{profile?.handle || (profile?.company || profile?.name || (activeContext ? activeContext.name : user.name)).toLowerCase().replace(/\s/g, '')}</p>
         
         <div className="profile-meta-grid">
           <div className="meta-item">
@@ -547,6 +571,39 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           )}
         </div>
+
+        {/* Social Media Links */}
+        {(profile?.social_facebook || profile?.social_instagram || profile?.social_x || profile?.social_youtube || profile?.social_tiktok) && (
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px', alignItems: 'center' }}>
+            {profile.social_facebook && (
+              <a href={profile.social_facebook} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#1877F2'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <Facebook size={20} />
+              </a>
+            )}
+            {profile.social_instagram && (
+              <a href={profile.social_instagram} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#E4405F'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <Instagram size={20} />
+              </a>
+            )}
+            {profile.social_x && (
+              <a href={profile.social_x} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#1DA1F2'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <Twitter size={20} />
+              </a>
+            )}
+            {profile.social_youtube && (
+              <a href={profile.social_youtube} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#FF0000'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <Youtube size={20} />
+              </a>
+            )}
+            {profile.social_tiktok && (
+              <a href={profile.social_tiktok} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#000000'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.78-1.15 5.54-3.33 7.37-1.87 1.56-4.32 2.36-6.73 2.11-2.91-.28-5.63-2.02-6.94-4.66-1.3-2.61-1.11-5.88.54-8.28 1.48-2.12 4.02-3.41 6.64-3.48.05 1.34.01 2.68.04 4.02-1.28.16-2.58.58-3.49 1.53-1.04 1.05-1.42 2.63-1.05 4.07.41 1.58 1.77 2.85 3.37 3.19 1.66.36 3.47-.19 4.45-1.51.81-1.08 1.11-2.47 1.08-3.83.02-5.75.01-11.51.01-17.26z"/>
+                </svg>
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Role-Specific Detail Card */}
         {(isOfficial || isProfessional) && (
