@@ -12,6 +12,12 @@ CREATE TABLE IF NOT EXISTS public.pages (
   contact_email text,
   contact_phone text,
   website text,
+  social_facebook text,
+  social_instagram text,
+  social_x text,
+  social_youtube text,
+  social_tiktok text,
+  type_metadata jsonb default '{}'::jsonb,
   is_verified boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null

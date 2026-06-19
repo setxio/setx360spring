@@ -20,6 +20,14 @@ export const PageCreatorView: React.FC = () => {
   const [contactPhone, setContactPhone] = useState('');
   const [website, setWebsite] = useState('');
 
+  // Social & Dynamic State
+  const [socialFacebook, setSocialFacebook] = useState('');
+  const [socialInstagram, setSocialInstagram] = useState('');
+  const [socialX, setSocialX] = useState('');
+  const [socialYoutube, setSocialYoutube] = useState('');
+  const [socialTiktok, setSocialTiktok] = useState('');
+  const [typeMetadata, setTypeMetadata] = useState<Record<string, any>>({});
+
   const pageTypeConfigs: Record<PageType, { label: string; icon: React.ReactNode; color: string; description: string }> = {
     business: { label: 'Business', icon: <Store size={24} />, color: '#3b82f6', description: 'Local shops, restaurants, and professional services.' },
     artist: { label: 'Artist / Creator', icon: <Music size={24} />, color: '#d946ef', description: 'Musicians, visual artists, and content creators.' },
@@ -48,7 +56,13 @@ export const PageCreatorView: React.FC = () => {
           about: about.trim() || null,
           contact_email: contactEmail.trim() || null,
           contact_phone: contactPhone.trim() || null,
-          website: website.trim() || null
+          website: website.trim() || null,
+          social_facebook: socialFacebook.trim() || null,
+          social_instagram: socialInstagram.trim() || null,
+          social_x: socialX.trim() || null,
+          social_youtube: socialYoutube.trim() || null,
+          social_tiktok: socialTiktok.trim() || null,
+          type_metadata: typeMetadata
         })
         .select()
         .single();
@@ -210,6 +224,149 @@ export const PageCreatorView: React.FC = () => {
                 placeholder="https://www.example.com"
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
               />
+            </div>
+
+            {/* Dynamic Type-Specific Fields */}
+            {selectedType === 'artist' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Genre</label>
+                  <input
+                    type="text"
+                    value={typeMetadata.genre || ''}
+                    onChange={(e) => setTypeMetadata({ ...typeMetadata, genre: e.target.value })}
+                    placeholder="e.g. Rock, Hip Hop, Jazz"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Label / Affiliation</label>
+                  <input
+                    type="text"
+                    value={typeMetadata.label || ''}
+                    onChange={(e) => setTypeMetadata({ ...typeMetadata, label: e.target.value })}
+                    placeholder="Independent, Universal, etc."
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {selectedType === 'business' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Industry Category</label>
+                  <input
+                    type="text"
+                    value={typeMetadata.industry || ''}
+                    onChange={(e) => setTypeMetadata({ ...typeMetadata, industry: e.target.value })}
+                    placeholder="e.g. Retail, Restaurant, Service"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {selectedType === 'venue' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Max Capacity</label>
+                  <input
+                    type="number"
+                    value={typeMetadata.capacity || ''}
+                    onChange={(e) => setTypeMetadata({ ...typeMetadata, capacity: e.target.value })}
+                    placeholder="e.g. 500"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {selectedType === 'non_profit' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Mission Focus</label>
+                  <input
+                    type="text"
+                    value={typeMetadata.mission_focus || ''}
+                    onChange={(e) => setTypeMetadata({ ...typeMetadata, mission_focus: e.target.value })}
+                    placeholder="e.g. Education, Environment, Health"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {selectedType === 'church' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Denomination</label>
+                  <input
+                    type="text"
+                    value={typeMetadata.denomination || ''}
+                    onChange={(e) => setTypeMetadata({ ...typeMetadata, denomination: e.target.value })}
+                    placeholder="e.g. Non-Denominational, Baptist, Catholic"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div style={{ height: '1px', background: 'var(--border)', margin: '16px 0' }} />
+
+            {/* Social Media Section */}
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text)' }}>Social Media Profiles</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Facebook URL</label>
+                <input
+                  type="url"
+                  value={socialFacebook}
+                  onChange={(e) => setSocialFacebook(e.target.value)}
+                  placeholder="https://facebook.com/..."
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>Instagram URL</label>
+                <input
+                  type="url"
+                  value={socialInstagram}
+                  onChange={(e) => setSocialInstagram(e.target.value)}
+                  placeholder="https://instagram.com/..."
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>X (Twitter) URL</label>
+                <input
+                  type="url"
+                  value={socialX}
+                  onChange={(e) => setSocialX(e.target.value)}
+                  placeholder="https://x.com/..."
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>YouTube URL</label>
+                <input
+                  type="url"
+                  value={socialYoutube}
+                  onChange={(e) => setSocialYoutube(e.target.value)}
+                  placeholder="https://youtube.com/..."
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text)' }}>TikTok URL</label>
+                <input
+                  type="url"
+                  value={socialTiktok}
+                  onChange={(e) => setSocialTiktok(e.target.value)}
+                  placeholder="https://tiktok.com/@..."
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '1rem', outline: 'none' }}
+                />
+              </div>
             </div>
           </div>
         </div>
