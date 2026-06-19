@@ -612,7 +612,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
 
                         {/* Personal Account */}
                         <div 
-                          onClick={() => { setActiveContext(null); setIsContextDropdownOpen(false); }}
+                          onClick={() => { setActiveContext(null); setIsContextDropdownOpen(false); window.location.reload(); }}
                           style={{
                             padding: '12px 16px',
                             display: 'flex',
@@ -640,7 +640,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
                             {userPages.map(page => (
                               <div 
                                 key={page.id}
-                                onClick={() => { setActiveContext(page); setIsContextDropdownOpen(false); }}
+                                onClick={() => { setActiveContext(page); setIsContextDropdownOpen(false); window.location.reload(); }}
                                 style={{
                                   padding: '12px 16px',
                                   display: 'flex',

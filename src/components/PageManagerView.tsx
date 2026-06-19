@@ -56,7 +56,7 @@ export const PageManagerView: React.FC = () => {
                   key={page.id}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveContext(page)}
+                  onClick={() => { setActiveContext(page); window.location.reload(); }}
                   style={{
                     backgroundColor: bgColors.card,
                     border: `1px solid ${bgColors.border}`,

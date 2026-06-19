@@ -469,7 +469,7 @@ export const useSocialFeedData = (
   };
 
   return useQuery({
-    queryKey: [...queryKeys.posts.list(scope, activeCategory), searchQuery],
+    queryKey: [...queryKeys.posts.list(scope, activeCategory), searchQuery, filterUserId, filterGroupId],
     queryFn: fetchContent,
   });
 };

@@ -318,7 +318,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       }
     };
     fetchProfile();
-  }, [user.id, profileId]);
+  }, [user.id, profileId, targetId]);
 
   const handleFollowToggle = async () => {
     if (!user || isOwnProfile) return;

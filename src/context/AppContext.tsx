@@ -145,8 +145,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Pages Architecture State
   const [userPages, setUserPages] = useState<import('../types/user').Page[]>([]);
-  const [activeContext, setActiveContext] = useState<import('../types/user').Page | null>(null);
+  const [activeContextState, setActiveContextState] = useState<import('../types/user').Page | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('setx_active_context');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return null;
+  });
 
+  const activeContext = activeContextState;
+  const setActiveContext = (page: import('../types/user').Page | null) => {
+    setActiveContextState(page);
+    if (typeof window !== 'undefined') {
+      if (page) localStorage.setItem('setx_active_context', JSON.stringify(page));
+      else localStorage.removeItem('setx_active_context');
+    }
+  };
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
 
   // Global Audio State
