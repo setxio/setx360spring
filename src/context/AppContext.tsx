@@ -18,6 +18,7 @@ export type Layout = 'classic' | 'minimal' | 'setx-v1';
 import { getSeasonalTheme, applyCustomThemeVariables, clearCustomThemeVariables } from '../lib/theme';
 
 export type Scope = 'national' | 'state' | 'county' | 'city';
+export type AppTier = 'global' | 'state' | 'local';
 
 interface AppContextType {
   user: User | null;
@@ -28,6 +29,7 @@ interface AppContextType {
   env: Env;
   theme: Theme;
   scope: Scope;
+  appTier: AppTier;
   activeTab: number;
   unreadCount: number;
   isLoading: boolean;
@@ -88,6 +90,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Detect Project Slug (e.g. setx.io/my-business)
   const pathParts = pathname.split('/').filter(Boolean);
   const projectSlug = (isSetxIO && pathParts.length > 0) ? pathParts[0] : null;
+
+  // Determine App Tier based on Domain
+  const isEfutura = hostname.toLowerCase().includes('efutura.com');
+  const isTxOrb = hostname.toLowerCase().includes('txorb.com') || hostname.toLowerCase().includes('texasorb.com');
+  const appTier: AppTier = isEfutura ? 'global' : isTxOrb ? 'state' : 'local';
 
   const [env, setEnvState] = useState<Env>(() => {
     if (typeof window !== 'undefined') {
@@ -528,6 +535,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     env,
     theme,
     scope,
+    appTier,
     activeTab,
     unreadCount,
     isLoading,

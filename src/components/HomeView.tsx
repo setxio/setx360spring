@@ -20,7 +20,7 @@ interface HomeViewProps {
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) => {
-  const { theme, toggleTheme, logout } = useApp();
+  const { theme, toggleTheme, logout, appTier } = useApp();
   const [query, setQuery] = useState('');
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   // Search state
@@ -103,6 +103,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
   };
 
   const getHeaderLogo = () => {
+    if (appTier === 'global') return '/logo-efutura.png';
+    if (appTier === 'state') return '/X_edit.png'; // Update with proper orb logo path if different
+
     if (theme.startsWith('io-')) return '/logo-io.png';
     if (theme.startsWith('neo')) return '/logo-neo.png';
     if (theme.startsWith('twilight')) return '/logo-twilight.png';
@@ -617,7 +620,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
           
           <div className="home-logo-wrapper" style={{ flex: 'none' }}>
             <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxShadow: theme.endsWith('-dark') ? `0 0 25px 2px var(--primary)` : 'none' }}>
-              <img src={getHeaderLogo()} alt="SETX 360 Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
+              <img src={getHeaderLogo()} alt={`${appTier === 'global' ? 'Efutura' : appTier === 'state' ? 'Texas Orb' : 'SETX 360'} Logo`} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'contain', zIndex: 1 }} />
             </div>
           </div>
 
@@ -662,7 +665,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
           <input 
             type="text" 
             className="home-main-input" 
-            placeholder={`Search ${scope === 'city' ? user?.community || 'Local' : 'SETX'}...`}
+            placeholder={`Search ${appTier === 'global' ? 'Efutura' : appTier === 'state' ? 'Texas Orb' : (scope === 'city' ? user?.community || 'Local' : 'SETX')}...`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
