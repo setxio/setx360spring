@@ -72,6 +72,7 @@ const AdminMessagesView = lazy(() => import('./components/AdminMessagesView').th
 const Overview         = lazy(() => import('./components/Overview').then(m => ({ default: m.Overview })));
 const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
+const StadiumView      = lazy(() => import('./components/stadium/StadiumView').then(m => ({ default: m.StadiumView })));
 
 const CharitiesView    = lazy(() => import('./components/CharitiesView').then(m => ({ default: m.CharitiesView })));
 const CrowdFundView    = lazy(() => import('./components/CrowdFundView').then(m => ({ default: m.CrowdFundView })));
@@ -263,6 +264,7 @@ const App: React.FC = () => {
     if (projectStore) {
       const isOwner = user?.id === projectStore.owner_id;
       if (isOwner && env !== 'market') {
+        localStorage.setItem('ecity_env', 'market');
         window.location.href = 'https://www.setx.io/dashboard';
         return null;
       }
@@ -450,6 +452,7 @@ const App: React.FC = () => {
     if (env === 'news') return <WeatherNewsView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'crowdfund') return <CrowdFundView />;
     if (env === 'charity') return <CharitiesView />;
+    if (env === 'stadium') return <StadiumView onNavigate={(envStr) => setEnv(envStr as Env)} />;
 
     if (env === 'civics') {
       if (user?.role !== 'admin') { setEnv('discover'); return null; }
@@ -477,6 +480,7 @@ const App: React.FC = () => {
     }
     
     if (env === 'dashboard' || env === 'admin') {
+      localStorage.setItem('ecity_env', 'market');
       window.location.href = 'https://www.setx.io/dashboard';
       return null;
     }

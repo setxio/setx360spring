@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabase';
 import type { User, StaffClearance } from '../types/user';
 
-export type Env = 'home' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages' | 'proplus' | 'crowdfund' | 'charity' | 'page_creator' | 'page_manager';
+export type Env = 'home' | 'stadium' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages' | 'proplus' | 'crowdfund' | 'charity' | 'page_creator' | 'page_manager';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
@@ -384,20 +384,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     const isAuthenticatingFromPublic = currentEnv === 'market' || currentEnv === 'search' || !currentEnv;
 
-    if (isSignInEvent && isAuthenticatingFromPublic && !envParam) {
-      if (userData.email === 'setxplatform@gmail.com' || userData.role === 'admin') {
-        setEnv('admin');
-        setActiveTab(0);
-      } else {
-        setLayout('minimal');
-        setEnv('home');
-        setActiveTab(0);
-      }
+    if (isSignInEvent) {
+      setLayout('minimal');
+      setEnv('home');
+      setActiveTab(0);
     } else if (!currentEnv && !envParam) {
-      if (userData.email === 'setxplatform@gmail.com' || userData.role === 'admin') {
-        setEnv('admin');
-        setActiveTab(0);
-      } else if (isSetxIO) {
+      if (isSetxIO) {
         setEnv('labs');
         setActiveTab(0);
       } else {
@@ -406,6 +398,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveTab(0);
       }
     }
+
   }, []);
 
   useEffect(() => {

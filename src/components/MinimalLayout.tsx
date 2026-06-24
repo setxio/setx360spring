@@ -906,6 +906,26 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         )}
       </AnimatePresence>
 
+      {/* Beta Ribbon */}
+      <div style={{
+        background: 'linear-gradient(90deg, rgba(245,158,11,0.1), rgba(239,68,68,0.1))',
+        borderBottom: '1px solid rgba(245,158,11,0.2)',
+        padding: '6px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        zIndex: 90,
+        position: 'relative',
+        color: theme.includes('light') ? '#b45309' : '#fcd34d',
+        fontWeight: 600,
+        fontSize: '0.8rem',
+        letterSpacing: '0.5px'
+      }}>
+        <AlertTriangle size={14} />
+        {env === 'me' ? 'Personal' : env.charAt(0).toUpperCase() + env.slice(1)} Platform is currently in Beta Mode
+      </div>
+
       {/* Main Content */}
       <main style={{ 
         flex: 1, 

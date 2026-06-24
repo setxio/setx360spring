@@ -56,7 +56,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
   const folderConfig = [
     { id: 'social_comms', label: 'Social & Comms', items: ['social', 'discover', 'contacts', 'messages', 'phone', 'proplus'] },
     { id: 'market_shops', label: 'Market & Shops', items: ['market', 'wallet', 'classifieds', 'jobs', 'gigs'] },
-    { id: 'media_events', label: 'Media & Events', items: ['videos', 'music', 'events', 'eats', 'art', 'faith', 'sports'] },
+    { id: 'media_events', label: 'Media & Events', items: ['stadium', 'videos', 'music', 'events', 'eats', 'art', 'faith', 'sports'] },
     { id: 'tools_services', label: 'Tools & Services', items: ['services', 'page_creator', 'page_manager', 'care', 'crowdfund', 'charity', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
   ];
   // Swipe logic
@@ -144,6 +144,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'charity', label: 'Charities', icon: <HandHeart size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' },
     { id: 'me', label: 'Me Portal', icon: <User size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)' },
     { id: 'settings', label: 'Settings', icon: <Settings size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #64748b, #475569)' },
+    { id: 'stadium', label: 'Stadium', icon: <Globe size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #10b981, #3b82f6)' },
     { id: 'logout', label: 'Sign Out', icon: <Power size={32} strokeWidth={1.5} color="#ef4444" />, gradient: 'linear-gradient(135deg, #1f2937, #000000)' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
