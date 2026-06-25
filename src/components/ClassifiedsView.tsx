@@ -83,7 +83,7 @@ type PostType = 'item' | 'vehicle' | 'real_estate' | 'event';
 type MainTab = 'items' | 'vehicles' | 'real_estate' | 'map' | 'my_stuff' | 'saved';
 
 export const ClassifiedsView: React.FC = () => {
-  const { user, theme } = useApp();
+  const { user, theme, appOrigin } = useApp();
   const [activeTab, setActiveTab] = useState<MainTab>('items');
   
   // Data State
@@ -292,7 +292,8 @@ export const ClassifiedsView: React.FC = () => {
           images: imageUrls,
           item_details,
           event_availability: selectedEventId ? eventAvailability : 'now',
-          status: 'active'
+          status: 'active',
+          metadata: { platform: appOrigin }
         });
       } else {
         await supabase.from('classified_events').insert({
@@ -305,6 +306,7 @@ export const ClassifiedsView: React.FC = () => {
           start_date: eventStart,
           end_date: eventEnd,
           schedule: eventSchedule,
+          metadata: { platform: appOrigin },
           status: 'active'
         });
       }

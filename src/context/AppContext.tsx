@@ -19,6 +19,7 @@ import { getSeasonalTheme, applyCustomThemeVariables, clearCustomThemeVariables 
 
 export type Scope = 'national' | 'state' | 'county' | 'city';
 export type AppTier = 'global' | 'state' | 'local';
+export type AppOrigin = 'christworx' | 'efutura' | 'txorb' | 'setx360';
 
 interface AppContextType {
   user: User | null;
@@ -30,6 +31,7 @@ interface AppContextType {
   theme: Theme;
   scope: Scope;
   appTier: AppTier;
+  appOrigin: AppOrigin;
   activeTab: number;
   unreadCount: number;
   isLoading: boolean;
@@ -92,9 +94,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const projectSlug = (isSetxIO && pathParts.length > 0) ? pathParts[0] : null;
 
   // Determine App Tier based on Domain
+  const isChristworx = hostname.toLowerCase().includes('christworx.com');
   const isEfutura = hostname.toLowerCase().includes('efutura.com');
   const isTxOrb = hostname.toLowerCase().includes('txorb.com') || hostname.toLowerCase().includes('texasorb.com');
-  const appTier: AppTier = isEfutura ? 'global' : isTxOrb ? 'state' : 'local';
+  
+  const appTier: AppTier = (isEfutura || isChristworx) ? 'global' : isTxOrb ? 'state' : 'local';
+  const appOrigin: AppOrigin = isChristworx ? 'christworx' : isEfutura ? 'efutura' : isTxOrb ? 'txorb' : 'setx360';
 
   const [env, setEnvState] = useState<Env>(() => {
     if (typeof window !== 'undefined') {
@@ -536,6 +541,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     theme,
     scope,
     appTier,
+    appOrigin,
     activeTab,
     unreadCount,
     isLoading,

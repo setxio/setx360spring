@@ -20,7 +20,7 @@ interface HomeViewProps {
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) => {
-  const { theme, toggleTheme, logout, appTier } = useApp();
+  const { theme, toggleTheme, logout, appTier, appOrigin } = useApp();
   const [query, setQuery] = useState('');
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   // Search state
@@ -247,7 +247,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
         body: {
           query: query,
           scope_type: scope,
-          scope_value: scopeValue
+          scope_value: scopeValue,
+          platform: appOrigin
         }
       });
       

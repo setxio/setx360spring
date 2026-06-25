@@ -23,7 +23,8 @@ export const useSocialFeedData = (
   activeCategory: string,
   activeType: string,
   theme: string,
-  searchQuery: string = ''
+  searchQuery: string = '',
+  appOrigin?: string
 ) => {
   const fetchContent = async () => {
     let currentFollowWeights: Record<string, number> = {};
@@ -110,6 +111,10 @@ export const useSocialFeedData = (
       .from('posts')
       .select(selectString)
       .neq('moderation_status', 'hidden');
+
+    if (appOrigin === 'christworx') {
+      query = query.eq('metadata->>platform', 'christworx');
+    }
 
     if (user) {
       const { data: blocks } = await supabase.from('blocks').select('blocked_id').eq('blocker_id', user.id);
@@ -256,6 +261,10 @@ export const useSocialFeedData = (
       .in('ai_category', ['official_alert', 'community_alert'])
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
       
+    if (appOrigin === 'christworx') {
+      alertQuery = alertQuery.eq('metadata->>platform', 'christworx');
+    }
+      
     if (theme.startsWith('setx-')) {
       alertQuery = alertQuery.or('author_county.in.("Jefferson","Orange","Hardin","Jasper","Jefferson County","Orange County","Hardin County","Jasper County")');
     } else if (user?.state) {
@@ -297,6 +306,11 @@ export const useSocialFeedData = (
       } else if (activeCategory === 'Classifieds' || activeCategory === 'Everybody') {
         // Exclude Vehicles and Real Estate from the main Classifieds/Everybody feeds
         classQuery = classQuery.not('category', 'in', '("Vehicles & Powersports","Property Rentals & Home Sales")');
+      }
+      
+      if (appOrigin === 'christworx') {
+        // We'll assume classifieds has metadata column as well, or we can use a similar approach
+        classQuery = classQuery.eq('metadata->>platform', 'christworx');
       }
       
       const { data: classData } = await classQuery.order('created_at', { ascending: false }).limit(30);
@@ -469,7 +483,7 @@ export const useSocialFeedData = (
   };
 
   return useQuery({
-    queryKey: [...queryKeys.posts.list(scope, activeCategory), searchQuery, filterUserId, filterGroupId],
+    queryKey: [...queryKeys.posts.list(scope, activeCategory), searchQuery, filterUserId, filterGroupId, appOrigin],
     queryFn: fetchContent,
   });
 };

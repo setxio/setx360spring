@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { query, scope_type, scope_value } = await req.json()
+    const { query, scope_type, scope_value, platform } = await req.json()
 
     if (!query) {
       return new Response(JSON.stringify({ profiles: [], posts: [], stores: [], events: [] }), {
@@ -38,10 +38,43 @@ serve(async (req) => {
     const { data, error } = await supabaseClient.rpc('match_universal', {
       query_embedding: embeddingResult,
       match_threshold: 0.75, // adjust based on model confidence
-      match_count: 20
+      match_count: 30
     })
 
     if (error) throw error
+    
+    // Filter out non-christworx content if on christworx platform
+    let filteredData = data || [];
+    if (platform === 'christworx' && filteredData.length > 0) {
+      // For posts, we need to verify they belong to christworx
+      const postIds = filteredData.filter((d: any) => d.type === 'post').map((d: any) => d.id);
+      
+      let validPostIds = new Set<string>();
+      if (postIds.length > 0) {
+        const { data: postsData } = await supabaseClient
+          .from('posts')
+          .select('id, metadata')
+          .in('id', postIds);
+          
+        if (postsData) {
+          postsData.forEach((p: any) => {
+            if (p.metadata?.platform === 'christworx') {
+              validPostIds.add(p.id);
+            }
+          });
+        }
+      }
+      
+      // Filter out posts that are not verified as christworx
+      filteredData = filteredData.filter((d: any) => {
+        if (d.type === 'post') {
+          return validPostIds.has(d.id);
+        }
+        // Assume other types (stores, events) might need similar filtering if they had metadata,
+        // but for now we enforce strictly on posts as requested.
+        return true;
+      });
+    }
 
     // 4. Group results to match existing global_search schema
     const results = {
@@ -55,8 +88,8 @@ serve(async (req) => {
     }
 
     // Sort into groups based on type
-    if (data) {
-      data.forEach((item: any) => {
+    if (filteredData) {
+      filteredData.forEach((item: any) => {
         // Map back to the expected structure in SearchOverlay
         const formattedItem = {
           id: item.id,

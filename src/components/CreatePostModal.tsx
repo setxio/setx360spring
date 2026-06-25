@@ -3,6 +3,7 @@ import { useToast } from '../context/ToastContext';
 import { X, Image, Video, BarChart2, Loader2, ChevronDown, Plus } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 import { LinkPreviewCard, extractPreviewUrl } from './LinkPreviewCard';
 import './CreatePostModal.css';
 import './CreatePostModalMeta.css';
@@ -25,6 +26,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [postContent, setPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { info, warning, error: toastError } = useToast();
+  const { appOrigin } = useApp();
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [location] = useState(user?.community || '');
@@ -161,7 +163,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         visibility_scope: currentScope === 'national' ? 'national' : currentScope,
         group_id: targetFeed === 'Groups' ? selectedGroupId : null,
         is_nsfw: isNsfw,
-        tags: tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+        tags: tags.split(',').map(t => t.trim()).filter(t => t.length > 0),
+        metadata: { platform: appOrigin }
       }]);
 
       if (error) throw error;

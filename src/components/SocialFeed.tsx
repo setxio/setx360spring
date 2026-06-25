@@ -39,7 +39,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   onNavigateToPost,
   onNavigateToProfile
 }) => {
-  const { theme, layout, localSearchQuery } = useApp();
+  const { theme, layout, localSearchQuery, appOrigin } = useApp();
   const [activeCategory, setActiveCategory] = useState('Everybody');
   const [activeType, setActiveType] = useState('all');
   const feedTopRef = React.useRef<HTMLDivElement>(null);
@@ -74,7 +74,8 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
     activeCategory,
     activeType,
     theme,
-    localSearchQuery
+    localSearchQuery,
+    appOrigin
   );
 
   const posts: any[] = feedData?.posts ?? [];
