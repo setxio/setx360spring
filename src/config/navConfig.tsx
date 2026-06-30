@@ -229,6 +229,14 @@ export const appsNav: NavItem[] = [
   { icon: <User size={24} />, label: 'Account' },
 ];
 
+export const gigsNav: NavItem[] = [
+  { icon: <Zap size={24} />, label: 'Gigs' },
+  { icon: <Briefcase size={24} />, label: 'My Posts' },
+  { icon: <FileText size={24} />, label: 'My Tasks' },
+  { icon: <DollarSign size={24} />, label: 'Earnings' },
+  { icon: <Users size={24} />, label: 'Directory' },
+];
+
 // Switcher env buttons (top footer pill)
 export interface SwitcherItem {
   id: string;

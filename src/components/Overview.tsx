@@ -37,6 +37,7 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
 
   const [bugReports, setBugReports] = useState<any[]>([]);
   const [adminBroadcasts, setAdminBroadcasts] = useState<any[]>([]);
+  const [gigDisputes, setGigDisputes] = useState<any[]>([]);
   const [newBroadcastMsg, setNewBroadcastMsg] = useState('');
   const [newBroadcastType, setNewBroadcastType] = useState('info');
 
@@ -67,7 +68,8 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
         supabase.from('classified_reports').select('*, reporter:profiles!classified_reports_reporter_id_fkey(name), item:classified_items(*)').eq('status', 'pending'),
         supabase.from('profiles').select('*').eq('identity_disputed', true),
         supabase.from('bug_reports').select('*, profile:profiles(name, avatar_url)').order('created_at', { ascending: false }).limit(20),
-        supabase.from('admin_broadcasts').select('*').order('created_at', { ascending: false }).limit(10)
+        supabase.from('admin_broadcasts').select('*').order('created_at', { ascending: false }).limit(10),
+        supabase.from('gig_disputes').select('*, gig:gigs(*), requester:profiles!requester_id(first_name, last_name)').eq('status', 'Open')
       ]) as any[];
 
       const userCount = results[0].data;
@@ -85,6 +87,7 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
       setDisputedUsers(results[7].data || []);
       setBugReports(results[8].data || []);
       setAdminBroadcasts(results[9].data || []);
+      setGigDisputes(results[10].data || []);
 
       setStats(prev => ({
         ...prev,
@@ -338,6 +341,47 @@ export const Overview: React.FC<{ user: User }> = ({ user }) => {
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        <div className="admin-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', gridColumn: '1 / -1' }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0 }}>Gig Disputes</h3>
+          </div>
+          <div className="mini-verification-list">
+            {gigDisputes.length === 0 ? (
+              <p style={{ textAlign: 'center', padding: '20px 0', opacity: 0.5 }}>No active gig disputes.</p>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                    <th style={{ textAlign: 'left', padding: '12px' }}>Gig</th>
+                    <th style={{ textAlign: 'left', padding: '12px' }}>Requester</th>
+                    <th style={{ textAlign: 'left', padding: '12px' }}>Reason</th>
+                    <th style={{ textAlign: 'left', padding: '12px' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gigDisputes.map(d => (
+                    <tr key={d.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>{d.gig?.title}</td>
+                      <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{d.requester?.first_name} {d.requester?.last_name || ''}</td>
+                      <td style={{ padding: '12px', color: '#f59e0b' }}>{d.reason}</td>
+                      <td style={{ padding: '12px', display: 'flex', gap: '8px' }}>
+                        <button onClick={async () => {
+                           await supabase.from('gig_disputes').update({ status: 'Resolved' }).eq('id', d.id);
+                           fetchAllData();
+                        }} style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.2)', border: 'none', borderRadius: 6, color: '#10b981', fontSize: '0.8rem', cursor: 'pointer' }}>Resolve</button>
+                        <button onClick={async () => {
+                           await supabase.from('gig_disputes').update({ status: 'Closed' }).eq('id', d.id);
+                           fetchAllData();
+                        }} style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.2)', border: 'none', borderRadius: 6, color: '#ef4444', fontSize: '0.8rem', cursor: 'pointer' }}>Close</button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             )}

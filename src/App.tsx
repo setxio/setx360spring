@@ -93,6 +93,7 @@ const App: React.FC = () => {
   } = useApp();
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [projectStore, setProjectStore] = useState<any>(null);
   
   // Auto-hide scroll logic is handled inside each layout component (ClassicLayout, MinimalLayout)
@@ -404,7 +405,7 @@ const App: React.FC = () => {
         case 1: return <ClassifiedsView />;
         case 2: return <UserDirectory scope={scope} onNavigateToProfile={setActiveProfileId} />;
         case 3: return <GroupDirectory scope={scope} onNavigateToGroup={setActiveGroupId} />;
-        case 4: return <MessagesView user={user} />;
+        case 4: return <MessagesView user={user} initialChatId={activeChatId} />;
         case 5: return <SavedView />;
         case 6: return <NotificationsView user={user} />;
         case 7: return <ProfilePage 
@@ -441,7 +442,11 @@ const App: React.FC = () => {
     if (env === 'auto') return <AutoView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'travel') return <TravelView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'jobs') return <JobsView activeTab={activeTab} user={user} scope={scope} />;
-    if (env === 'gigs') return <GigsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'gigs') return <GigsView activeTab={activeTab} user={user} scope={scope} onNavigate={(envStr, tab, context) => {
+      setEnv(envStr as Env);
+      if (tab !== undefined) setActiveTab(tab);
+      if (context?.chatId) setActiveChatId(context.chatId);
+    }} />;
     if (env === 'classifieds') return <ClassifiedsView />;
     if (env === 'proplus') return <ProPlusView user={user} scope={scope} />;
     if (env === 'videos') return <MediaView activeTab={activeTab} user={user} scope={scope} />;

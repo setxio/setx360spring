@@ -144,6 +144,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ onClose, u
             >
               <option value="resident">Resident</option>
               <option value="business">Business</option>
+              <option value="freelancer">Freelancer / Gig Worker</option>
               <option value="venue">Venue</option>
               <option value="media">Media</option>
               <option value="non_profit">Non Profit</option>

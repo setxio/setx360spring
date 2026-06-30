@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, AlertCircle, ChevronRight, ChevronLeft, DollarSign, MapPin, Loader2 } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, ChevronRight, ChevronLeft, DollarSign, MapPin, Loader2, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
 import './CreateGigModal.css';
@@ -31,6 +31,7 @@ const CATEGORIES = [
 export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose, user, onSuccess }) => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreedToDisclaimer, setAgreedToDisclaimer] = useState(false);
   const { success, error } = useToast();
 
   const [formData, setFormData] = useState({
@@ -42,12 +43,34 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
     location: '',
     compensation_amount: '',
     compensation_type: 'Flat',
+    questions: [] as string[],
+    require_answers: false,
   });
 
   if (!isOpen) return null;
 
-  const handleNext = () => setStep(prev => Math.min(prev + 1, 3));
+  const handleNext = () => setStep(prev => Math.min(prev + 1, 4));
   const handlePrev = () => setStep(prev => Math.max(prev - 1, 1));
+
+  const addQuestion = () => {
+    if (formData.questions.length < 5) {
+      setFormData({ ...formData, questions: [...formData.questions, ''] });
+    } else {
+      error('Maximum of 5 questions allowed.');
+    }
+  };
+
+  const removeQuestion = (index: number) => {
+    const newQuestions = [...formData.questions];
+    newQuestions.splice(index, 1);
+    setFormData({ ...formData, questions: newQuestions });
+  };
+
+  const updateQuestion = (index: number, val: string) => {
+    const newQuestions = [...formData.questions];
+    newQuestions[index] = val;
+    setFormData({ ...formData, questions: newQuestions });
+  };
 
   const handleSubmit = async () => {
     if (!user) {
@@ -57,6 +80,11 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
     
     if (!formData.title || !formData.description || !formData.category_id || !formData.compensation_amount) {
       error('Please fill in all required fields.');
+      return;
+    }
+
+    if (!agreedToDisclaimer) {
+      error('You must acknowledge that the platform is not liable for incomplete or unsatisfactory work.');
       return;
     }
 
@@ -75,6 +103,8 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
           location: formData.type === 'Local' ? formData.location : null,
           compensation_amount: formData.compensation_amount,
           compensation_type: formData.compensation_type,
+          questions: formData.questions.filter(q => q.trim() !== ''),
+          require_answers: formData.require_answers,
           status: 'Active'
         })
         .select();
@@ -192,6 +222,63 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
 
   const renderStep3 = () => (
     <div className="wizard-step">
+      <h3>Questionnaire (Optional)</h3>
+      <p className="step-desc">Ask freelancers questions when they apply.</p>
+      
+      <div className="form-group" style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <label>Custom Questions ({formData.questions.length}/5)</label>
+          {formData.questions.length < 5 && (
+            <button className="secondary-btn" onClick={addQuestion} style={{ fontSize: '0.8rem', padding: '4px 8px' }}>
+              <Plus size={14} /> Add Question
+            </button>
+          )}
+        </div>
+        
+        {formData.questions.length === 0 ? (
+          <div style={{ padding: '24px', textAlign: 'center', background: 'var(--card-bg)', borderRadius: '12px', border: '1px dashed var(--border)', marginTop: '8px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No questions added. Click above to add one.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+            {formData.questions.map((q, idx) => (
+              <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                <input 
+                  type="text" 
+                  placeholder={`Question ${idx + 1}`} 
+                  value={q}
+                  onChange={(e) => updateQuestion(idx, e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button className="tool-btn" onClick={() => removeQuestion(idx)} style={{ color: '#ef4444', padding: '10px' }}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {formData.questions.length > 0 && (
+        <div className="form-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input 
+              type="checkbox" 
+              checked={formData.require_answers} 
+              onChange={(e) => setFormData({...formData, require_answers: e.target.checked})} 
+            />
+            <span style={{ fontSize: '0.95rem' }}>Make answers mandatory for applicants</span>
+          </label>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '24px', marginTop: '4px' }}>
+            If unchecked, freelancers can opt out and skip your questions.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStep4 = () => (
+    <div className="wizard-step">
       <h3>Compensation</h3>
       <p className="step-desc">How much are you offering for this task?</p>
       
@@ -234,6 +321,18 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
           <p>By posting this gig, you agree to pay the provider the agreed upon compensation upon completion.</p>
         </div>
       </div>
+      
+      <div className="disclaimer-checkbox">
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', marginTop: '16px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+          <input 
+            type="checkbox" 
+            checked={agreedToDisclaimer} 
+            onChange={(e) => setAgreedToDisclaimer(e.target.checked)} 
+            style={{ marginTop: '2px' }}
+          />
+          <span>I acknowledge that the platform is not liable for incomplete or unsatisfactory work or any disputes arising from this gig.</span>
+        </label>
+      </div>
     </div>
   );
 
@@ -247,12 +346,13 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
 
         <div className="wizard-progress">
           <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }} />
+            <div className="progress-fill" style={{ width: `${(step / 4) * 100}%` }} />
           </div>
           <div className="step-indicators">
             <span className={step >= 1 ? 'active' : ''}>1. Basics</span>
             <span className={step >= 2 ? 'active' : ''}>2. Logistics</span>
-            <span className={step >= 3 ? 'active' : ''}>3. Payment</span>
+            <span className={step >= 3 ? 'active' : ''}>3. Questions</span>
+            <span className={step >= 4 ? 'active' : ''}>4. Payment</span>
           </div>
         </div>
 
@@ -260,6 +360,7 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
           {step === 1 && renderStep1()}
           {step === 2 && renderStep2()}
           {step === 3 && renderStep3()}
+          {step === 4 && renderStep4()}
         </div>
 
         <div className="modal-footer wizard-footer">
@@ -269,7 +370,7 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
             </button>
           ) : <div></div>}
           
-          {step < 3 ? (
+          {step < 4 ? (
             <button className="primary-btn gigs-btn" onClick={handleNext}>
               Next <ChevronRight size={18} />
             </button>

@@ -1,5 +1,6 @@
-import React from 'react';
-import { X, ShieldCheck, Star, Briefcase, Clock, MapPin, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, ShieldCheck, Star, Briefcase, Clock, MapPin, CheckCircle2, DollarSign, Wallet as WalletIcon } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import './WorkerProfileModal.css';
 
 interface WorkerProfileModalProps {
@@ -11,14 +12,11 @@ interface WorkerProfileModalProps {
   successRate: number;
   totalGigs: number;
   primaryCategory: string;
+  cashAppHandle?: string;
+  zelleHandle?: string;
+  workerId?: string;
   onAccept?: () => void;
 }
-
-const MOCK_REVIEWS = [
-  { id: 1, requester: 'Sarah M.', rating: 5, date: '2 days ago', text: 'James was incredibly fast and professional! Handled the delivery perfectly.' },
-  { id: 2, requester: 'David K.', rating: 5, date: '1 week ago', text: 'Arrived on time and helped me move a heavy couch. Highly recommend.' },
-  { id: 3, requester: 'Auto-System', rating: 5, date: '2 weeks ago', text: 'Auto-generated 5-star review (No rating provided within 10 days of completion).', isAuto: true },
-];
 
 export const WorkerProfileModal: React.FC<WorkerProfileModalProps> = ({ 
   isOpen, 
@@ -29,12 +27,40 @@ export const WorkerProfileModal: React.FC<WorkerProfileModalProps> = ({
   successRate,
   totalGigs,
   primaryCategory,
+  cashAppHandle,
+  zelleHandle,
+  workerId,
   onAccept
 }) => {
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isOpen && workerId) {
+      fetchReviews();
+    }
+  }, [isOpen, workerId]);
+
+  const fetchReviews = async () => {
+    try {
+      const { data } = await supabase
+        .from('gig_reviews')
+        .select(`
+          *,
+          gig:gigs(title),
+          reviewer:profiles!reviewer_id(first_name, last_name)
+        `)
+        .eq('worker_id', workerId)
+        .order('created_at', { ascending: false });
+      if (data) setReviews(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="gig-modal-overlay">
+    <div className="modal-overlay">
       <div className="gig-modal worker-profile-modal">
         <button className="gig-modal-close" onClick={onClose}>
           <X size={24} />
@@ -86,24 +112,50 @@ export const WorkerProfileModal: React.FC<WorkerProfileModalProps> = ({
             </div>
           )}
 
+          {/* Payment Methods */}
+          {(cashAppHandle || zelleHandle) && (
+            <div className="verification-checklist" style={{ marginTop: '16px' }}>
+              <h3>Payment Methods</h3>
+              <ul>
+                {cashAppHandle && <li><DollarSign size={16} style={{ color: '#00D632', marginRight: '8px' }} /> Cash App: {cashAppHandle}</li>}
+                {zelleHandle && <li><WalletIcon size={16} style={{ color: '#7412e8', marginRight: '8px' }} /> Zelle: {zelleHandle}</li>}
+              </ul>
+            </div>
+          )}
+
           {/* Reviews Section */}
           <div className="worker-reviews-section">
-            <h3>Recent Reviews</h3>
+            <div className="section-header-row">
+              <h3>Reviews & History</h3>
+              <span className="review-count">{reviews.length} completed gigs</span>
+            </div>
+            
             <div className="reviews-list">
-              {MOCK_REVIEWS.map(review => (
+              {reviews.length === 0 ? (
+                <p style={{ color: 'var(--text-secondary)' }}>No completed gigs or reviews yet.</p>
+              ) : reviews.map(review => (
                 <div key={review.id} className="review-card">
                   <div className="review-header">
-                    <span className="reviewer-name">{review.requester}</span>
-                    <span className="review-date">{review.date}</span>
+                    <div className="reviewer-info">
+                      <div className="reviewer-avatar">{review.reviewer?.first_name?.[0] || 'U'}</div>
+                      <div className="reviewer-details">
+                        <span className="reviewer-name">{review.reviewer?.first_name} {review.reviewer?.last_name || ''}</span>
+                        <span className="review-date">{new Date(review.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="review-rating">
+                      <Star size={14} className="star-icon" />
+                      <span>{review.rating}.0</span>
+                    </div>
                   </div>
-                  <div className="review-stars">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} size={14} className="star-filled" />
-                    ))}
+                  <div className="review-gig-title" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: '500' }}>
+                    Gig: {review.gig?.title || 'Unknown Gig'}
                   </div>
-                  <p className={`review-text ${review.isAuto ? 'auto-generated' : ''}`}>
-                    {review.text}
-                  </p>
+                  {review.review_text && (
+                    <p className={`review-text ${review.is_auto ? 'auto-review' : ''}`}>
+                      {review.review_text}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

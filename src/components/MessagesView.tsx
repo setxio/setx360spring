@@ -10,6 +10,7 @@ import './MessagesView.css';
 
 interface MessagesViewProps {
   user: User;
+  initialChatId?: string | null;
 }
 
 interface MessageData {
@@ -33,11 +34,12 @@ interface Conversation {
   isInteraction?: boolean;
   isFriend?: boolean;
   isProPlus?: boolean;
+  isGig?: boolean;
 }
 
-export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic' | 'proplus'>('recent');
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+export const MessagesView: React.FC<MessagesViewProps> = ({ user, initialChatId }) => {
+  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic' | 'proplus' | 'gigs'>('recent');
+  const [activeChatId, setActiveChatId] = useState<string | null>(initialChatId || null);
   const [messageInput, setMessageInput] = useState('');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   
@@ -450,6 +452,66 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
             });
           }
         }
+        
+        // Fetch Gig Contacts (people we've interacted with on gigs)
+        const { data: myGigs } = await supabase
+          .from('gigs')
+          .select('id')
+          .eq('requester_id', user.id);
+          
+        const myGigIds = myGigs?.map(g => g.id) || [];
+        
+        let gigContactIds = new Set<string>();
+        
+        // 1. People who applied to my gigs
+        if (myGigIds.length > 0) {
+          const { data: appsToMyGigs } = await supabase
+            .from('gig_applications')
+            .select('applicant_id')
+            .in('gig_id', myGigIds);
+          if (appsToMyGigs) appsToMyGigs.forEach(app => gigContactIds.add(app.applicant_id));
+        }
+        
+        // 2. People whose gigs I applied to
+        const { data: myApps } = await supabase
+          .from('gig_applications')
+          .select('gig_id')
+          .eq('applicant_id', user.id);
+          
+        if (myApps && myApps.length > 0) {
+          const appliedGigIds = myApps.map(a => a.gig_id);
+          const { data: appliedGigs } = await supabase
+            .from('gigs')
+            .select('requester_id')
+            .in('id', appliedGigIds);
+          if (appliedGigs) appliedGigs.forEach(g => gigContactIds.add(g.requester_id));
+        }
+        
+        if (gigContactIds.size > 0) {
+          const { data: gigProfiles } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url')
+            .in('id', Array.from(gigContactIds));
+            
+          if (gigProfiles) {
+            gigProfiles.forEach(gigUser => {
+              const existingConv = convList.find(c => c.otherId === gigUser.id);
+              if (!existingConv) {
+                convList.push({
+                  otherId: gigUser.id,
+                  name: gigUser.name || 'Gig Contact',
+                  avatar: gigUser.avatar_url,
+                  lastMessage: 'Start a conversation...',
+                  lastTimestamp: '',
+                  unreadCount: 0,
+                  isGig: true
+                });
+              } else {
+                existingConv.isGig = true;
+              }
+            });
+          }
+        }
       }
 
       // Fetch businesses
@@ -503,6 +565,12 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     };
     buildConversations();
   }, [allMessages, user.id]);
+
+  useEffect(() => {
+    if (initialChatId) {
+      setActiveChatId(initialChatId);
+    }
+  }, [initialChatId]);
 
   const searchUsers = async (query: string) => {
     setSearchQuery(query);
@@ -567,6 +635,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
     if (activeTab === 'businesses') return ['vendor', 'business', 'restaurant', 'store'].includes(c.role || '');
     if (activeTab === 'civic') return c.role === 'civic';
     if (activeTab === 'proplus') return c.isProPlus;
+    if (activeTab === 'gigs') return c.isGig;
     return true;
   });
 
@@ -602,6 +671,9 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
             </button>
             <button className={`tab-btn ${activeTab === 'proplus' ? 'active' : ''}`} onClick={() => setActiveTab('proplus')}>
               <Star size={14} /> <span style={{fontSize:'0.8rem'}}>Connect</span>
+            </button>
+            <button className={`tab-btn ${activeTab === 'gigs' ? 'active' : ''}`} onClick={() => setActiveTab('gigs')}>
+              <Briefcase size={14} /> <span style={{fontSize:'0.8rem'}}>Gigs</span>
             </button>
           </nav>
 
@@ -662,7 +734,12 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ user }) => {
                 </div>
                 <div className="conversation-info">
                   <div className="conv-header-row">
-                    <span className="conv-name">{conv.name}</span>
+                    <span className="conv-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {conv.name}
+                      {conv.role === 'civic' && <Landmark size={12} style={{ color: 'var(--primary)' }} />}
+                      {conv.isProPlus && <Star size={12} style={{ color: '#fbbf24' }} />}
+                      {conv.isGig && <span style={{ fontSize: '0.6rem', padding: '2px 4px', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--gigs-green)', borderRadius: '8px' }}>Gig</span>}
+                    </span>
                     <span className="conv-time">{conv.lastTimestamp}</span>
                   </div>
                   <div className="conv-preview" style={{ color: 'var(--text-muted)' }}>

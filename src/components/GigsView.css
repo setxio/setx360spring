@@ -1,3 +1,80 @@
+.gigs-internal-nav {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.gigs-mode-toggle-container {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: var(--card-bg);
+}
+
+.gigs-mode-toggle {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 30px;
+  padding: 4px;
+}
+
+[data-theme='dark'] .gigs-mode-toggle {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.gigs-mode-btn {
+  padding: 8px 24px;
+  border-radius: 26px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gigs-mode-btn.active {
+  background: var(--gigs-green);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.gigs-internal-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.gigs-tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.gigs-tab:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.gigs-tab.active {
+  background: var(--gigs-green);
+  color: white;
+}
+
 .gigs-content {
   padding: 16px;
   animation: fadeIn 0.4s ease-out;

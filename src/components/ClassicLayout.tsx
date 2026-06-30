@@ -81,7 +81,7 @@ import {
   meNav, discoverNav, searchNav, socialNav, marketNav, eatsNav, ridesNav,
   servicesNav, eventsNav, walletNav, careNav, homesNav, autoNav,
   travelNav, jobsNav, videosNav, musicNav, artNav, faithNav, sportsNav,
-  newsNav, civicsNav, vendorNav, civicNav, adminNav, switcherItems
+  newsNav, civicsNav, vendorNav, civicNav, adminNav, switcherItems, gigsNav
 } from '../config/navConfig';
 
 // Props for the layout
@@ -400,6 +400,7 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
     if (env === 'auto') return autoNav;
     if (env === 'travel') return travelNav;
     if (env === 'jobs') return jobsNav;
+    if (env === 'gigs') return gigsNav;
     if (env === 'videos') return videosNav;
     if (env === 'music') return musicNav;
     if (env === 'art') return artNav;

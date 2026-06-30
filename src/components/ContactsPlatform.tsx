@@ -15,7 +15,7 @@ interface ContactsPlatformProps {
 
 export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hideHeader, hideRecentTab, hideTabs }) => {
   const { user } = useApp();
-  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic' | 'proplus'>(hideRecentTab ? 'friends' : 'recent');
+  const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'interactions' | 'businesses' | 'civic' | 'proplus' | 'gigs'>(hideRecentTab ? 'friends' : 'recent');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Data states
@@ -25,6 +25,7 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [civicContacts, setCivicContacts] = useState<any[]>([]);
   const [proConnections, setProConnections] = useState<any[]>([]);
+  const [gigContacts, setGigContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
@@ -98,6 +99,34 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
           { id: '1', name: 'Marcus T. (Driver)', phone: '409-555-0201', role: 'Delivery Driver', avatar_url: 'https://i.pravatar.cc/150?u=11' },
           { id: '2', name: 'Sarah L. (Service)', phone: '409-555-0202', role: 'Plumber', avatar_url: 'https://i.pravatar.cc/150?u=12' }
         ]);
+      } else if (activeTab === 'gigs') {
+        if (user) {
+          const { data: myGigs } = await supabase.from('gigs').select('id').eq('requester_id', user.id);
+          const myGigIds = myGigs?.map(g => g.id) || [];
+          
+          let gigContactIds = new Set<string>();
+          
+          if (myGigIds.length > 0) {
+            const { data: appsToMyGigs } = await supabase.from('gig_applications').select('applicant_id').in('gig_id', myGigIds);
+            if (appsToMyGigs) appsToMyGigs.forEach(app => gigContactIds.add(app.applicant_id));
+          }
+          
+          const { data: myApps } = await supabase.from('gig_applications').select('gig_id').eq('applicant_id', user.id);
+          if (myApps && myApps.length > 0) {
+            const appliedGigIds = myApps.map(a => a.gig_id);
+            const { data: appliedGigs } = await supabase.from('gigs').select('requester_id').in('id', appliedGigIds);
+            if (appliedGigs) appliedGigs.forEach(g => gigContactIds.add(g.requester_id));
+          }
+          
+          if (gigContactIds.size > 0) {
+            const { data: gigProfiles } = await supabase.from('profiles').select('*').in('id', Array.from(gigContactIds));
+            setGigContacts(gigProfiles || []);
+          } else {
+            setGigContacts([]);
+          }
+        } else {
+          setGigContacts([]);
+        }
       }
     } catch (err) {
       console.error('Error fetching contacts:', err);
@@ -273,6 +302,9 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
               <button className={`tab-btn ${activeTab === 'proplus' ? 'active' : ''}`} onClick={() => setActiveTab('proplus')}>
                 <Star size={16} /> Connect
               </button>
+              <button className={`tab-btn ${activeTab === 'gigs' ? 'active' : ''}`} onClick={() => setActiveTab('gigs')}>
+                <Briefcase size={16} /> Gigs
+              </button>
             </nav>
           )}
         </div>
@@ -285,6 +317,7 @@ export const ContactsPlatform: React.FC<ContactsPlatformProps> = ({ onBack, hide
         {activeTab === 'businesses' && renderList(businesses, 'businesses')}
         {activeTab === 'civic' && renderList(civicContacts, 'civic')}
         {activeTab === 'proplus' && renderList(proConnections, 'proplus')}
+        {activeTab === 'gigs' && renderList(gigContacts, 'gigs')}
       </main>
     </div>
   );

@@ -304,7 +304,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
         { icon: <Briefcase size={16} />, label: 'My Posts' },
         { icon: <FileText size={16} />, label: 'My Tasks' },
         { icon: <DollarSign size={16} />, label: 'Earnings' },
-        { icon: <User size={16} />, label: 'Profile' },
+        { icon: <Users size={16} />, label: 'Directory' },
       ]
     },
     { 
