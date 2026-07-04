@@ -69,7 +69,8 @@ const AppsView         = lazy(() => import('./components/apps/AppsView').then(m 
 const ContactsView     = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const PhoneView        = lazy(() => import('./components/PhoneView').then(m => ({ default: m.PhoneView })));
 const AdminMessagesView = lazy(() => import('./components/AdminMessagesView').then(m => ({ default: m.AdminMessagesView })));
-const Overview         = lazy(() => import('./components/Overview').then(m => ({ default: m.Overview })));
+
+const AdminDashboard   = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
 const StadiumView      = lazy(() => import('./components/stadium/StadiumView').then(m => ({ default: m.StadiumView })));
@@ -351,7 +352,7 @@ const App: React.FC = () => {
     if (env === 'me') {
       switch (activeTab) {
         case 0: return <MePortal />;
-        case 1: return <Overview user={user} />;
+        case 1: setTimeout(() => setEnv('admin'), 0); return null;
         case 2: return <OrdersView />;
         case 3: return <WalletView activeTab={0} user={user} scope={scope} />;
         case 4: return <SavedView />;
@@ -487,9 +488,7 @@ const App: React.FC = () => {
     }
     
     if (env === 'dashboard' || env === 'admin') {
-      localStorage.setItem('ecity_env', 'market');
-      window.location.href = 'https://www.setx.io/dashboard';
-      return null;
+      return null; // Handled directly at the root level below
     }
     
     if (env === 'admin_messages') {
@@ -504,6 +503,19 @@ const App: React.FC = () => {
       <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Loader2 className="animate-spin" size={48} color="var(--primary)" />
       </div>
+    );
+  }
+
+  // Top-level admin bypass
+  if ((env === 'admin' || env === 'dashboard')) {
+    if (user?.role !== 'admin') {
+      // Must be an admin
+      return <div className="app-container" style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh',color:'red'}}>Access Denied</div>;
+    }
+    return (
+      <React.Suspense fallback={<div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><Loader2 className="animate-spin" size={48} color="var(--primary)" /></div>}>
+        <AdminDashboard user={user} />
+      </React.Suspense>
     );
   }
 
