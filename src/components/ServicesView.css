@@ -1,30 +1,31 @@
 .services-container {
-  padding: 20px;
+  padding: var(--sp-5);
   padding-bottom: 100px;
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.5s var(--ease-out);
 }
 
 .services-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--sp-6);
 }
 
 .expert-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: var(--sp-2);
+  padding: var(--sp-1-5, 6px) var(--sp-3);
   background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-bottom: 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--sp-3);
 }
 
 .services-welcome h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin-bottom: 4px;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  margin-bottom: var(--sp-1);
+  letter-spacing: var(--tracking-tight);
   background: linear-gradient(135deg, #f59e0b, #10b981);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -32,18 +33,23 @@
 
 .services-welcome p {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
 }
 
 .services-search-bar {
-  margin-top: 20px;
+  margin-top: var(--sp-5);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  border-radius: 30px;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  transition: border-color var(--duration-200) var(--ease-out);
+}
+
+.services-search-bar:focus-within {
+  border-color: var(--primary);
 }
 
 .services-search-bar input {
@@ -51,11 +57,12 @@
   border: none;
   color: var(--text);
   width: 100%;
-  font-size: 1rem;
+  font-size: var(--text-base);
+  outline: none;
 }
 
 .services-section {
-  margin-bottom: 32px;
+  margin-bottom: var(--sp-8);
 }
 
 .services-categories {

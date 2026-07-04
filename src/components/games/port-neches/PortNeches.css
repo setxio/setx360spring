@@ -1,0 +1,149 @@
+.port-neches-game-area {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  border-left: 2px solid rgba(0,0,0,0.2);
+  border-right: 2px solid rgba(0,0,0,0.2);
+  background-color: #38bdf8;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Seamless scrolling river background — 200% wide for smooth looping */
+.pn-river-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background-image: url('/images/port-neches/bg.png');
+  background-size: 50% 100%;
+  background-repeat: repeat-x;
+  z-index: 1;
+  will-change: transform;
+}
+
+/* Ground strip — decorative */
+.pn-ground-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, #4ade80 0%, #86efac 50%, transparent 100%);
+  z-index: 2;
+}
+
+/* Player */
+.pn-entity-runner {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  z-index: 10;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: height 0.15s ease, transform 0.15s ease;
+}
+
+.pn-entity-runner.sliding {
+  border-radius: 28px 28px 12px 12px;
+  box-shadow: 4px 2px 12px rgba(0,0,0,0.4);
+}
+
+/* Bench obstacle */
+.pn-entity-bench {
+  position: absolute;
+  width: 70px;
+  height: 50px;
+  background: linear-gradient(160deg, #92400e 0%, #78350f 100%);
+  border-radius: 8px 8px 4px 4px;
+  z-index: 5;
+  bottom: 60px;
+  box-shadow: 0 4px 0 #451a03;
+}
+.pn-entity-bench::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 6px;
+  right: 6px;
+  height: 6px;
+  background: #a16207;
+  border-radius: 3px;
+}
+.pn-entity-bench::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 8px;
+  right: 8px;
+  height: 12px;
+  background: #78350f;
+  clip-path: polygon(0 0, 20% 0, 20% 100%, 80% 100%, 80% 0, 100% 0, 100% 0, 85% 100%, 15% 100%);
+}
+
+/* Tugboat obstacle */
+.pn-entity-tugboat {
+  position: absolute;
+  width: 90px;
+  height: 60px;
+  z-index: 4;
+  bottom: 55px;
+}
+.pn-entity-tugboat::before {
+  content: '🚢';
+  font-size: 48px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+/* Jump count dots — shown above player */
+.pn-jump-dots {
+  position: absolute;
+  bottom: 125px;
+  left: 120px;
+  display: flex;
+  gap: 5px;
+  z-index: 11;
+}
+
+.pn-jump-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.pn-jump-dot.available {
+  background: #38bdf8;
+  box-shadow: 0 0 6px rgba(56,189,248,0.8);
+}
+
+.pn-jump-dot.used {
+  background: rgba(255,255,255,0.25);
+  border: 1.5px solid rgba(255,255,255,0.4);
+}
+
+/* Desktop control hints */
+.pn-control-hints {
+  position: absolute;
+  top: 70px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  text-align: right;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@media (max-width: 640px) {
+  .pn-control-hints { display: none; }
+}

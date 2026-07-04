@@ -123,12 +123,11 @@
 
 /* Hourly Forecast */
 .weather-hourly-container {
-  background: var(--glass-bg);
+  background: var(--surface-2);
   border: 1px solid var(--border-color);
   border-radius: 24px;
   padding: 16px;
   margin-bottom: 24px;
-  backdrop-filter: blur(20px);
 }
 
 .weather-hourly-header {
@@ -180,11 +179,10 @@
 
 /* 10-Day Forecast */
 .weather-daily-container {
-  background: var(--glass-bg);
+  background: var(--surface-2);
   border: 1px solid var(--border-color);
   border-radius: 24px;
   padding: 16px;
-  backdrop-filter: blur(20px);
 }
 
 .weather-daily-header {

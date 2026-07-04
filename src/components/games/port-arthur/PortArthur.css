@@ -1,0 +1,225 @@
+.pa-container {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background-color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.pa-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+}
+
+.pa-score-card, .pa-lives-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  color: #111;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: flex;
+  gap: 4px;
+}
+
+.dark .pa-score-card, .dark .pa-lives-card {
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.games-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.pa-game-area {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-left: 2px solid rgba(0,0,0,0.3);
+  border-right: 2px solid rgba(0,0,0,0.3);
+  background-color: #1e3a8a;
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Water background — large tile, no seam */
+.pa-water-bg {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 300%;
+  background: repeating-linear-gradient(
+    180deg,
+    #1e3a8a 0px,
+    #1e40af 40px,
+    #1d4ed8 80px,
+    #2563eb 120px,
+    #1e40af 160px,
+    #1e3a8a 200px
+  );
+  z-index: 1;
+  will-change: transform;
+}
+
+/* Boat — pure CSS so no transparency checkerboard */
+.pa-entity-boat {
+  position: absolute;
+  width: 60px;
+  height: 80px;
+  z-index: 10;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pa-entity-boat::before {
+  content: '⛵';
+  font-size: 52px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+
+/* Buoy — pure CSS red-and-white striped ring buoy */
+.pa-entity-buoy {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ef4444 0deg 90deg,
+    #fff 90deg 180deg,
+    #ef4444 180deg 270deg,
+    #fff 270deg 360deg
+  );
+  border: 3px solid #991b1b;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* Sandbar — natural sandy shape */
+.pa-entity-sandbar {
+  position: absolute;
+  width: 110px;
+  height: 55px;
+  background: radial-gradient(ellipse at center, #d4a853 0%, #b8863a 60%, #8b6520 100%);
+  border-radius: 50%;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  border: 2px solid #a06c1a;
+}
+
+/* Invisible split-zone steering — replaces button controls */
+.pa-zone-left,
+.pa-zone-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 15;
+  touch-action: none;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 32px;
+}
+
+.pa-zone-left {
+  left: 0;
+  justify-content: flex-start;
+  padding-left: 20px;
+}
+
+.pa-zone-right {
+  right: 0;
+  justify-content: flex-end;
+  padding-right: 20px;
+}
+
+.pa-zone-hint {
+  font-size: 28px;
+  color: rgba(255,255,255,0.2);
+  transition: color 0.1s;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pa-zone-left:active .pa-zone-hint,
+.pa-zone-right:active .pa-zone-hint {
+  color: rgba(255,255,255,0.7);
+}
+
+.pa-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.pa-modal {
+  background: #fff;
+  padding: 32px;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  color: #111;
+}
+
+.dark .pa-modal {
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.pa-modal-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background 0.2s;
+}
+
+.pa-modal-btn:hover {
+  background: #2563eb;
+}
+
+.pa-modal-btn.secondary {
+  background: #64748b;
+}
+
+.pa-modal-btn.secondary:hover {
+  background: #475569;
+}

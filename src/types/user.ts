@@ -19,6 +19,8 @@ export type User = {
   enable_read_receipts?: boolean;
   enable_typing_indicators?: boolean;
   translation_language?: string;
+  arcade_coins?: number;
+  arcade_badges?: string[];
 };
 
 

@@ -23,6 +23,7 @@ import {
   Home,
   Database,
   GraduationCap,
+  Globe,
   TreePine,
   X
 } from 'lucide-react';
@@ -102,6 +103,7 @@ export const GigsView: React.FC<{ activeTab?: number; user?: any; scope?: string
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('All Cities');
+  const [workTypeFilter, setWorkTypeFilter] = useState<'All' | 'Local' | 'Remote'>('All');
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<any>(null);
@@ -318,8 +320,9 @@ export const GigsView: React.FC<{ activeTab?: number; user?: any; scope?: string
            (g.description || '').toLowerCase().includes(search);
          
          const cityMatch = selectedCity === 'All Cities' || g.location.toLowerCase().includes(selectedCity.toLowerCase());
+         const workTypeMatch = workTypeFilter === 'All' || g.type === workTypeFilter;
          
-         return searchMatch && cityMatch;
+         return searchMatch && cityMatch && workTypeMatch;
       })
       .map(g => {
         let matchScore = 50;
@@ -348,9 +351,6 @@ export const GigsView: React.FC<{ activeTab?: number; user?: any; scope?: string
             <h1>Gig Economy</h1>
             <p>Find local tasks, remote freelance work, and quick shifts.</p>
           </div>
-          <button className="primary-btn post-gig-btn" onClick={() => setIsModalOpen(true)}>
-            Post a Gig
-          </button>
         </div>
         {!workerProfile && user && (
           <div className="become-worker-cta glass" style={{ padding: '16px', margin: '16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--gigs-green)', borderRadius: '12px' }}>
@@ -391,27 +391,52 @@ export const GigsView: React.FC<{ activeTab?: number; user?: any; scope?: string
       </section>
 
       <section className="gigs-section">
-        <div className="section-header">
+        <div className="section-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
           <h2>Available Now <span className="live-badge">Live</span></h2>
-          <select 
-            className="city-filter-select"
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '20px',
-              border: '1px solid var(--border)',
-              background: 'var(--card-bg)',
-              color: 'var(--text)',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              outline: 'none'
-            }}
-          >
-            {CITY_OPTIONS.map(city => (
-              <option key={city} value={city}>{city}</option>
-            ))}
-          </select>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="toggle-options" style={{ padding: '2px', display: 'flex', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '20px', overflow: 'hidden' }}>
+              <button 
+                className={`toggle-opt ${workTypeFilter === 'All' ? 'active' : ''}`}
+                onClick={() => setWorkTypeFilter('All')}
+                style={{ padding: '4px 12px', borderRadius: '18px', fontSize: '0.8rem', flex: 1, minWidth: '60px' }}
+              >
+                All
+              </button>
+              <button 
+                className={`toggle-opt ${workTypeFilter === 'Local' ? 'active' : ''}`}
+                onClick={() => setWorkTypeFilter('Local')}
+                style={{ padding: '4px 12px', borderRadius: '18px', fontSize: '0.8rem', flex: 1, minWidth: '60px' }}
+              >
+                Local
+              </button>
+              <button 
+                className={`toggle-opt ${workTypeFilter === 'Remote' ? 'active' : ''}`}
+                onClick={() => setWorkTypeFilter('Remote')}
+                style={{ padding: '4px 12px', borderRadius: '18px', fontSize: '0.8rem', flex: 1, minWidth: '60px' }}
+              >
+                Remote
+              </button>
+            </div>
+            <select 
+              className="city-filter-select"
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid var(--border)',
+                background: 'var(--card-bg)',
+                color: 'var(--text)',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              {CITY_OPTIONS.map(city => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="gigs-list">
           {filteredGigs.length === 0 ? (
@@ -461,7 +486,11 @@ export const GigsView: React.FC<{ activeTab?: number; user?: any; scope?: string
               </div>
               <div className="gig-card-footer">
                 <div className="gig-tags">
-                  <span className={`gig-type ${gig.type.toLowerCase()}`}>{gig.type}</span>
+                  <span className={`gig-type ${gig.type.toLowerCase()}`}>
+                    {gig.type === 'Remote' && <Globe size={12} style={{marginRight: 4}} />}
+                    {gig.type === 'Local' && <MapPin size={12} style={{marginRight: 4}} />}
+                    {gig.type}
+                  </span>
                   <span className={`gig-urgency ${gig.urgency.toLowerCase()}`}>{gig.urgency}</span>
                   {gig.verifiedOnly && (
                     <span className="gig-urgency verified-dibs"><ShieldCheck size={12} style={{marginRight: 4}}/> First Dibs</span>

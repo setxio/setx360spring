@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield, Settings, LogOut, Power, HeartHandshake, HandHeart, Home, Landmark, Map, Utensils, Contact, Star, Trophy } from 'lucide-react';
+import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield, Settings, LogOut, Power, HeartHandshake, HandHeart, Home, Landmark, Map, Utensils, Contact, Star, Trophy, Gamepad2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -56,7 +56,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
   const folderConfig = [
     { id: 'social_comms', label: 'Social & Comms', items: ['social', 'discover', 'contacts', 'messages', 'phone', 'proplus'] },
     { id: 'market_shops', label: 'Market & Shops', items: ['market', 'wallet', 'classifieds', 'jobs', 'gigs'] },
-    { id: 'media_events', label: 'Media & Events', items: ['stadium', 'videos', 'music', 'events', 'eats', 'art', 'faith', 'sports'] },
+    { id: 'media_events', label: 'Media & Events', items: ['stadium', 'videos', 'music', 'events', 'eats', 'art', 'faith', 'sports', 'games'] },
     { id: 'tools_services', label: 'Tools & Services', items: ['services', 'page_creator', 'page_manager', 'care', 'crowdfund', 'charity', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
   ];
   // Swipe logic
@@ -148,6 +148,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'me', label: 'Me Portal', icon: <User size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)' },
     { id: 'settings', label: 'Settings', icon: <Settings size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #64748b, #475569)' },
     { id: 'stadium', label: 'Stadium', icon: <Globe size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #10b981, #3b82f6)' },
+    { id: 'games', label: 'Games', icon: <Gamepad2 size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #ff416c, #ff4b2b)' },
     { id: 'logout', label: 'Sign Out', icon: <Power size={32} strokeWidth={1.5} color="#ef4444" />, gradient: 'linear-gradient(135deg, #1f2937, #000000)' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 

@@ -239,7 +239,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onNavigateToPost,
   onNavigateToProfile
 }) => {
-  const { activeContext } = useApp();
+  const { activeContext, theme } = useApp();
+  const isDark = theme.includes('dark') || theme.includes('io') || theme.includes('neo');
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);

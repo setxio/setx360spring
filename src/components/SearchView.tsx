@@ -232,13 +232,13 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
               {/* People */}
               {(activeTab === 'all' || activeTab === 'profiles') && results.profiles?.length > 0 && (
                 <div className="results-section-block">
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><User size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> People</h3>
+                  <h3 className="results-section-title"><User size={18} /> People</h3>
                   {results.profiles.map((p: any) => (
                     <div key={p.id} className="search-result-card" onClick={() => handleResultClick('profiles', p)}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <Avatar url={p.avatar_url} name={p.name} size={40} />
                         <div>
-                          <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: 'var(--primary)' }}>{p.name}</h3>
+                          <h3>{p.name}</h3>
                           <p>{p.role?.replace('_', ' ') || 'Member'} • {p.community || p.county}</p>
                         </div>
                       </div>
@@ -249,12 +249,12 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
               {/* Stores */}
               {(activeTab === 'all' || activeTab === 'stores') && results.stores?.length > 0 && (
-                <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Store size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Places</h3>
+                <div className="results-section-block">
+                  <h3 className="results-section-title"><Store size={18} /> Places</h3>
                   {results.stores.map((s: any) => (
                     <div key={s.id} className="search-result-card" onClick={() => handleResultClick('stores', s)}>
                       <h3>{s.name}</h3>
-                      <p style={{ color: 'var(--text)', marginBottom: '8px' }}>{s.category || 'Local Business'}</p>
+                      <p style={{ color: 'var(--text)', marginBottom: 'var(--sp-2)' }}>{s.category || 'Local Business'}</p>
                       <p>{s.description?.substring(0, 150)}...</p>
                     </div>
                   ))}
@@ -263,14 +263,14 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
               {/* Groups */}
               {(activeTab === 'all' || activeTab === 'groups') && results.groups?.length > 0 && (
-                <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Users size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Groups</h3>
+                <div className="results-section-block">
+                  <h3 className="results-section-title"><Users size={18} /> Groups</h3>
                   {results.groups.map((g: any) => (
                     <div key={g.id} className="search-result-card" onClick={() => handleResultClick('groups', g)}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
                         <Avatar url={g.avatar_url || g.image_url} name={g.name} size={40} />
                         <div>
-                          <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: 'var(--primary)' }}>{g.name}</h3>
+                          <h3>{g.name}</h3>
                           <p>{(g.description || g.content)?.substring(0, 100)}</p>
                         </div>
                       </div>
@@ -281,12 +281,12 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
               {/* Posts */}
               {(activeTab === 'all' || activeTab === 'posts') && results.posts?.length > 0 && (
-                <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><MessageSquare size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Posts</h3>
+                <div className="results-section-block">
+                  <h3 className="results-section-title"><MessageSquare size={18} /> Posts</h3>
                   {results.posts.map((post: any) => (
                     <div key={post.id} className="search-result-card" onClick={() => handleResultClick('posts', post)}>
-                      <p style={{ color: 'var(--text)', marginBottom: '8px' }}>{post.content}</p>
-                      <p style={{ fontSize: '0.8rem' }}>{new Date(post.created_at).toLocaleDateString()} • {post.type}</p>
+                      <p style={{ color: 'var(--text)', marginBottom: 'var(--sp-2)' }}>{post.content}</p>
+                      <p>{new Date(post.created_at).toLocaleDateString()} • {post.type}</p>
                     </div>
                   ))}
                 </div>
@@ -294,12 +294,12 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
               {/* Products */}
               {(activeTab === 'all' || activeTab === 'products') && results.products?.length > 0 && (
-                <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><ShoppingBag size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Products</h3>
+                <div className="results-section-block">
+                  <h3 className="results-section-title"><ShoppingBag size={18} /> Products</h3>
                   {results.products.map((pd: any) => (
                     <div key={pd.id} className="search-result-card" onClick={() => handleResultClick('products', pd)}>
                       <h3>{pd.name}</h3>
-                      <p style={{ color: 'var(--text)', fontWeight: 'bold', marginBottom: '8px' }}>${pd.price}</p>
+                      <p style={{ color: 'var(--text)', fontWeight: 'var(--font-bold)', marginBottom: 'var(--sp-2)' }}>${pd.price}</p>
                       <p>{pd.description?.substring(0, 100)}</p>
                     </div>
                   ))}
@@ -308,24 +308,24 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
               
               {/* Web */}
               {(activeTab === 'all' || activeTab === 'web') && results.wiki?.filter((w: any) => !!w.url)?.length > 0 && (
-                <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><ExternalLink size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Web</h3>
+                <div className="results-section-block">
+                  <h3 className="results-section-title"><ExternalLink size={18} /> Web</h3>
                   {results.wiki.filter((w: any) => !!w.url).map((w: any) => (
-                    <a 
-                      key={w.id} 
-                      href={w.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="search-result-card" 
+                    <a
+                      key={w.id}
+                      href={w.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="search-result-card"
                       style={{ display: 'block', textDecoration: 'none' }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', marginBottom: 'var(--sp-1)' }}>
                         <h3 style={{ color: '#3b82f6', margin: 0, textDecoration: 'underline' }}>{w.title}</h3>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--sp-1)', fontSize: 'var(--text-2xs)', fontWeight: 600, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: 'var(--sp-0-5) var(--sp-1-5)', borderRadius: 'var(--radius-xs)', textTransform: 'uppercase' }}>
                           <ExternalLink size={10} /> External
                         </span>
                       </div>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '8px' }}>{w.url}</p>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginBottom: 'var(--sp-2)' }}>{w.url}</p>
                       <p style={{ color: 'var(--text)', textDecoration: 'none' }}>{w.description?.substring(0, 150)}...</p>
                     </a>
                   ))}
@@ -340,8 +340,8 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
                 if (filteredWiki.length === 0) return null;
                 
                 return (
-                  <div className="results-section-block" style={{ marginTop: '32px' }}>
-                    <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Globe size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Wiki</h3>
+                  <div className="results-section-block">
+                    <h3 className="results-section-title"><Globe size={18} /> Wiki</h3>
                     {filteredWiki.map((w: any) => (
                       <div 
                         key={w.id} 
@@ -360,8 +360,8 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
               {/* Images */}
               {(activeTab === 'images') && (
-                <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><ImageIcon size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Images</h3>
+                <div className="results-section-block">
+                  <h3 className="results-section-title"><ImageIcon size={18} /> Images</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
                     {/* Gather images from profiles, stores, events, and wiki */}
                     {[
@@ -383,8 +383,8 @@ export const SearchView: React.FC<SearchViewProps> = ({ user, scope, onNavigate 
 
               {/* Videos */}
               {(activeTab === 'videos') && (
-                <div className="results-section-block" style={{ marginTop: '32px' }}>
-                  <h3 style={{ fontSize: '1.2rem', margin: '0 0 16px', color: 'var(--text)' }}><Video size={18} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Videos</h3>
+                <div className="results-section-block">
+                  <h3 className="results-section-title"><Video size={18} /> Videos</h3>
                   {/* Gather videos from wiki and posts (if they contain video links) */}
                   {[
                     ...(results.wiki || []).filter((w: any) => w.url?.match(/(youtube\.com|youtu\.be|vimeo\.com|\.(mp4|webm|mov))/i)).map((w: any) => ({ ...w, _type: 'wiki' })),

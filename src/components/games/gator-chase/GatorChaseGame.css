@@ -1,0 +1,288 @@
+.gator-chase-container {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  background-color: #000a14;
+  color: #fff;
+  font-family: 'Fredoka One', sans-serif;
+  overflow: hidden;
+}
+
+.gator-chase-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: rgba(0, 20, 40, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid #1f3a5f;
+}
+
+.gator-chase-back-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.gator-chase-stats {
+  display: flex;
+  gap: 24px;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #60a5fa;
+  letter-spacing: 1px;
+}
+
+.gator-chase-game-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.gator-chase-board {
+  position: relative;
+  background-color: #000;
+  border: 4px solid #1e3a8a;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(30, 58, 138, 0.5);
+  transform-origin: center;
+}
+
+.maze-row {
+  display: flex;
+}
+
+.maze-cell {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.maze-wall {
+  background-color: #1e40af;
+  border: 1px solid #1e3a8a;
+  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+}
+
+.maze-coin {
+  width: 6px;
+  height: 6px;
+  background-color: #fde047;
+  border-radius: 50%;
+  box-shadow: 0 0 5px #fde047;
+}
+
+.maze-crawfish {
+  width: 16px;
+  height: 16px;
+  background-image: url('/images/gator-chase/crawfish.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  from { transform: scale(0.9); }
+  to { transform: scale(1.1); }
+}
+
+.entity-player {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: left, top;
+}
+
+/* Give player a slight glow */
+.entity-player::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #60a5fa;
+  z-index: -1;
+}
+
+.entity-gator {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  z-index: 9;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  will-change: left, top, transform;
+  image-rendering: pixelated;
+}
+
+/* Waddle animation */
+.entity-gator.moving {
+  animation: waddle 0.3s infinite alternate;
+}
+
+@keyframes waddle {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(10deg); }
+}
+
+.entity-gator.frightened {
+  background-image: url('/images/gator-chase/cyan_gator.png') !important;
+  filter: hue-rotate(180deg) brightness(1.5) saturate(0); /* Turn them blue/white */
+  animation: frightened 0.5s infinite alternate, waddle 0.4s infinite alternate;
+}
+
+@keyframes frightened {
+  from { opacity: 0.8; }
+  to { opacity: 1; }
+}
+
+.entity-gator.frightened-ending {
+  animation: flash 0.2s infinite, waddle 0.4s infinite alternate;
+}
+
+@keyframes flash {
+  0% { filter: hue-rotate(180deg) brightness(1.5) saturate(0); }
+  100% { filter: none; }
+}
+
+.gator-chase-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.overlay-title {
+  font-size: 36px;
+  color: #fde047;
+  margin-bottom: 24px;
+  text-shadow: 0 0 10px rgba(253, 224, 71, 0.5);
+}
+
+.start-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 24px;
+  font-size: 20px;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+  transition: transform 0.1s;
+}
+
+.start-btn:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Controls */
+.mobile-controls {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .gator-chase-board {
+    transform: scale(0.85); /* scale down map to fit on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .gator-chase-board {
+    transform: scale(0.7);
+  }
+}
+
+/* D-Pad — 4-button cross layout for precise grid navigation */
+.d-pad-container {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+}
+
+@media (max-width: 768px) {
+  .d-pad-container {
+    display: block;
+  }
+  .gator-chase-game-area {
+    padding-bottom: 200px;
+  }
+}
+
+.d-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 62px);
+  grid-template-rows: repeat(3, 62px);
+  gap: 4px;
+}
+
+.d-btn {
+  width: 62px;
+  height: 62px;
+  border-radius: 14px;
+  background: rgba(30, 58, 138, 0.75);
+  border: 2px solid rgba(96, 165, 250, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: background 0.08s, transform 0.08s;
+  touch-action: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.d-btn:active {
+  background: rgba(59, 130, 246, 0.9);
+  transform: scale(0.92);
+}
+
+.d-center {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: rgba(30, 58, 138, 0.35);
+  border: 2px solid rgba(96,165,250,0.3);
+}

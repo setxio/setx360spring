@@ -2976,6 +2976,8 @@ export type Database = {
         Row: {
           ad_credits: number | null
           allow_dms: boolean | null
+          arcade_badges: string[] | null
+          arcade_coins: number | null
           avatar_url: string | null
           banner_url: string | null
           bio: string | null

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabase';
 import type { User, StaffClearance } from '../types/user';
 
-export type Env = 'home' | 'stadium' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages' | 'proplus' | 'crowdfund' | 'charity' | 'page_creator' | 'page_manager';
+export type Env = 'home' | 'stadium' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages' | 'proplus' | 'crowdfund' | 'charity' | 'page_creator' | 'page_manager' | 'games';
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'

@@ -167,22 +167,19 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
       <h3>Logistics</h3>
       <p className="step-desc">Where and when does this need to happen?</p>
       
-      <div className="form-group">
-        <label>Gig Type</label>
-        <div className="toggle-options">
-          <button 
-            className={`toggle-opt ${formData.type === 'Local' ? 'active' : ''}`}
-            onClick={() => setFormData({...formData, type: 'Local'})}
-          >
-            Local (In-Person)
-          </button>
-          <button 
-            className={`toggle-opt ${formData.type === 'Remote' ? 'active' : ''}`}
-            onClick={() => setFormData({...formData, type: 'Remote'})}
-          >
-            Remote (Digital)
-          </button>
-        </div>
+      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-soft)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+        <input 
+          type="checkbox" 
+          id="remote-checkbox"
+          checked={formData.type === 'Remote'}
+          onChange={(e) => {
+             setFormData({ ...formData, type: e.target.checked ? 'Remote' : 'Local', location: e.target.checked ? 'Remote' : formData.location })
+          }}
+          style={{ width: '20px', height: '20px', accentColor: 'var(--gigs-green)', cursor: 'pointer' }}
+        />
+        <label htmlFor="remote-checkbox" style={{ margin: 0, cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem' }}>
+          This is a remote (digital) gig
+        </label>
       </div>
 
       {formData.type === 'Local' && (
@@ -337,7 +334,7 @@ export const CreateGigModal: React.FC<CreateGigModalProps> = ({ isOpen, onClose,
   );
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay gig-modal-overlay">
       <div className="modal-content gig-modal">
         <div className="modal-header">
           <h2>Post a Gig</h2>

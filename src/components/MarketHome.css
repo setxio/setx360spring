@@ -1,5 +1,5 @@
 .market-home {
-  padding: 16px;
+  padding: var(--sp-4);
   max-width: 1200px;
   margin: 0 auto;
   animation: fadeIn 0.5s ease-out;
@@ -8,13 +8,13 @@
 /* ── Hero Section ── */
 .market-hero {
   position: relative;
-  border-radius: 28px;
+  border-radius: var(--radius-3xl);
   overflow: hidden;
-  margin-bottom: 32px;
+  margin-bottom: var(--sp-8);
   aspect-ratio: 21/9;
   min-height: 280px;
   background: #090d16;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  box-shadow: var(--shadow-2xl);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -70,21 +70,21 @@
 }
 
 .market-hero h2 {
-  font-size: 2.8rem;
-  font-weight: 900;
-  line-height: 1.1;
-  margin-bottom: 8px;
-  letter-spacing: -1px;
+  font-size: var(--text-5xl);
+  font-weight: var(--font-black);
+  line-height: var(--leading-tight);
+  margin-bottom: var(--sp-2);
+  letter-spacing: var(--tracking-tighter);
   background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .market-hero p {
-  font-size: 1.05rem;
+  font-size: var(--text-base);
   opacity: 0.85;
   max-width: 450px;
-  margin-bottom: 20px;
+  margin-bottom: var(--sp-5);
 }
 
 /* ── Hero Search Bar (Bezos Style) ── */

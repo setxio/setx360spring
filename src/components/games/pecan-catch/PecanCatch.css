@@ -1,0 +1,227 @@
+.pecan-catch-container {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background-color: #87CEEB; /* Sky blue */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pecan-catch-container.dark {
+  background-color: #1a1a2e; /* Night sky */
+}
+
+.pecan-catch-game-area {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-left: 2px solid rgba(0,0,0,0.1);
+  border-right: 2px solid rgba(0,0,0,0.1);
+  background-image: url('/images/pecan-catch/tree-bg.png'), url('/images/pecan-catch/park-bg.png');
+  background-position: top center, bottom center;
+  background-repeat: repeat-x, no-repeat;
+  background-size: 100% 55%, 100% 50%;
+  touch-action: none;
+  min-height: 100dvh;
+}
+
+/* UI Overlay */
+.pecan-catch-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.pecan-catch-score-card, .pecan-catch-lives-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dark .pecan-catch-score-card, .dark .pecan-catch-lives-card {
+  background: rgba(31, 41, 55, 0.9);
+  color: #f3f4f6;
+}
+
+/* Entities */
+.entity-player {
+  position: absolute;
+  bottom: 20px;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+/* Inner avatar should be responsive to player entity */
+.entity-player .avatar-container {
+  width: 100% !important;
+  height: 100% !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.entity-pecan {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  transform: translateX(-50%);
+  background-image: url('/images/pecan-catch/pecan.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 3;
+}
+
+.entity-squirrel {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  transform: translateX(-50%);
+  background-image: url('/images/pecan-catch/squirrel.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 4;
+  top: 50px;
+  transition: left 0.5s ease-out;
+}
+
+/* Modals */
+.pecan-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.pecan-modal {
+  background: white;
+  padding: 32px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .pecan-modal {
+  background: #1f2937;
+  color: white;
+}
+
+.pecan-modal h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #16a34a;
+}
+
+.pecan-modal p {
+  margin-bottom: 24px;
+  font-size: 16px;
+  color: #4b5563;
+}
+
+.dark .pecan-modal p {
+  color: #d1d5db;
+}
+
+.pecan-modal-btn {
+  width: 100%;
+  padding: 14px;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+}
+
+.pecan-modal-btn:hover {
+  background: #15803d;
+  transform: translateY(-2px);
+}
+
+.pecan-modal-btn.secondary {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.dark .pecan-modal-btn.secondary {
+  border-color: #4b5563;
+  color: #9ca3af;
+}
+
+/* Drag-to-steer overlay — covers game area, pointer events only */
+.pecan-drag-zone {
+  position: absolute;
+  inset: 0;
+  bottom: 90px; /* don't capture taps on avatar */
+  z-index: 8;
+  cursor: grab;
+  touch-action: none;
+}
+.pecan-drag-zone:active {
+  cursor: grabbing;
+}
+
+/* Hint bar */
+.pecan-drag-hint {
+  position: absolute;
+  bottom: 96px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(0,0,0,0.4);
+  pointer-events: none;
+  z-index: 9;
+  font-weight: 500;
+}
+
+.control-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.control-btn:active {
+  background: rgba(255, 255, 255, 0.4);
+}

@@ -79,6 +79,7 @@ const CrowdFundView    = lazy(() => import('./components/CrowdFundView').then(m 
 
 const ProductDetailsModal = lazy(() => import('./components/ProductDetailsModal').then(m => ({ default: m.ProductDetailsModal })));
 const LocalActionAgent    = lazy(() => import('./components/LocalActionAgent').then(m => ({ default: m.LocalActionAgent })));
+const GamesView           = lazy(() => import('./components/games/GamesView').then(m => ({ default: m.GamesView })));
 
 import { useApp, type Env } from './context/AppContext';
 import { supabase } from './lib/supabase';
@@ -458,6 +459,7 @@ const App: React.FC = () => {
     if (env === 'crowdfund') return <CrowdFundView />;
     if (env === 'charity') return <CharitiesView />;
     if (env === 'stadium') return <StadiumView onNavigate={(envStr) => setEnv(envStr as Env)} />;
+    if (env === 'games') return <GamesView />;
 
     if (env === 'civics') {
       if (user?.role !== 'admin') { setEnv('discover'); return null; }

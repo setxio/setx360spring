@@ -47,11 +47,11 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
   const renderSkeletons = () => (
     <div className="product-premium-grid">
       {[1, 2, 3, 4, 5, 6].map(i => (
-        <div key={i} className="product-premium-card" style={{ height: '320px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '16px', padding: '16px' }}>
-          <div className="skeleton" style={{ width: '100%', height: '180px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.1)', marginBottom: '12px' }} />
-          <div className="skeleton" style={{ width: '40%', height: '12px', background: 'rgba(255, 255, 255, 0.1)', marginBottom: '8px' }} />
-          <div className="skeleton" style={{ width: '80%', height: '16px', background: 'rgba(255, 255, 255, 0.1)', marginBottom: '12px' }} />
-          <div className="skeleton" style={{ width: '30%', height: '20px', background: 'rgba(255, 255, 255, 0.1)' }} />
+        <div key={i} className="product-premium-card card" style={{ height: '320px', padding: 'var(--sp-4)' }}>
+          <div className="skeleton" style={{ width: '100%', height: '180px', marginBottom: 'var(--sp-3)' }} />
+          <div className="skeleton" style={{ width: '40%', height: '12px', marginBottom: 'var(--sp-2)' }} />
+          <div className="skeleton" style={{ width: '80%', height: '16px', marginBottom: 'var(--sp-3)' }} />
+          <div className="skeleton" style={{ width: '30%', height: '20px' }} />
         </div>
       ))}
     </div>

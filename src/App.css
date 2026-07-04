@@ -3,7 +3,14 @@
   flex-direction: column;
   min-height: 100vh;
   position: relative;
+  /* Background uses the depth gradient + solid fallback */
   background-color: var(--bg);
+  background-image:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--bg) 96%, var(--primary) 4%) 0%,
+      var(--bg) 40%,
+      var(--bg) 100%
+    );
   color: var(--text);
   padding-bottom: calc(160px + var(--sticky-player-offset, 0px)); /* Space for dual footers */
   overflow-x: hidden;
@@ -27,13 +34,21 @@
   height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 var(--sp-4);
   overflow: hidden;
   opacity: 1;
   transform: translateY(0);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
   will-change: transform, opacity;
   pointer-events: auto;
+  /* Frosted glass material */
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--highlight-top);
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 -1px 0 rgba(0,0,0,0.04);
 }
 
 .main-header.header-hidden {
@@ -63,15 +78,27 @@
 }
 
 .theme-toggle {
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
+  /* Frosted glass pill button */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--highlight-top);
   color: var(--text);
-  padding: 8px;
-  border-radius: 12px;
+  padding: var(--sp-2);
+  border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 1px 0 var(--highlight-top-strong);
+  transition: all var(--duration-150) var(--ease-out);
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 1px 0 var(--highlight-top-strong);
 }
 
 /* Content Area */
@@ -80,13 +107,13 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: var(--sp-5) var(--sp-4);
 }
 
 .view-container h2 {
-  font-size: 1.8rem;
-  margin-bottom: 24px;
-  font-weight: 800;
+  font-size: var(--text-3xl);
+  margin-bottom: var(--sp-6);
+  font-weight: var(--font-extrabold);
 }
 
 .placeholder-content {
@@ -120,7 +147,7 @@
 
 .switcher-wrapper {
   background: var(--bg-soft);
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   display: flex;
   border: 1px solid var(--border);
   width: 95%;
@@ -173,15 +200,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 12px 0;
+  gap: var(--sp-1);
+  padding: var(--sp-3) 0;
   border: none;
   background: transparent;
   color: var(--text-primary);
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: var(--font-bold);
+  font-size: var(--text-sm);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--duration-300) var(--ease-in-out);
   scroll-snap-align: center;
   scroll-snap-stop: always;
   white-space: nowrap;
@@ -280,9 +307,9 @@
     min-width: 100px;
     max-width: none;
     flex: 0 0 auto;
-    padding: 10px 14px;
-    border-radius: 14px;
-    font-size: 0.85rem;
+    padding: var(--sp-2-5, 10px) var(--sp-3-5, 14px);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
   }
 }
 
@@ -381,6 +408,14 @@
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
   will-change: transform, opacity;
   pointer-events: auto;
+  /* Frosted glass material with top highlight edge */
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border-top: 1px solid var(--highlight-top);
+  box-shadow:
+    var(--shadow-xl),
+    inset 0 1px 0 var(--highlight-top-strong);
 }
 
 .bottom-nav.nav-hidden {
@@ -411,13 +446,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
   min-width: 72px;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 8px 0;
-  transition: all 0.2s ease;
+  padding: var(--sp-2) 0;
+  transition: all var(--duration-200) var(--ease-out);
   position: relative;
 }
 
@@ -437,26 +472,26 @@
 }
 
 .nav-btn .label {
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: var(--text-2xs);
+  font-weight: var(--font-medium);
   color: var(--text-muted);
 }
 
 .nav-btn.active .label {
   color: var(--primary);
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 
 .badge {
   position: absolute;
-  top: -4px;
-  right: -8px;
+  top: -var(--sp-1);
+  right: -var(--sp-2);
   background: #ef4444;
   color: white;
-  font-size: 0.6rem;
-  font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 10px;
+  font-size: var(--text-2xs);
+  font-weight: var(--font-bold);
+  padding: var(--sp-0-5) 5px;
+  border-radius: var(--radius-md);
   border: 2px solid var(--bg);
 }
 
@@ -490,20 +525,20 @@
 .create-post-fab-classic {
   position: fixed;
   bottom: calc(160px + var(--sticky-player-offset, 0px));
-  right: 24px;
+  right: var(--sp-6);
   width: 60px;
   height: 60px;
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   background: var(--primary);
   border: none;
   color: white;
-  box-shadow: 0 8px 24px rgba(var(--primary-rgb, 112,0,244), 0.4);
+  box-shadow: var(--shadow-xl);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 9000;
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-200) var(--ease-out);
 }
 
 .create-post-fab-classic:hover {
@@ -520,20 +555,20 @@
 .create-post-fab-minimal {
   position: fixed;
   bottom: calc(24px + var(--sticky-player-offset, 0px));
-  right: 24px;
+  right: var(--sp-6);
   width: 60px;
   height: 60px;
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   background: var(--primary);
   border: none;
   color: white;
-  box-shadow: 0 8px 24px rgba(var(--primary-rgb, 112,0,244), 0.4);
+  box-shadow: var(--shadow-xl);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 9000;
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-200) var(--ease-out);
 }
 
 .create-post-fab-minimal:hover {

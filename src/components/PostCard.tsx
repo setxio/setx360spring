@@ -206,7 +206,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           <div className="quoted-post-header">
             <Avatar url={contentPost.author?.avatar_url} name={contentPost.author?.name} size={20} />
             <span className="quoted-post-author">{contentPost.author?.name}</span>
-            <span className="post-meta" style={{ fontSize: '0.75rem' }}>· {formatRelativeTime(contentPost.created_at)}</span>
+            <span className="post-date">· {formatRelativeTime(contentPost.created_at)}</span>
           </div>
           <div className="quoted-post-content">
             {formatText(contentPost.content)}
@@ -404,31 +404,23 @@ export const PostCard: React.FC<PostCardProps> = ({
         >
           <Eye size={14} />
           <span>{contentPost.views || 0}</span>
-          {user?.id === contentPost.profile_id && <BarChart2 size={14} style={{ marginLeft: 4 }} />}
+          {user?.id === contentPost.profile_id && <BarChart2 size={14} style={{ marginLeft: 'var(--sp-1)' }} />}
         </div>
       </div>
 
       {/* Emoji Reactions Row */}
-      <div style={{ display: 'flex', gap: '6px', padding: '4px 0 8px', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+      <div className="post-reactions-row" onClick={e => e.stopPropagation()}>
         {REACTIONS.map(emoji => {
           const count = reactionCounts[emoji] || 0;
           const isActive = userReaction === emoji;
           return (
             <button
               key={emoji}
+              className={`reaction-btn${isActive ? ' active' : ''}`}
               onClick={() => handleReaction(emoji)}
               title={user ? `React with ${emoji}` : 'Sign in to react'}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '4px',
-                padding: '3px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600,
-                border: isActive ? '1px solid var(--primary)' : '1px solid var(--border)',
-                background: isActive ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.04)',
-                color: isActive ? 'var(--primary)' : 'var(--text-muted)',
-                cursor: user ? 'pointer' : 'default',
-                transition: 'all 0.15s ease',
-              }}
             >
-              <span style={{ fontSize: '1rem' }}>{emoji}</span>
+              <span className="reaction-emoji">{emoji}</span>
               {count > 0 && <span>{count}</span>}
             </button>
           );
