@@ -36,6 +36,7 @@ interface WbPage {
   id: string; site_id: string; title: string; slug: string;
   content?: string; status: string; sort_order: number; created_at: string;
   meta_title?: string; meta_description?: string; og_image?: string;
+  blocks?: any[];
 }
 interface WbMedia {
   id: string; site_id: string; file_name: string; file_url: string;
@@ -601,6 +602,88 @@ const AppearanceTab: React.FC<{ siteId: string; wlConfig: any; onUpdateWlConfig:
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
+interface PageBlock {
+  id: string;
+  type: 'hero' | 'feature_grid' | 'rich_text';
+  data: any;
+}
+
+const BlockBuilder: React.FC<{ blocks: PageBlock[]; onChange: (blocks: PageBlock[]) => void }> = ({ blocks, onChange }) => {
+  const addBlock = (type: PageBlock['type']) => {
+    onChange([...blocks, { id: crypto.randomUUID(), type, data: {} }]);
+  };
+
+  const updateBlock = (id: string, data: any) => {
+    onChange(blocks.map(b => b.id === id ? { ...b, data: { ...b.data, ...data } } : b));
+  };
+
+  const removeBlock = (id: string) => {
+    onChange(blocks.filter(b => b.id !== id));
+  };
+
+  const moveBlock = (index: number, direction: 'up' | 'down') => {
+    const newBlocks = [...blocks];
+    if (direction === 'up' && index > 0) {
+      [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
+    } else if (direction === 'down' && index < blocks.length - 1) {
+      [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
+    }
+    onChange(newBlocks);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {blocks.map((block, index) => (
+        <div key={block.id} className="wb-widget" style={{ padding: 16, borderLeft: '4px solid #2271b1' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: 12, color: '#2271b1' }}>{block.type.replace('_', ' ')}</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="wb-icon-btn" onClick={() => moveBlock(index, 'up')} disabled={index === 0}><ChevronUp size={16} /></button>
+              <button className="wb-icon-btn" onClick={() => moveBlock(index, 'down')} disabled={index === blocks.length - 1}><ChevronDown size={16} /></button>
+              <button className="wb-icon-btn" onClick={() => removeBlock(block.id)} style={{ color: '#d63638' }}><Trash2 size={16} /></button>
+            </div>
+          </div>
+          
+          {block.type === 'hero' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input className="wb-input" placeholder="Headline" value={block.data.headline || ''} onChange={e => updateBlock(block.id, { headline: e.target.value })} />
+              <textarea className="wb-textarea" placeholder="Subheadline" value={block.data.subheadline || ''} onChange={e => updateBlock(block.id, { subheadline: e.target.value })} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                 <input className="wb-input" placeholder="Button Text" value={block.data.btnText || ''} onChange={e => updateBlock(block.id, { btnText: e.target.value })} style={{ flex: 1 }} />
+                 <input className="wb-input" placeholder="Button Link" value={block.data.btnLink || ''} onChange={e => updateBlock(block.id, { btnLink: e.target.value })} style={{ flex: 1 }} />
+              </div>
+            </div>
+          )}
+          
+          {block.type === 'feature_grid' && (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+               <input className="wb-input" placeholder="Section Title" value={block.data.title || ''} onChange={e => updateBlock(block.id, { title: e.target.value })} />
+               <p style={{ fontSize: 12, color: '#646970', margin: 0 }}>Features (comma separated)</p>
+               <textarea className="wb-textarea" placeholder="Feature 1, Feature 2..." value={block.data.features || ''} onChange={e => updateBlock(block.id, { features: e.target.value })} />
+             </div>
+          )}
+
+          {block.type === 'rich_text' && (
+             <RichEditor content={block.data.content || ''} onChange={html => updateBlock(block.id, { content: html })} />
+          )}
+        </div>
+      ))}
+
+      {blocks.length === 0 && (
+        <div style={{ padding: 32, textAlign: 'center', border: '1px dashed #dcdcde', borderRadius: 6, color: '#646970' }}>
+          No blocks yet. Add a block to start building your page.
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <button className="wb-btn-secondary" onClick={() => addBlock('hero')}><Plus size={14} /> Add Hero</button>
+        <button className="wb-btn-secondary" onClick={() => addBlock('feature_grid')}><Plus size={14} /> Add Feature Grid</button>
+        <button className="wb-btn-secondary" onClick={() => addBlock('rich_text')}><Plus size={14} /> Add Rich Text</button>
+      </div>
+    </div>
+  );
+};
+
 export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const [mode, setMode] = useState<'list' | 'dashboard'>('list');
   const [activeSite, setActiveSite] = useState<WbSite | null>(null);
@@ -1457,8 +1540,8 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
               <input type="text" className="wb-input" value={editingPage.title || ''} onChange={e => setEditingPage({ ...editingPage, title: e.target.value })} placeholder="Page title..." />
             </div>
             <div className="wb-form-group">
-              <label>Content</label>
-              <RichEditor content={editingPage.content || ''} onChange={html => setEditingPage({ ...editingPage, content: html })} />
+              <label>Page Content (Blocks)</label>
+              <BlockBuilder blocks={editingPage.blocks || []} onChange={blocks => setEditingPage({ ...editingPage, blocks })} />
             </div>
             <div className="wb-form-group">
               <label>Status</label>
