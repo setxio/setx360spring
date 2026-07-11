@@ -493,6 +493,110 @@ const ImagePickerModal: React.FC<{
   );
 };
 
+// ─── Appearance Tab ───────────────────────────────────────────────────────────
+const AppearanceTab: React.FC<{ siteId: string; wlConfig: any; onUpdateWlConfig: (key: string, value: any) => void; storageBucket?: string }> = ({ siteId, wlConfig, onUpdateWlConfig, storageBucket }) => {
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerTarget, setPickerTarget] = useState<'logo' | 'favicon'>('logo');
+
+  return (
+    <div>
+      <div className="wb-content-header" style={{ marginBottom: 24 }}>
+        <h1>Appearance & Theming</h1>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
+        <div className="wb-widget">
+          <h2 className="wb-widget-title"><Palette size={16} /> Brand Assets</h2>
+          <div className="wb-widget-content" style={{ padding: '16px 20px 20px' }}>
+            <div className="wb-form-group">
+              <label>Site Logo</label>
+              {wlConfig?.logoUrl ? (
+                <div style={{ position: 'relative', display: 'inline-block', width: '100%', border: '1px solid #dcdcde', borderRadius: 6, padding: 12, textAlign: 'center', background: '#f6f7f7' }}>
+                  <img src={wlConfig.logoUrl} alt="Logo" style={{ maxHeight: 60, maxWidth: '100%', objectFit: 'contain' }} />
+                  <button className="wb-btn-text" style={{ padding: '0', fontSize: 12, color: '#d63638', marginTop: 12, display: 'block', width: '100%' }} onClick={() => onUpdateWlConfig('logoUrl', '')}>Remove logo</button>
+                </div>
+              ) : (
+                <button className="wb-btn-secondary" style={{ width: '100%' }} onClick={() => { setPickerTarget('logo'); setShowPicker(true); }}>
+                  <ImageIcon size={14} style={{ marginRight: 6 }} /> Choose Logo
+                </button>
+              )}
+            </div>
+            <div className="wb-form-group" style={{ marginBottom: 0 }}>
+              <label>Favicon</label>
+              {wlConfig?.faviconUrl ? (
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #dcdcde', borderRadius: 6, padding: '8px 12px', background: '#f6f7f7' }}>
+                  <img src={wlConfig.faviconUrl} alt="Favicon" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                  <button className="wb-btn-text" style={{ padding: '0', fontSize: 12, color: '#d63638', marginLeft: 'auto' }} onClick={() => onUpdateWlConfig('faviconUrl', '')}>Remove</button>
+                </div>
+              ) : (
+                <button className="wb-btn-secondary" style={{ width: '100%' }} onClick={() => { setPickerTarget('favicon'); setShowPicker(true); }}>
+                  <ImageIcon size={14} style={{ marginRight: 6 }} /> Choose Favicon (32x32)
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="wb-widget">
+          <h2 className="wb-widget-title">Colors & Typography</h2>
+          <div className="wb-widget-content" style={{ padding: '16px 20px 20px' }}>
+            <div className="wb-form-group">
+              <label>Primary Accent Color</label>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <input type="color" value={wlConfig?.accentColor || '#2271b1'} onChange={e => onUpdateWlConfig('accentColor', e.target.value)} style={{ width: 40, height: 40, padding: 0, border: '1px solid #dcdcde', borderRadius: 4, cursor: 'pointer' }} />
+                <input type="text" className="wb-input" value={wlConfig?.accentColor || '#2271b1'} onChange={e => onUpdateWlConfig('accentColor', e.target.value)} style={{ flex: 1, marginBottom: 0 }} />
+              </div>
+            </div>
+            <div className="wb-form-group">
+              <label>Heading Font</label>
+              <select className="wb-select" value={wlConfig?.headingFont || 'Inter'} onChange={e => onUpdateWlConfig('headingFont', e.target.value)}>
+                <option value="Inter">Inter</option>
+                <option value="Playfair Display">Playfair Display</option>
+                <option value="Merriweather">Merriweather</option>
+                <option value="Lora">Lora</option>
+              </select>
+            </div>
+            <div className="wb-form-group" style={{ marginBottom: 0 }}>
+              <label>Body Font</label>
+              <select className="wb-select" value={wlConfig?.bodyFont || 'Inter'} onChange={e => onUpdateWlConfig('bodyFont', e.target.value)}>
+                <option value="Inter">Inter</option>
+                <option value="Roboto">Roboto</option>
+                <option value="Open Sans">Open Sans</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="wb-widget">
+          <h2 className="wb-widget-title">Header & Footer Layout</h2>
+          <div className="wb-widget-content" style={{ padding: '16px 20px 20px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 16 }}>
+              <input type="checkbox" checked={wlConfig?.showHeaderSearch ?? true} onChange={e => onUpdateWlConfig('showHeaderSearch', e.target.checked)} style={{ width: 16, height: 16 }} />
+              <span>Show Search Bar in Header</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 16 }}>
+              <input type="checkbox" checked={wlConfig?.showFooterSocial ?? true} onChange={e => onUpdateWlConfig('showFooterSocial', e.target.checked)} style={{ width: 16, height: 16 }} />
+              <span>Show Social Icons in Footer</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <input type="checkbox" checked={wlConfig?.centerLogo ?? false} onChange={e => onUpdateWlConfig('centerLogo', e.target.checked)} style={{ width: 16, height: 16 }} />
+              <span>Center Logo in Navigation</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      {showPicker && (
+        <ImagePickerModal
+          siteId={siteId}
+          storageBucket={storageBucket}
+          onSelect={(url) => {
+            onUpdateWlConfig(pickerTarget === 'logo' ? 'logoUrl' : 'faviconUrl', url);
+            setShowPicker(false);
+          }}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
+    </div>
+  );
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const [mode, setMode] = useState<'list' | 'dashboard'>('list');
@@ -611,7 +715,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
     await enterDashboard(data);
   };
 
-  const updateWhiteLabel = async (key: string, value: string) => {
+  const updateWhiteLabel = async (key: string, value: any) => {
     if (!activeSite) return;
     const newConfig = { ...wlConfig, [key]: value };
     setWlConfig(newConfig);
@@ -1128,8 +1232,13 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
             <SettingsTab siteId={activeSite.id} subdomain={activeSite.subdomain} />
           )}
 
-          {/* ── APPEARANCE / INTEGRATIONS fallback ── */}
-          {(activeTab === 'appearance' || activeTab === 'plugins') && (
+          {/* ── APPEARANCE ── */}
+          {activeTab === 'appearance' && activeSite && (
+            <AppearanceTab siteId={activeSite.id} wlConfig={wlConfig} onUpdateWlConfig={updateWhiteLabel} storageBucket={activeSite.storage_bucket} />
+          )}
+
+          {/* ── INTEGRATIONS fallback ── */}
+          {activeTab === 'plugins' && (
             <div>
               <div className="wb-content-header"><h1>{navItems.find(i => i.id === activeTab)?.label}</h1></div>
               <div className="wb-empty-state">
