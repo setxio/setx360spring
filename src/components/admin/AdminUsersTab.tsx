@@ -26,9 +26,22 @@ export const AdminUsersTab: React.FC = () => {
     setIsLoading(false);
   };
 
-  const handleVerification = async (id: string, isApproval: boolean) => {
-    // Basic stub for verification handling
-    await supabase.from('verifications').update({ status: isApproval ? 'approved' : 'rejected' }).eq('id', id);
+  const handleVerification = async (id: string, profileId: string, requestedRole: string, isApproval: boolean) => {
+    const status = isApproval ? 'approved' : 'rejected';
+    const { error } = await supabase.from('verifications').update({ status }).eq('id', id);
+
+    if (!error && isApproval && profileId) {
+      // If approved, update the profile to the requested role (e.g. 'verified_pro')
+      // Also ensure is_verified is set to true
+      await supabase.from('profiles').update({ role: requestedRole, is_verified: true }).eq('id', profileId);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('platform_activity').insert({
+        action_type: 'verification_approved',
+        description: `Approved verification for ${profileId} (Role updated to ${requestedRole})`,
+        user_id: user?.id
+      });
+    }
     fetchUsers();
   };
 
@@ -54,8 +67,8 @@ export const AdminUsersTab: React.FC = () => {
                   <td><span className="status-badge pending">Pending</span></td>
                   <td>
                     <div className="action-buttons">
-                      <button className="btn-approve" onClick={() => handleVerification(v.id, true)}><CheckCircle size={16} /> Approve</button>
-                      <button className="btn-reject" onClick={() => handleVerification(v.id, false)}><XCircle size={16} /> Reject</button>
+                      <button className="btn-approve" onClick={() => handleVerification(v.id, v.profile_id || v.user_id, v.requested_role, true)}><CheckCircle size={16} /> Approve</button>
+                      <button className="btn-reject" onClick={() => handleVerification(v.id, v.profile_id || v.user_id, v.requested_role, false)}><XCircle size={16} /> Reject</button>
                     </div>
                   </td>
                 </tr>

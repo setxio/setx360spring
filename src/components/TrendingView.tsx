@@ -20,10 +20,10 @@ interface TrendingPost {
 
 interface TrendingViewProps {
   user?: any;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
 }
 
-export const TrendingView: React.FC<TrendingViewProps> = ({ user, scope = 'national' }) => {
+export const TrendingView: React.FC<TrendingViewProps> = ({ user, scope = 'state' }) => {
   const { theme } = useApp();
   const [posts, setPosts] = useState<TrendingPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +45,7 @@ export const TrendingView: React.FC<TrendingViewProps> = ({ user, scope = 'natio
         if (scope === 'city') query = query.or(`location.eq.${user.community},community.eq.${user.community}`);
         else if (scope === 'county') query = query.eq('county', user.county);
         else if (scope === 'state') query = query.eq('state', user.state);
+      else if (scope === 'region') query = query.eq('state', user.state);
       }
 
       const { data, error } = await query;

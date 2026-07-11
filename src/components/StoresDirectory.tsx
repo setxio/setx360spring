@@ -15,7 +15,7 @@ type LocationType = 'all' | 'physical' | 'online';
 
 interface StoresDirectoryProps {
   user?: any;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
   onNavigateToStore?: (id: string) => void;
 }
 
@@ -34,7 +34,7 @@ const isOpenNow = (businessHours: any): boolean => {
   } catch { return false; }
 };
 
-export const StoresDirectory: React.FC<StoresDirectoryProps> = ({ user, scope = 'national', onNavigateToStore }) => {
+export const StoresDirectory: React.FC<StoresDirectoryProps> = ({ user, scope = 'state', onNavigateToStore }) => {
   const [stores, setStores] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,7 +68,7 @@ export const StoresDirectory: React.FC<StoresDirectoryProps> = ({ user, scope = 
           if (!seller) return true;
           if (scope === 'city') return seller.community === user.community;
           if (scope === 'county') return seller.county === user.county;
-          if (scope === 'state') return seller.state === user.state;
+          if (scope === 'region') return seller.state === user.state;
           return true;
         });
 
@@ -81,7 +81,7 @@ export const StoresDirectory: React.FC<StoresDirectoryProps> = ({ user, scope = 
             city: `${user.county || 'your'} County`,
             ...(!isSETX ? {
               county: user.state || 'your state',
-              state: 'nationwide'
+              state: 'statewide'
             } : {})
           };
           const nextScope = escalationMap[scope];

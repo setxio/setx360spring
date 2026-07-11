@@ -11,7 +11,7 @@ import './MarketHome.css';
 
 interface MarketHomeProps {
   user: User;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
   onNavigateToStore?: (id: string) => void;
 }
 
@@ -35,7 +35,7 @@ const STORE_CATEGORIES = [
   { id: 'local', name: 'SETX Only', icon: <MapPin size={16} /> }
 ];
 
-export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national', onNavigateToStore }) => {
+export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'state', onNavigateToStore }) => {
   const { theme, setActiveTab, localSearchQuery } = useApp();
   const { addToCart } = useCart();
   const [activeCategory, setActiveCategory] = useState('all');
@@ -97,7 +97,8 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
 
     let query = supabase
       .from('products')
-      .select(`*, ${storeJoin}`);
+      .select(`*, ${storeJoin}`)
+      .eq('stores.category', 'Retail');
 
     if (localSearchQuery && localSearchQuery.trim() !== '') {
       query = query.ilike('name', `%${localSearchQuery.trim()}%`);
@@ -121,7 +122,7 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
         } else if (user.county) {
           query = query.eq('stores.seller.county', user.county);
         }
-      } else if (scope === 'state' && user.state) {
+      } else if (scope === 'region' && user.state) {
         query = query.eq('stores.seller.state', user.state);
       }
     }
@@ -218,6 +219,7 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
       .from('stores')
       .select('*')
       .eq('status', 'active')
+      .eq('category', 'Retail')
       .order('is_verified', { ascending: false })
       .order('trust_score', { ascending: false })
       .limit(10);
@@ -237,7 +239,8 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
     let query = supabase
       .from('stores')
       .select('*, seller:profiles!owner_id!inner(community, county, state, country)')
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .eq('category', 'Retail');
       
     if (localSearchQuery && localSearchQuery.trim() !== '') {
       query = query.ilike('name', `%${localSearchQuery.trim()}%`);
@@ -265,7 +268,7 @@ export const MarketHome: React.FC<MarketHomeProps> = ({ user, scope = 'national'
         } else if (user.county) {
           query = query.eq('seller.county', user.county);
         }
-      } else if (scope === 'state' && user.state) {
+      } else if (scope === 'region' && user.state) {
         query = query.eq('seller.state', user.state);
       }
     }

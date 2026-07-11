@@ -5,6 +5,7 @@ import { X, Repeat } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { formatText } from '../utils/textFormatting';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 
 interface RepostModalProps {
   post: any;
@@ -17,6 +18,7 @@ export const RepostModal: React.FC<RepostModalProps> = ({ post, user, onClose, o
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { error: toastError } = useToast();
+  const { activeContext } = useApp();
 
   const handleRepost = async (withMessage: boolean) => {
     if (!user) return;
@@ -24,6 +26,7 @@ export const RepostModal: React.FC<RepostModalProps> = ({ post, user, onClose, o
 
     const { error } = await supabase.from('posts').insert({
       profile_id: user.id,
+      page_id: activeContext?.id || null,
       type: 'repost',
       original_post_id: post.id,
       content: withMessage ? content.trim() : '',
@@ -55,7 +58,7 @@ export const RepostModal: React.FC<RepostModalProps> = ({ post, user, onClose, o
           {/* Quote Input */}
           <div className="repost-input-container" style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <Avatar url={user?.avatar_url} name={user?.name} size={40} />
+              <Avatar url={activeContext ? activeContext.avatar_url : user?.avatar_url} name={activeContext ? activeContext.name : user?.name} size={40} />
               <textarea
                 placeholder="Add a comment..."
                 value={content}

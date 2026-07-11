@@ -15,7 +15,7 @@ const UPCOMING_GAMES = [
   { id: 'u3', sport: 'High School FB', match: 'East High vs West Prep', date: 'Fri, Apr 25', time: '7:30 PM', location: 'Memorial Stadium' }
 ];
 
-export const SportsView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ user: propUser, scope = 'national' }) => {
+export const SportsView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ user: propUser, scope = 'state' }) => {
   const [scores, setScores] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);

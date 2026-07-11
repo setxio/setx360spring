@@ -55,7 +55,7 @@ const DESTINATIONS: Destination[] = [
   }
 ];
 
-export const TravelView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'national' }) => {
+export const TravelView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'state' }) => {
   const [subMode, setSubMode] = useState<'flights' | 'hotels' | 'packages'>('flights');
   const [destinations, setDestinations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -2705,7 +2705,8 @@ export type Database = {
           moderation_flag: string | null
           moderation_status: string | null
           original_post_id: string | null
-          poll_data: Json | null
+            page_id: string | null
+            poll_data: Json | null
           priority: number | null
           profile_id: string | null
           reply_count: number | null
@@ -2753,7 +2754,8 @@ export type Database = {
           moderation_flag?: string | null
           moderation_status?: string | null
           original_post_id?: string | null
-          poll_data?: Json | null
+            page_id?: string | null
+            poll_data?: Json | null
           priority?: number | null
           profile_id?: string | null
           reply_count?: number | null
@@ -4222,7 +4224,8 @@ export type Database = {
           location: string | null
           media_urls: string[] | null
           original_post_id: string | null
-          poll_data: Json | null
+            page_id: string | null
+            poll_data: Json | null
           profile_id: string | null
           repost_count: number | null
           reposts_count: number | null

@@ -47,11 +47,8 @@ export async function POST(req: Request) {
       });
 
       if (updateError) {
-        console.error('Failed to increment Supabase balance:', updateError);
-        // Fallback: direct update if RPC doesn't exist
-        await supabase.from('wallet_balances')
-          .update({ balance_setx: amount_setx }) // In production, read current balance and add
-          .eq('profile_id', profile_id);
+        console.error('CRITICAL: Failed to increment Supabase balance during webhook:', updateError);
+        // Do not attempt a destructive fallback update here. The RPC is required for atomic safety.
       }
 
       // 2. Minting Log on XRPL (The Master Treasury writes the receipt)

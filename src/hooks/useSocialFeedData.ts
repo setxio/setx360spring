@@ -24,7 +24,10 @@ export const useSocialFeedData = (
   activeType: string,
   theme: string,
   searchQuery: string = '',
-  appOrigin?: string
+  appOrigin?: string,
+  activeCity?: string,
+  activeCounty?: string,
+  physicalCity?: string | null
 ) => {
   const fetchContent = async () => {
     let currentFollowWeights: Record<string, number> = {};
@@ -277,17 +280,31 @@ export const useSocialFeedData = (
     if (user && !filterUserId) {
       const isSETX = theme.startsWith('setx-');
 
+      // Effective city = the notch-active city
+      const effectiveCity = activeCity || user.community;
+      const effectiveCounty = activeCounty || user.county;
+
       if (scope === 'national') {
+        // National shows everything, no filters needed
       } else if (scope === 'state' && user.state) {
         query = query.or(`author_state.eq.${user.state},visibility_scope.eq.national`);
+      } else if (scope === 'region') {
+        // Region scope: use SETX county list or a broader state filter
+        if (isSETX) {
+          query = query.in('author_county', SETX_COUNTY_LIST).limit(50);
+        } else if (user.state) {
+          query = query.or(`author_state.eq.${user.state},visibility_scope.eq.national`);
+        }
       } else if (scope === 'county') {
         if (isSETX) {
           query = query.in('author_county', SETX_COUNTY_LIST).limit(50);
-        } else if (user.county) {
-          query = query.or(`author_county.eq.${user.county},visibility_scope.eq.national`);
+        } else if (effectiveCounty) {
+          query = query.or(`author_county.eq.${effectiveCounty},visibility_scope.eq.national`);
         }
-      } else if (scope === 'city' && user.community) {
-        query = query.eq('author_community', user.community).limit(50);
+      } else if (scope === 'city' && effectiveCity) {
+        // Dual-visibility: show posts tagged in this city OR authored by citizens OF this city
+        // This makes traveler posts appear in their home city feed automatically
+        query = query.or(`author_community.eq.${effectiveCity},location.eq.${effectiveCity}`).limit(50);
       }
     }
 

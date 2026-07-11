@@ -7,6 +7,11 @@ export interface WeatherData {
     high: number;
     low: number;
     isDay: boolean;
+    feelsLike?: number;
+    precip?: number;
+    aqi?: number;
+    pm25?: number;
+    so2?: number;
   };
   hourly: {
     time: Date;
@@ -39,6 +44,21 @@ function getWeatherCondition(code: number, isDay: boolean): string {
   if ([85, 86].includes(code)) return 'Snow Showers';
   if ([95, 96, 99].includes(code)) return 'Thunderstorm';
   return 'Unknown';
+}
+
+export function getMascotImage(weatherData: WeatherData | null): string {
+  if (!weatherData) return '/images/weather-gator/scene_sunny.png';
+  
+  const { condition, temp, wind } = weatherData.current;
+  const c = condition.toLowerCase();
+
+  // 1. Check for extreme conditions first
+  if (c.includes('snow') || c.includes('ice') || temp < 50) return '/images/weather-gator/scene_cold.png';
+  if (wind > 15) return '/images/weather-gator/scene_windy.png';
+  if (c.includes('rain') || c.includes('drizzle') || c.includes('showers') || c.includes('thunder')) return '/images/weather-gator/scene_rainy.png';
+  
+  // Default to sunny (even for cloudy, since we don't have a cloudy specific one yet)
+  return '/images/weather-gator/scene_sunny.png';
 }
 
 export async function getUserLocation(): Promise<{lat: number; lon: number}> {
@@ -77,12 +97,21 @@ export async function getLocationNameFromCoords(lat: number, lon: number): Promi
 }
 
 export async function getWeatherFromCoords(lat: number, lon: number, locationName: string = 'Local'): Promise<WeatherData> {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago`;
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,wind_speed_10m,apparent_temperature,precipitation&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago`;
+  const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,sulphur_dioxide&timezone=America%2FChicago`;
   
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Failed to fetch weather data");
+  const [weatherRes, aqiRes] = await Promise.all([
+    fetch(weatherUrl),
+    fetch(aqiUrl).catch(() => null)
+  ]);
+
+  if (!weatherRes.ok) throw new Error("Failed to fetch weather data");
   
-  const data = await response.json();
+  const data = await weatherRes.json();
+  let aqiData = null;
+  if (aqiRes && aqiRes.ok) {
+    aqiData = await aqiRes.json();
+  }
   
   // Parse Hourly Data (next 24 hours)
   const hourly = [];
@@ -128,7 +157,12 @@ export async function getWeatherFromCoords(lat: number, lon: number, locationNam
       wind: Math.round(data.current.wind_speed_10m),
       high: daily[0]?.high || Math.round(data.current.temperature_2m),
       low: daily[0]?.low || Math.round(data.current.temperature_2m),
-      isDay: data.current.is_day === 1
+      isDay: data.current.is_day === 1,
+      feelsLike: Math.round(data.current.apparent_temperature),
+      precip: data.current.precipitation,
+      aqi: aqiData?.current?.us_aqi ? Math.round(aqiData.current.us_aqi) : undefined,
+      pm25: aqiData?.current?.pm2_5,
+      so2: aqiData?.current?.sulphur_dioxide
     },
     hourly,
     daily

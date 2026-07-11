@@ -62,7 +62,7 @@ const CLINICS = [
   }
 ];
 
-export const CareView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'national' }) => {
+export const CareView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'state' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [clinics, setClinics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

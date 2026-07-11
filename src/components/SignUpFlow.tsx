@@ -38,12 +38,16 @@ type AccountType = {
 const accountTypes: AccountType[] = [
   { id: 'resident', label: 'Resident', icon: <User />, description: 'Local resident of your community' },
   { id: 'guest', label: 'Guest', icon: <Globe />, description: 'Visiting or new to the area' },
+  { id: 'business', label: 'Business / Merchant', icon: <Building2 />, description: 'Local store, retailer, or service' },
+  { id: 'civic', label: 'Civic / Organization', icon: <Church />, description: 'Non-profit, government, or church' },
+  { id: 'creator', label: 'Content Creator', icon: <Tv />, description: 'Artist, musician, influencer, media' },
+  { id: 'gig', label: 'Gig Worker / Driver', icon: <Briefcase />, description: 'Freelancer, delivery, service provider' }
 ];
 
 export const SignUpFlow: React.FC = () => {
   const { theme } = useApp();
   const [step, setStep] = useState(1);
-  const [isLoginMode, setIsLoginMode] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: '',
@@ -173,7 +177,7 @@ export const SignUpFlow: React.FC = () => {
     setError('');
     
     // Check for Jefferson/Orange Admin designated email
-    const baseRole = (formData.email === 'setxplatform@gmail.com') ? 'admin' : formData.type;
+    const baseRole = (formData.email === 'setxplatform@gmail.com') ? 'admin' : 'resident';
 
     const { error } = await supabase.auth.signUp({
       email: formData.email,
@@ -181,9 +185,7 @@ export const SignUpFlow: React.FC = () => {
       options: {
         emailRedirectTo: window.location.origin,
         data: {
-          name: ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(baseRole) 
-            ? formData.company || `${formData.firstName} ${formData.lastName}`.trim()
-            : `${formData.firstName} ${formData.lastName}`.trim(),
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
           first_name: formData.firstName,
           last_name: formData.lastName,
           role: baseRole,
@@ -197,16 +199,7 @@ export const SignUpFlow: React.FC = () => {
           birth_month: parseInt(formData.birthMonth),
           birth_day: parseInt(formData.birthDay),
           birth_year: parseInt(formData.birthYear),
-          // Role-specific captures
-          company: formData.company,
-          business_category: formData.business_category,
-          official_title: formData.official_title,
-          official_department: formData.official_department,
-          official_type: formData.official_type,
-          creator_type: formData.creator_type,
-          artist_name: formData.artist_name,
-          artist_genre: formData.artist_genre,
-          verification_status: ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(baseRole) ? 'pending' : 'verified',
+          verification_status: 'verified',
           phone: '', 
           website: '',
           translation_language: formData.translation_language,
@@ -342,7 +335,7 @@ export const SignUpFlow: React.FC = () => {
                     Don't have an account? <button 
                       className="link-btn" 
                       style={{ color: '#22c55e', fontWeight: 700, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                      onClick={() => setIsLoginMode(false)}
+                      onClick={() => { setIsLoginMode(false); setStep(2); }}
                     >Sign Up</button>
                   </p>
                 </div>
@@ -420,86 +413,7 @@ export const SignUpFlow: React.FC = () => {
                   )}
                 </div>
               </>
-            ) : (
-              <>
-                <div className="signup-header">
-                  <h3>Join SETX 360</h3>
-                  <p>Select your account type to get started</p>
-                </div>
-                <div className="type-grid">
-                  {accountTypes.map(type => (
-                    <button 
-                      key={type.id}
-                      className={`type-card premium-card ${formData.type === type.id ? 'selected' : ''}`}
-                      onClick={() => { setFormData({ ...formData, type: type.id }); handleNext(); }}
-                    >
-                      <div className="type-icon">{type.icon}</div>
-                      <div className="type-info">
-                        <span className="type-label">{type.label}</span>
-                        <span className="type-desc">{type.description}</span>
-                      </div>
-                      {formData.type === type.id && <Check className="check-icon" size={16} />}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Premium Glassmorphic CTA card for Business/Organization signups */}
-                <div 
-                  className="premium-card glass-partner-cta"
-                  style={{
-                    marginTop: '24px',
-                    padding: '20px',
-                    borderRadius: '16px',
-                    border: '1px solid rgba(139, 92, 246, 0.25)',
-                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%)',
-                    backdropFilter: 'blur(12px)',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onClick={() => window.open('https://setx.io/signup', '_blank')}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(139, 92, 246, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.25)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left' }}>
-                    <div style={{ 
-                      width: '40px', 
-                      height: '40px', 
-                      borderRadius: '10px', 
-                      background: 'rgba(139, 92, 246, 0.15)', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      fontSize: '1.2rem',
-                      color: '#a855f7'
-                    }}>
-                      💼
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc', marginBottom: '2px' }}>
-                        Business or Organization?
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                        Looking to manage your business or organization? Register as a Partner on setx.io →
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="login-prompt" style={{ textAlign: 'center', marginTop: '24px' }}>
-                  <button className="back-btn" onClick={() => setIsLoginMode(true)} style={{ margin: '0 auto', fontSize: '1rem' }}>
-                    Already have an account? <span style={{ color: '#a855f7', fontWeight: 700 }}>Sign In</span>
-                  </button>
-                </div>
-              </>
-            )}
+            ) : null}
           </motion.div>
         )}
 
@@ -646,150 +560,9 @@ export const SignUpFlow: React.FC = () => {
                 className="primary-btn" 
                 disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword || !formData.birthMonth || !formData.birthDay || !formData.birthYear || formData.password !== formData.confirmPassword}
                 onClick={() => {
-                  const hasSpecialFields = ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(formData.type);
-                  if (hasSpecialFields) setStep(2.5);
-                  else setStep(3);
+                  setStep(3);
                 }}
               >
-                Continue <ChevronRight size={18} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Step 2.5: Role Specific Info */}
-        {step === 2.5 && (
-          <motion.div 
-            key="step2.5"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="signup-step"
-          >
-            <button className="back-btn" onClick={() => setStep(2)}><ArrowLeft size={20} /> Back</button>
-            <div className="signup-header">
-              <h3>{formData.type.charAt(0).toUpperCase() + formData.type.slice(1)} Details</h3>
-              <p>Tell us more about your {formData.type} identity</p>
-            </div>
-            
-            <div className="form-inputs">
-              {formData.type === 'business' && (
-                <>
-                  <div className="input-group">
-                    <label>Business Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Roasters Co." 
-                      value={formData.company}
-                      onChange={e => setFormData({ ...formData, company: e.target.value })}
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label>Business Category</label>
-                    <select 
-                      value={formData.business_category}
-                      onChange={e => setFormData({ ...formData, business_category: e.target.value })}
-                    >
-                      <option value="">Select Category</option>
-                      <option value="Food & Drink">Food & Drink</option>
-                      <option value="Services">Services</option>
-                      <option value="Retail">Retail</option>
-                      <option value="Health">Health</option>
-                      <option value="Artisan">Artisan</option>
-                    </select>
-                  </div>
-                </>
-              )}
-
-              {['official', 'chamber'].includes(formData.type) && (
-                <>
-                  <div className="input-group">
-                    <label>Official Title</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Mayor, Director" 
-                      list="official-titles"
-                      value={formData.official_title}
-                      onChange={e => setFormData({ ...formData, official_title: e.target.value })}
-                    />
-                    <datalist id="official-titles">
-                      <option value="City Manager" />
-                      <option value="City Worker" />
-                      <option value="Mayor" />
-                      <option value="City Council Member" />
-                      <option value="Department Director" />
-                      <option value="Chamber President" />
-                    </datalist>
-                  </div>
-                  <div className="input-group">
-                    <label>Department / Office</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. City Hall, Parks & Rec" 
-                      value={formData.official_department}
-                      onChange={e => setFormData({ ...formData, official_department: e.target.value })}
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label>Organization Type</label>
-                    <div className="radio-group" style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input type="radio" name="offType" checked={formData.official_type === 'city'} onChange={() => setFormData({...formData, official_type: 'city'})} />
-                        City Govt
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input type="radio" name="offType" checked={formData.official_type === 'chamber'} onChange={() => setFormData({...formData, official_type: 'chamber'})} />
-                        Chamber
-                      </label>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {['media', 'artist'].includes(formData.type) && (
-                <>
-                  <div className="input-group">
-                    <label>Creator / Media Type</label>
-                    <select 
-                      value={formData.creator_type}
-                      onChange={e => setFormData({ ...formData, creator_type: e.target.value })}
-                    >
-                      <option value="">Select Type</option>
-                      <option value="Journalist">Independent Journalist</option>
-                      <option value="Blogger">Blogger / Influencer</option>
-                      <option value="Musician">Music Artist</option>
-                      <option value="Photographer">Photographer</option>
-                      <option value="News Org">News Organization</option>
-                    </select>
-                  </div>
-                  {formData.creator_type === 'Musician' && (
-                    <div className="input-row" style={{ display: 'flex', gap: '12px' }}>
-                      <div className="input-group" style={{ flex: 1 }}>
-                        <label>Band/Artist Name</label>
-                        <input type="text" value={formData.artist_name} onChange={e => setFormData({...formData, artist_name: e.target.value})} />
-                      </div>
-                      <div className="input-group" style={{ flex: 1 }}>
-                        <label>Genre</label>
-                        <input type="text" value={formData.artist_genre} onChange={e => setFormData({...formData, artist_genre: e.target.value})} />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {['church', 'non_profit', 'venue'].includes(formData.type) && (
-                <div className="input-group">
-                  <label>Organization/Venue Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. St. Peters, The Grand Hall" 
-                    value={formData.company}
-                    onChange={e => setFormData({ ...formData, company: e.target.value })}
-                  />
-                </div>
-              )}
-
-              <button className="primary-btn" onClick={() => setStep(3)}>
                 Continue <ChevronRight size={18} />
               </button>
             </div>
@@ -805,7 +578,7 @@ export const SignUpFlow: React.FC = () => {
             exit={{ opacity: 0, x: -20 }}
             className="signup-step"
           >
-            <button className="back-btn" onClick={() => { const hasSpecialFields = ['business', 'official', 'chamber', 'media', 'artist', 'venue', 'non_profit', 'church'].includes(formData.type); if (hasSpecialFields) setStep(2.5); else setStep(2); }}><ArrowLeft size={20} /> Back</button>
+            <button className="back-btn" onClick={() => { setStep(2); }}><ArrowLeft size={20} /> Back</button>
             <div className="signup-header">
               <h3>Verify Your Area</h3>
               <p>Enter your zip code to see if you qualify for a Resident Badge</p>

@@ -3,7 +3,7 @@ import { CloudSun, Wind, Droplets, Thermometer, Newspaper, ArrowRight, AlertTria
 import { getPreviewWeather } from '../lib/weatherService';
 import { fetchLocalSports } from '../lib/admin';
 import { useApp } from '../context/AppContext';
-import { WeatherForecastModal } from './WeatherForecastModal';
+import { WeatherForecastModal, getWeatherIcon } from './WeatherForecastModal';
 import './WeatherNewsView.css';
 
 const NEWS_ARTICLES = [
@@ -30,7 +30,7 @@ const FORECAST = [
   { day: 'Fri', temp: 80, icon: <CloudSun size={20} /> }
 ];
 
-export const WeatherNewsView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ user: propUser, scope = 'national' }) => {
+export const WeatherNewsView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ user: propUser, scope = 'state' }) => {
   const [activeCounty, setActiveCounty] = useState<'Jefferson' | 'Orange'>('Jefferson');
   const [weather, setWeather] = useState<any>(null);
   const [sports, setSports] = useState<any[]>([]);
@@ -130,7 +130,7 @@ export const WeatherNewsView: React.FC<{ activeTab?: number; user?: any; scope?:
                 <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', color: 'var(--text)' }}>{weather?.current?.temp || 76}°</h3>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{weather?.current?.condition || 'Mostly Sunny'}</span>
               </div>
-              <CloudSun size={24} color="var(--primary)" />
+              {getWeatherIcon(weather?.current?.condition || 'Clear', 32)}
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '12px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>

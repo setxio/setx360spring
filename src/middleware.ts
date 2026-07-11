@@ -26,12 +26,12 @@ export default async function middleware(req: NextRequest) {
     'christworx.com', 'www.christworx.com',
     'localhost:3000', 'localhost:5173'
   ];
-  const isCoreDomain = hostname && coreDomains.some((d) => hostname.includes(d));
+  const isCoreDomain = hostname && coreDomains.includes(hostname);
 
   // If it's a core domain, allow the request to proceed normally to the main app layout
   if (isCoreDomain) {
     // If they are explicitly trying to hit the B2B marketing site: setx.io
-    if (hostname?.includes('setx.io') && !hostname?.includes('.')) {
+    if (hostname === 'setx.io') {
        // Allow them to hit the main marketing page, or redirect to a landing
        return NextResponse.rewrite(new URL(`/b2b-landing`, req.url));
     }
@@ -40,9 +40,21 @@ export default async function middleware(req: NextRequest) {
 
   // Handle Multi-Tenant Routing
   if (hostname) {
-    // 1. Subdomain routing (e.g., boutique.setx.io)
+    // 1. Subdomain routing (e.g., boutique.setx.io, myblog.setx360.com)
     if (hostname.endsWith('.setx.io')) {
       const slug = hostname.replace('.setx.io', '');
+      return NextResponse.rewrite(new URL(`/tenant/${slug}${url.pathname}`, req.url));
+    }
+    if (hostname.endsWith('.setx360.com')) {
+      const slug = hostname.replace('.setx360.com', '');
+      return NextResponse.rewrite(new URL(`/tenant/${slug}${url.pathname}`, req.url));
+    }
+    if (hostname.endsWith('.txorb.com')) {
+      const slug = hostname.replace('.txorb.com', '');
+      return NextResponse.rewrite(new URL(`/tenant/${slug}${url.pathname}`, req.url));
+    }
+    if (hostname.endsWith('.localhost:3000')) {
+      const slug = hostname.replace('.localhost:3000', '');
       return NextResponse.rewrite(new URL(`/tenant/${slug}${url.pathname}`, req.url));
     }
 

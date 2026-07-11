@@ -36,7 +36,11 @@ export const PageCreatorView: React.FC = () => {
     official: { label: 'Government / Civic', icon: <Landmark size={24} />, color: '#64748b', description: 'City officials, municipalities, and public services.' },
     chamber: { label: 'Chamber of Commerce', icon: <Briefcase size={24} />, color: '#0ea5e9', description: 'Business networks and economic development.' },
     media: { label: 'Media & News', icon: <Camera size={24} />, color: '#ef4444', description: 'Local news, podcasts, and publications.' },
-    church: { label: 'Church / Faith', icon: <Sparkles size={24} />, color: '#8b5cf6', description: 'Congregations and religious organizations.' }
+    church: { label: 'Church / Faith', icon: <Sparkles size={24} />, color: '#8b5cf6', description: 'Congregations and religious organizations.' },
+    professional: { label: 'Professional', icon: <Briefcase size={24} />, color: '#06b6d4', description: 'Individual professional or freelancer identity.' },
+    restaurant: { label: 'Restaurant', icon: <Store size={24} />, color: '#f97316', description: 'Restaurants, cafes, food trucks, and eateries.' },
+    retail: { label: 'Retail', icon: <Store size={24} />, color: '#3b82f6', description: 'Retail shops, boutiques, and brick-and-mortar stores.' },
+    service: { label: 'Service', icon: <Briefcase size={24} />, color: '#8b5cf6', description: 'Service-based businesses and independent contractors.' }
   };
 
   const handleCreatePage = async () => {

@@ -3,10 +3,12 @@ import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 import { Image as ImageIcon, Send, ThumbsUp, MessageSquare, Share2 } from 'lucide-react';
 import { PostCard } from './PostCard';
+import { useApp } from '../context/AppContext';
 
 export const ProPlusFeedTab: React.FC<{ user: any }> = ({ user }) => {
   const [posts, setPosts] = useState<any[]>([]);
   const [content, setContent] = useState('');
+  const { activeContext } = useApp();
 
   useEffect(() => {
     fetchPosts();
@@ -14,8 +16,8 @@ export const ProPlusFeedTab: React.FC<{ user: any }> = ({ user }) => {
 
   const fetchPosts = async () => {
     const { data } = await supabase
-      .from('posts')
-      .select('*, author:profiles!posts_profile_id_fkey(id, name, avatar_url, role, community, is_verified)')
+      .from('detailed_posts')
+      .select('*')
       .eq('type', 'proplus')
       .order('created_at', { ascending: false })
       .limit(30);
@@ -27,12 +29,14 @@ export const ProPlusFeedTab: React.FC<{ user: any }> = ({ user }) => {
     if (!content.trim()) return;
     const { data, error } = await supabase.from('posts').insert({
       profile_id: user.id,
+      page_id: activeContext?.id || null,
       content,
       type: 'proplus',
-    }).select('*, author:profiles!posts_profile_id_fkey(id, name, avatar_url, role, community, is_verified)').single();
+    }).select('*').single();
 
     if (!error && data) {
-      setPosts([data, ...posts]);
+      // Re-fetch to get the detailed_posts view mapping
+      fetchPosts();
       setContent('');
     }
   };
@@ -41,7 +45,7 @@ export const ProPlusFeedTab: React.FC<{ user: any }> = ({ user }) => {
     <div className="proplus-feed-tab">
       <div className="glass-card new-post-card" style={{ display: 'block' }}>
         <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-          <Avatar url={user?.pro_avatar_url || user?.avatar_url} name={user?.name} size={48} />
+          <Avatar url={activeContext?.avatar_url || user?.pro_avatar_url || user?.avatar_url} name={activeContext?.name || user?.name} size={48} />
           <textarea 
             placeholder="Share an update, article, or professional milestone..."
             value={content}

@@ -135,6 +135,7 @@ export const ServicesView: React.FC<{ activeTab?: number; user?: any; scope?: st
         }
       }
       else if (scope === 'state') query = query.eq('seller.state', user.state);
+      else if (scope === 'region') query = query.eq('seller.state', user.state);
     }
 
     const { data, error } = await query;

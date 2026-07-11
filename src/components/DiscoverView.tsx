@@ -35,7 +35,7 @@ type FeedItem = (Post | MarketListing) & { _feedType: 'post' | 'trending' | 'mar
 
 const FETCH_LIMIT = 12;
 
-export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' | 'county' | 'city'; onNavigate?: (env: string) => void }> = ({ user, scope = 'national', onNavigate }) => {
+export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' | 'region' | 'county' | 'city'; onNavigate?: (env: string) => void }> = ({ user, scope = 'state', onNavigate }) => {
   const { theme } = useApp();
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -119,7 +119,7 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
 
     if (isSETX && (scope === 'county' || scope === 'city')) {
       query = query.in('author_county', SETX_COUNTY_LIST);
-    } else if (scope === 'state' && user?.state) {
+    } else if (scope === 'region' && user?.state) {
       query = query.eq('author_state', user.state);
     } else if (scope === 'city' && user?.community) {
       query = query.eq('author_community', user.community);
@@ -142,7 +142,7 @@ export const DiscoverView: React.FC<{ user: User; scope?: 'national' | 'state' |
 
     if (isSETX && (scope === 'county' || scope === 'city')) {
       query = query.in('author_county', SETX_COUNTY_LIST);
-    } else if (scope === 'state' && user?.state) {
+    } else if (scope === 'region' && user?.state) {
       query = query.eq('author_state', user.state);
     }
 

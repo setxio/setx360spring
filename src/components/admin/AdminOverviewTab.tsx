@@ -69,7 +69,7 @@ export const AdminOverviewTab: React.FC = () => {
         <div className="stat-card">
           <div className="stat-icon" style={{ color: 'var(--primary)' }}><Users size={24} /></div>
           <div className="stat-value">{stats.totalUsers.toLocaleString()}</div>
-          <div className="stat-label">Total Citizens</div>
+          <div className="stat-label">Total Users</div>
           <div className="stat-change up"><TrendingUp size={14} /> {stats.userGrowth}</div>
         </div>
         <div className="stat-card">

@@ -1,25 +1,29 @@
-// Legacy User Roles (Deprecating most of these in favor of Pages)
-export const LEGACY_PROFESSIONAL_ROLES = [
-  'business', 'media', 'official', 'non_profit', 'church', 'chamber', 'venue', 'artist',
-  'v_business', 'v_media', 'v_official', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue', 'v_artist'
-];
+export const VERIFIED_ROLES = ['verified_pro', 'admin', 'super admin'];
+export const LEGACY_PROFESSIONAL_ROLES = ['verified_pro', 'admin', 'super admin']; // To safely sunset it
 
-export const VENDOR_ROLES = ['business', 'v_business'];
-export const OFFICIAL_ROLES = ['official', 'v_official'];
-export const VERIFIED_ROLES = [
-  'v_business', 'v_media', 'v_official', 'v_non_profit', 'v_church', 'v_chamber', 'v_venue', 'v_artist', 'admin'
-];
+// Since Profile.role is now simple, but Page.page_type holds the actual flavor (business, official),
+// we adjust functions depending on whether they take a User.role or a Page.page_type.
+export const VENDOR_TYPES = ['business', 'retail', 'merchant', 'vendor'];
+export const OFFICIAL_TYPES = ['official', 'chamber', 'civic', 'non_profit', 'church', 'ministry'];
+export const CREATOR_TYPES = ['artist', 'creator', 'media'];
 
-export const isProfessional = (role: string) => LEGACY_PROFESSIONAL_ROLES.includes(role);
-export const isVendor = (role: string) => VENDOR_ROLES.includes(role);
-export const isOfficial = (role: string) => OFFICIAL_ROLES.includes(role);
-export const isVerified = (role: string) => VERIFIED_ROLES.includes(role);
-export const isAdmin = (role: string) => role === 'admin';
+export const isProfessional = (typeOrRole: string) => 
+  VERIFIED_ROLES.includes(typeOrRole) || 
+  VENDOR_TYPES.includes(typeOrRole) || 
+  OFFICIAL_TYPES.includes(typeOrRole) || 
+  CREATOR_TYPES.includes(typeOrRole);
+
+export const isVendor = (type: string) => VENDOR_TYPES.includes(type);
+export const isOfficial = (type: string) => OFFICIAL_TYPES.includes(type);
+export const isVerified = (role: string) => VERIFIED_ROLES.includes(role) || isProfessional(role);
+export const isAdmin = (role: string) => role === 'admin' || role === 'super admin';
 
 // --- New Pages Architecture ---
 
 export const PAGE_TYPES = [
-  'business', 
+  'retail',
+  'restaurant',
+  'service',
   'artist', 
   'non_profit', 
   'venue', 
@@ -31,8 +35,7 @@ export const PAGE_TYPES = [
 
 export type PageType = typeof PAGE_TYPES[number];
 
-export const isBusinessPage = (type: string) => type === 'business';
-export const isArtistPage = (type: string) => type === 'artist';
+export const isBusinessPage = (type: string) => type === 'retail' || type === 'business';
+export const isArtistPage = (type: string) => type === 'artist' || type === 'media';
 export const isNonProfitPage = (type: string) => type === 'non_profit';
-export const isCivicPage = (type: string) => ['official', 'chamber', 'church'].includes(type);
-
+export const isCivicPage = (type: string) => ['official', 'chamber', 'church', 'civic'].includes(type);

@@ -94,6 +94,7 @@ export const VideosView: React.FC<{ user: User; scope: string }> = ({ user, scop
         }
       }
       else if (scope === 'state') query = query.eq('author.state', user.state);
+      else if (scope === 'region') query = query.eq('author.state', user.state);
     }
 
     const { data, error } = await query;

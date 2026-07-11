@@ -34,10 +34,10 @@ const createGlowIcon = (type: 'store' | 'event'): DivIcon => {
 
 interface RadarMapViewProps {
   user?: any;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
 }
 
-export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'national' }) => {
+export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'state' }) => {
   const { theme } = useApp();
   const [items, setItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +48,7 @@ export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'natio
 
   useEffect(() => {
     fetchMapData();
-    if (navigator.geolocation && scope === 'national') { // Only auto-recenter on national to avoid fighting the notch
+    if (navigator.geolocation && scope === 'state') { // Only auto-recenter on national to avoid fighting the notch
       navigator.geolocation.getCurrentPosition(
         (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
         (err) => console.log('Geolocation denied or failed', err)
@@ -78,6 +78,9 @@ export const RadarMapView: React.FC<RadarMapViewProps> = ({ user, scope = 'natio
             eventQuery = eventQuery.eq('profiles.county', user.county);
           }
         } else if (scope === 'state') {
+          storeQuery = storeQuery.eq('seller.state', user.state);
+          eventQuery = eventQuery.eq('profiles.state', user.state);
+        } else if (scope === 'region') {
           storeQuery = storeQuery.eq('seller.state', user.state);
           eventQuery = eventQuery.eq('profiles.state', user.state);
         }

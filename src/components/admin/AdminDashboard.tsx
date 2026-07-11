@@ -7,7 +7,14 @@ import {
   Store, 
   Megaphone,
   LogOut,
-  ChevronLeft
+  ChevronLeft,
+  Database,
+  Building,
+  Contact,
+  BookOpen,
+  UploadCloud,
+  Bot,
+  AlertTriangle
 } from 'lucide-react';
 import '../AdminDashboard.css';
 import { useApp } from '../../context/AppContext';
@@ -18,9 +25,16 @@ import { AdminUsersTab } from './AdminUsersTab';
 import { AdminContentTab } from './AdminContentTab';
 import { AdminMarketTab } from './AdminMarketTab';
 import { AdminAdsAndFundsTab } from './AdminAdsAndFundsTab';
+import { AdminCrmView } from './AdminCrmView';
+import { AdminVendorsTab } from './AdminVendorsTab';
+import { AdminDirectoryTab } from './AdminDirectoryTab';
+import { AdminWikiTab } from './AdminWikiTab';
+import { AdminDataImport } from './AdminDataImport';
+import { AIAssistant } from './AIAssistant';
+import { SosAlertsManager } from '../dashboards/SosAlertsManager';
 
 export const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'content' | 'market' | 'ads'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'content' | 'market' | 'ads' | 'crm' | 'vendors' | 'directory' | 'wiki' | 'data' | 'ai' | 'alerts'>('overview');
   const { setEnv } = useApp();
 
   const handleExit = () => {
@@ -33,6 +47,13 @@ export const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     { id: 'content', label: 'Content Moderation', icon: <MessageSquareWarning size={20} /> },
     { id: 'market', label: 'Market & Gigs', icon: <Store size={20} /> },
     { id: 'ads', label: 'Ads & Crowdfunds', icon: <Megaphone size={20} /> },
+    { id: 'crm', label: 'CRM', icon: <Contact size={20} /> },
+    { id: 'vendors', label: 'Vendors', icon: <Building size={20} /> },
+    { id: 'directory', label: 'Directory', icon: <Database size={20} /> },
+    { id: 'wiki', label: 'Wiki', icon: <BookOpen size={20} /> },
+    { id: 'data', label: 'Data Import', icon: <UploadCloud size={20} /> },
+    { id: 'alerts', label: 'Crisis Alerts', icon: <AlertTriangle size={20} /> },
+    { id: 'ai', label: 'AI Assistant', icon: <Bot size={20} /> },
   ];
 
   return (
@@ -42,8 +63,8 @@ export const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
         <div className="sidebar-brand">
           <img src="/slingo-icon.png" alt="Logo" style={{ width: 32, height: 32 }} />
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>SETX Admin</h2>
-            <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Super-App Control</span>
+            <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>Super Admin</h2>
+            <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Platform Control</span>
           </div>
         </div>
         
@@ -81,7 +102,7 @@ export const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
               <img src={user.avatar_url || 'https://via.placeholder.com/40'} alt="Admin" />
               <div>
                 <strong>{user.name || user.first_name}</strong>
-                <span>System Administrator</span>
+                <span>Super Administrator</span>
               </div>
             </div>
           </div>
@@ -94,6 +115,25 @@ export const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
           {activeTab === 'content' && <AdminContentTab />}
           {activeTab === 'market' && <AdminMarketTab />}
           {activeTab === 'ads' && <AdminAdsAndFundsTab />}
+          {activeTab === 'crm' && <AdminCrmView />}
+          {activeTab === 'vendors' && <AdminVendorsTab vendors={[]} onRefresh={() => {}} />}
+          {activeTab === 'directory' && <AdminDirectoryTab 
+            users={[]}
+            searchQuery=""
+            onSearchChange={() => {}}
+            onRefresh={() => {}}
+            editingFeeUser={null}
+            customFeesForm={{ fee_percentage: '', base_fee: '' }}
+            onEditFeeUser={() => {}}
+            onCloseFeeModal={() => {}}
+            onFeeFormChange={() => {}}
+            onSaveCustomFees={() => {}}
+            onToggleUserStatus={() => {}}
+          />}
+          {activeTab === 'wiki' && <AdminWikiTab />}
+          {activeTab === 'data' && <AdminDataImport />}
+          {activeTab === 'alerts' && <SosAlertsManager user={user} />}
+          {activeTab === 'ai' && <AIAssistant />}
         </div>
       </main>
     </div>

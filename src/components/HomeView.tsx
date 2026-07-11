@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Moon, Sun, Users, Store, Compass, Calendar, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield, Settings, LogOut, Power, HeartHandshake, HandHeart, Home, Landmark, Map, Utensils, Contact, Star, Trophy, Gamepad2 } from 'lucide-react';
+import { Search, Moon, Sun, Users, Store, Compass, Calendar, CalendarDays, Zap, Car, Wrench, Wallet, Heart, Building, Plane, Briefcase, Tv, Palette, Book, Activity, Newspaper, Globe, Loader2, User, MessageSquare, ShoppingBag, ExternalLink, Image as ImageIcon, Video, Play, X, Phone, LayoutGrid, CloudSun, Music, Droplets, Wind, Thermometer, SkipBack, SkipForward, Pause, ChevronDown, MessageCircle, AlertTriangle, Bell, Shield, Settings, LogOut, Power, HeartHandshake, HandHeart, Home, Landmark, Map, Utensils, Contact, Star, Trophy, Gamepad2, Layers, AppWindow } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useGeolocation } from '../hooks/useGeolocation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Avatar } from './Avatar';
 import { WikiArticleView } from './wiki/WikiArticleView';
 import { WikiEditModal } from './wiki/WikiEditModal';
 import { getPreviewWeather } from '../lib/weatherService';
-import { WeatherForecastModal } from './WeatherForecastModal';
-
+import { WeatherForecastModal, getWeatherIcon } from './WeatherForecastModal';
+import { APPS_REGISTRY } from './apps/AppsStoreView';
 
 import './HomeView.css';
 import './SearchView.css';
@@ -20,7 +21,9 @@ interface HomeViewProps {
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) => {
-  const { theme, toggleTheme, logout, appTier, appOrigin } = useApp();
+  const { theme, toggleTheme, logout, appTier, appOrigin, setScope, activeCity, activeCounty, activeRegion } = useApp();
+  useGeolocation();
+
   const [query, setQuery] = useState('');
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   // Search state
@@ -52,13 +55,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
 
 
 
-  // Folders definition
-  const folderConfig = [
+  // Folders definition state
+  const [folderConfig, setFolderConfig] = useState([
     { id: 'social_comms', label: 'Social & Comms', items: ['social', 'discover', 'contacts', 'messages', 'phone', 'proplus'] },
     { id: 'market_shops', label: 'Market & Shops', items: ['market', 'wallet', 'classifieds', 'jobs', 'gigs'] },
-    { id: 'media_events', label: 'Media & Events', items: ['stadium', 'videos', 'music', 'events', 'eats', 'art', 'faith', 'sports', 'games'] },
-    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'page_creator', 'page_manager', 'care', 'crowdfund', 'charity', 'homes', 'auto', 'travel', 'news', 'civics', 'settings', 'logout'] }
-  ];
+    { id: 'media_events', label: 'Media & Events', items: ['stadium', 'videos', 'music', 'events', 'eats', 'art', 'faith', 'sports', 'apps'] },
+    { id: 'tools_services', label: 'Tools & Services', items: ['services', 'page_creator', 'page_manager', 'care', 'crowdfund', 'charity', 'homes', 'auto', 'travel', 'news', 'civics', 'web_builder', 'settings', 'logout'] }
+  ]);
   // Swipe logic
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
@@ -113,7 +116,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     return theme.includes('light') ? '/logo-setx-blue.png' : '/logo-setx-transparent.png';
   };
 
-  const defaultPlatforms = [
+  const defaultPlatforms: any[] = [
+    { id: 'weather', label: 'Weather', icon: <CloudSun size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #38bdf8, #0284c7)' },
     { id: 'social', label: 'Social', icon: <Users size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #8b5cf6, #3b82f6)' },
     { id: 'market', label: 'Market', icon: <Store size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #3b82f6, #0ea5e9)' },
     { id: 'discover', label: 'Discover', icon: <Compass size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #0ea5e9, #a855f7)' },
@@ -124,6 +128,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'wallet', label: 'Wallet', icon: <Wallet size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #22d3ee, #0284c7)' },
     { id: 'classifieds', label: 'Classifieds', icon: <ShoppingBag size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #8b5cf6, #ec4899)' },
     { id: 'care', label: 'Care', icon: <Heart size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #f43f5e, #be123c)' },
+    { id: 'calendar', label: 'Calendar', icon: <CalendarDays size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #14b8a6, #0f766e)' },
     { id: 'homes', label: 'Homes', icon: <Home size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #2dd4bf, #0f766e)' },
     { id: 'auto', label: 'Auto', icon: <Car size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #94a3b8, #475569)' },
     { id: 'travel', label: 'Travel', icon: <Plane size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #84cc16, #4d7c0f)' },
@@ -148,35 +153,83 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
     { id: 'me', label: 'Me Portal', icon: <User size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #a855f7, #ec4899)' },
     { id: 'settings', label: 'Settings', icon: <Settings size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #64748b, #475569)' },
     { id: 'stadium', label: 'Stadium', icon: <Globe size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #10b981, #3b82f6)' },
-    { id: 'games', label: 'Games', icon: <Gamepad2 size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #ff416c, #ff4b2b)' },
+    { id: 'apps', label: 'App Store', icon: <Layers size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #ff416c, #ff4b2b)' },
+    { id: 'web_builder', label: 'Websites', icon: <AppWindow size={32} strokeWidth={1.5} />, gradient: 'linear-gradient(135deg, #14b8a6, #3b82f6)' },
     { id: 'logout', label: 'Sign Out', icon: <Power size={32} strokeWidth={1.5} color="#ef4444" />, gradient: 'linear-gradient(135deg, #1f2937, #000000)' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [sortedPlatforms, setSortedPlatforms] = useState(defaultPlatforms);
 
   useEffect(() => {
+    const loadApps = async () => {
+      let combinedPlatforms = [...defaultPlatforms];
+      let newFolders = [...folderConfig];
+
+      // 1. Sync Favorites
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.favorite_apps) {
+        const favIds: string[] = user.user_metadata.favorite_apps;
+        const missingApps = favIds.map(fid => APPS_REGISTRY.find(a => a.id === fid))
+          .filter(a => a && !combinedPlatforms.find(dp => dp.id === a.id));
+
+        if (missingApps.length > 0) {
+          missingApps.forEach(app => {
+            if (!app) return;
+            combinedPlatforms.push({
+              id: app.id,
+              label: app.label,
+              icon: app.icon as React.ReactElement<any>,
+              gradient: app.gradient,
+              customImage: app.customImage,
+              imageBg: app.imageBg,
+              imageBorder: app.imageBorder,
+              imageStyle: app.imageStyle
+            });
+
+            // Map category to folder
+            let folderId = '';
+            if (app.category === 'Social & Comms') folderId = 'social_comms';
+            if (app.category === 'Market & Shops') folderId = 'market_shops';
+            if (app.category === 'Media & Events' || app.category === 'Games') folderId = 'media_events';
+            if (app.category === 'Tools & Services') folderId = 'tools_services';
+
+            if (folderId) {
+              const folder = newFolders.find(f => f.id === folderId);
+              if (folder && !folder.items.includes(app.id)) {
+                folder.items.push(app.id);
+              }
+            }
+          });
+          setFolderConfig(newFolders);
+        }
+      }
+
+      // 2. Sort combined platforms (by usage, fallback to alphabet)
+      const usageStr = localStorage.getItem('setx_app_usage');
+      let usage: any = {};
+      if (usageStr) {
+        try { usage = JSON.parse(usageStr); } catch(e){}
+      }
+      
+      combinedPlatforms.sort((a, b) => {
+        const aCount = usage[a.id] || 0;
+        const bCount = usage[b.id] || 0;
+        if (bCount !== aCount) {
+          return bCount - aCount;
+        }
+        return a.label.localeCompare(b.label);
+      });
+
+      setSortedPlatforms(combinedPlatforms);
+    };
+
+    loadApps();
+  }, []);
+
+  useEffect(() => {
     // Demo Modal
     if (!localStorage.getItem('setx_demo_seen')) {
       setShowDemoModal(true);
-    }
-
-    // Load app usage stats to sort platforms
-    const usageStr = localStorage.getItem('setx_app_usage');
-    if (usageStr) {
-      try {
-        const usage = JSON.parse(usageStr);
-        const sorted = [...defaultPlatforms].sort((a, b) => {
-          const aCount = usage[a.id] || 0;
-          const bCount = usage[b.id] || 0;
-          if (bCount !== aCount) {
-            return bCount - aCount;
-          }
-          return a.label.localeCompare(b.label);
-        });
-        setSortedPlatforms(sorted);
-      } catch (err) {
-        console.error('Failed to parse app usage', err);
-      }
     }
 
     // Fetch Admin Broadcasts
@@ -223,6 +276,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
 
     if (id === 'settings') {
       onNavigate('me', 6);
+    } else if (id === 'weather') {
+      setIsWeatherModalOpen(true);
+      setIsDrawerOpen(false);
     } else {
       onNavigate(id);
     }
@@ -662,6 +718,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
           </h2>
         </div>
 
+
         <form className="home-input-wrapper" onSubmit={handleSearchSubmit}>
           <Search className="home-input-icon" />
           <input 
@@ -688,7 +745,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
                 <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', color: 'var(--text)' }}>{weather?.current?.temp || 76}°</h3>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{weather?.current?.condition || 'Mostly Sunny'}</span>
               </div>
-              <CloudSun size={24} color="var(--primary)" />
+              {getWeatherIcon(weather?.current?.condition || 'Clear', 32)}
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '12px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
@@ -787,7 +844,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
         {/* FOLDERS */}
         <div className={`folder-grid ${(showAlertWidget || showLiveWidget) ? 'hide-folder-labels' : ''}`} style={{ marginTop: '32px' }}>
           {folderConfig.map(folder => {
-            const folderPlatforms = folder.items.map(id => defaultPlatforms.find(p => p.id === id)).filter(Boolean);
+            const folderPlatforms = folder.items.map(id => sortedPlatforms.find(p => p.id === id)).filter(Boolean);
             const previewApps = folderPlatforms.slice(0, 4); // First 4 for the 2x2 grid
             return (
               <div key={folder.id} className="app-folder" onClick={() => setActiveFolder(folder.id)}>
@@ -832,7 +889,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
               </h3>
               <div className="folder-modal-grid">
                 {folderConfig.find(f => f.id === activeFolder)?.items.map(id => {
-                  const platform = defaultPlatforms.find(p => p.id === id);
+                  const platform = sortedPlatforms.find(p => p.id === id);
                   if (!platform) return null;
                   return (
                     <div 
@@ -843,8 +900,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
                         handleAppClick(platform.id);
                       }}
                     >
-                      <div className="home-app-icon-wrapper" style={{ background: platform.gradient }}>
-                        {React.cloneElement(platform.icon as React.ReactElement<any>, { color: '#ffffff' })}
+                      <div className="home-app-icon-wrapper" style={{ 
+                        background: (platform as any).customImage ? ((platform as any).imageBg || '#fff') : platform.gradient,
+                        border: (platform as any).customImage ? `1px solid ${(platform as any).imageBorder || '#e5e7eb'}` : 'none'
+                      }}>
+                        {(platform as any).customImage ? (
+                          <img src={(platform as any).customImage} alt={platform.label} style={{ ...(platform as any).imageStyle, width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          React.cloneElement(platform.icon as React.ReactElement<any>, { color: '#ffffff' })
+                        )}
                       </div>
                       <span className="home-app-label">{platform.label}</span>
                     </div>
@@ -886,8 +950,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
               <div className="drawer-grid" style={{ marginBottom: '32px' }}>
                 {sortedPlatforms.slice(0, 4).map(platform => (
                   <div key={`recent-${platform.id}`} className="home-app-item" onClick={() => handleAppClick(platform.id)}>
-                    <div className="home-app-icon-wrapper" style={{ background: platform.gradient }}>
-                      {React.cloneElement(platform.icon as React.ReactElement<any>, { color: '#ffffff' })}
+                    <div className="home-app-icon-wrapper" style={{ 
+                      background: (platform as any).customImage ? ((platform as any).imageBg || '#fff') : platform.gradient,
+                      border: (platform as any).customImage ? `1px solid ${(platform as any).imageBorder || '#e5e7eb'}` : 'none'
+                    }}>
+                      {(platform as any).customImage ? (
+                        <img src={(platform as any).customImage} alt={platform.label} style={{ ...(platform as any).imageStyle, width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        React.cloneElement(platform.icon as React.ReactElement<any>, { color: '#ffffff' })
+                      )}
                     </div>
                     <span className="home-app-label">{platform.label}</span>
                   </div>
@@ -896,10 +967,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
 
               <h3 className="drawer-section-title">All Apps</h3>
               <div className="drawer-grid">
-                {[...defaultPlatforms].sort((a, b) => a.label.localeCompare(b.label)).map(platform => (
+                {[...sortedPlatforms].sort((a, b) => a.label.localeCompare(b.label)).map(platform => (
                   <div key={`all-${platform.id}`} className="home-app-item" onClick={() => handleAppClick(platform.id)}>
-                    <div className="home-app-icon-wrapper" style={{ background: platform.gradient }}>
-                      {React.cloneElement(platform.icon as React.ReactElement<any>, { color: '#ffffff' })}
+                    <div className="home-app-icon-wrapper" style={{ 
+                      background: (platform as any).customImage ? ((platform as any).imageBg || '#fff') : platform.gradient,
+                      border: (platform as any).customImage ? `1px solid ${(platform as any).imageBorder || '#e5e7eb'}` : 'none'
+                    }}>
+                      {(platform as any).customImage ? (
+                        <img src={(platform as any).customImage} alt={platform.label} style={{ ...(platform as any).imageStyle, width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        React.cloneElement(platform.icon as React.ReactElement<any>, { color: '#ffffff' })
+                      )}
                     </div>
                     <span className="home-app-label">{platform.label}</span>
                   </div>
@@ -928,8 +1006,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
         </div>
         {sortedPlatforms.length > 0 && (
           <div className="dock-item" onClick={() => handleAppClick(sortedPlatforms[0].id)}>
-            <div className="dock-icon-wrapper" style={{ background: sortedPlatforms[0].gradient }}>
-              {React.cloneElement(sortedPlatforms[0].icon as React.ReactElement<any>, { size: 24, color: '#fff' })}
+            <div className="dock-icon-wrapper" style={{ 
+              background: (sortedPlatforms[0] as any).customImage ? ((sortedPlatforms[0] as any).imageBg || '#fff') : sortedPlatforms[0].gradient,
+              border: (sortedPlatforms[0] as any).customImage ? `1px solid ${(sortedPlatforms[0] as any).imageBorder || '#e5e7eb'}` : 'none'
+            }}>
+              {(sortedPlatforms[0] as any).customImage ? (
+                <img src={(sortedPlatforms[0] as any).customImage} alt={sortedPlatforms[0].label} style={{ ...(sortedPlatforms[0] as any).imageStyle, width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                React.cloneElement(sortedPlatforms[0].icon as React.ReactElement<any>, { size: 24, color: '#fff' })
+              )}
             </div>
           </div>
         )}
@@ -939,7 +1024,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ user, scope, onNavigate }) =
       <WeatherForecastModal 
         isOpen={isWeatherModalOpen} 
         onClose={() => setIsWeatherModalOpen(false)}
-        onWeatherLoaded={(w) => setWeather(w.current)}
+        onWeatherLoaded={(w) => setWeather(w)}
       />
     </div>
   );

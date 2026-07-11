@@ -91,7 +91,7 @@ const MY_APPLICATIONS: Job[] = [
   }
 ];
 
-export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'national' }) => {
+export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'state' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [jobs, setJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -135,6 +135,7 @@ export const JobsView: React.FC<{ activeTab?: number; user?: any; scope?: string
         }
       }
       else if (scope === 'state') query = query.eq('employer.state', user.state);
+      else if (scope === 'region') query = query.eq('employer.state', user.state);
     }
 
     const { data, error } = await query;

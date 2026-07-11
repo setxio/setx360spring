@@ -61,7 +61,7 @@ const VEHICLES: Vehicle[] = [
   }
 ];
 
-export const AutoView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'national' }) => {
+export const AutoView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'state' }) => {
   const [activeType, setActiveType] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [vehicles, setVehicles] = useState<any[]>([]);
@@ -96,6 +96,7 @@ export const AutoView: React.FC<{ activeTab?: number; user?: any; scope?: string
         }
       }
       else if (scope === 'state') query = query.eq('seller.state', user.state);
+      else if (scope === 'region') query = query.eq('seller.state', user.state);
     }
 
     const { data, error } = await query;

@@ -7,11 +7,11 @@ import { useApp } from '../context/AppContext';
 
 interface ProductSearchProps {
   user: User;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
   onNavigateToStore?: (id: string) => void;
 }
 
-export const ProductSearch: React.FC<ProductSearchProps> = ({ user, scope = 'national', onNavigateToStore }) => {
+export const ProductSearch: React.FC<ProductSearchProps> = ({ user, scope = 'state', onNavigateToStore }) => {
   const { theme } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState<any[]>([]);
@@ -72,6 +72,7 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({ user, scope = 'nat
         if (scope === 'city') query = query.eq('stores.seller.community', user.community);
         else if (scope === 'county') query = query.eq('stores.seller.county', user.county);
         else if (scope === 'state') query = query.eq('stores.seller.state', user.state);
+      else if (scope === 'region') query = query.eq('stores.seller.state', user.state);
       }
 
       if (sortBy === 'rating') query = query.order('avg_rating', { ascending: false });

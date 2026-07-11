@@ -17,10 +17,10 @@ interface ActivityItem {
 
 interface NewArrivalsViewProps {
   user?: any;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
 }
 
-export const NewArrivalsView: React.FC<NewArrivalsViewProps> = ({ user, scope = 'national' }) => {
+export const NewArrivalsView: React.FC<NewArrivalsViewProps> = ({ user, scope = 'state' }) => {
   const { theme } = useApp();
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +55,10 @@ export const NewArrivalsView: React.FC<NewArrivalsViewProps> = ({ user, scope = 
       } else if (scope === 'state') {
         postQuery = postQuery.eq('profiles.state', user.state);
         productQuery = productQuery.eq('stores.seller.state', user.state);
-      }
+        } else if (scope === 'region') {
+        postQuery = postQuery.eq('profiles.state', user.state);
+        productQuery = productQuery.eq('stores.seller.state', user.state);
+        }
     }
 
     // Fetch from multiple tables and combine

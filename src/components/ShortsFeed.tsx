@@ -76,6 +76,7 @@ export const ShortsFeed: React.FC<{ user: User; scope: string }> = ({ user, scop
       if (scope === 'city') query = query.eq('author.community', user.community);
       else if (scope === 'county') query = query.eq('author.county', user.county);
       else if (scope === 'state') query = query.eq('author.state', user.state);
+      else if (scope === 'region') query = query.eq('author.state', user.state);
     }
 
     const { data, error } = await query;

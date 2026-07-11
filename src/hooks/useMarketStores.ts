@@ -26,6 +26,8 @@ export function useMarketStores(scope: Scope, userId?: string) {
           query = query.eq('county', profile.county);
         } else if (scope === 'state' && profile?.state) {
           query = query.eq('state', profile.state);
+        } else if (scope === 'region' && profile?.state) {
+          query = query.eq('state', profile.state);
         }
       }
 

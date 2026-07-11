@@ -19,7 +19,7 @@ const DENOMINATIONS = [
   'Orthodox'
 ];
 
-export const FaithView: React.FC<{ user?: any; scope?: string }> = ({ user: propUser, scope = 'national' }) => {
+export const FaithView: React.FC<{ user?: any; scope?: string }> = ({ user: propUser, scope = 'state' }) => {
   const [view, setView] = useState<'feed' | 'directory' | 'profile'>('feed');
   const [selectedChurchId, setSelectedChurchId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);

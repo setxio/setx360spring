@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '../lib/supabase';
 import type { User, StaffClearance } from '../types/user';
 
-export type Env = 'home' | 'stadium' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages' | 'proplus' | 'crowdfund' | 'charity' | 'page_creator' | 'page_manager' | 'games';
+export type Env = 'home' | 'stadium' | 'discover' | 'search' | 'social' | 'market' | 'eats' | 'rides' | 'services' | 'events' | 'wallet' | 'care' | 'homes' | 'auto' | 'travel' | 'jobs' | 'gigs' | 'videos' | 'music' | 'art' | 'faith' | 'sports' | 'news' | 'civics' | 'admin' | 'dashboard' | 'labs' | 'me' | 'apps' | 'contacts' | 'phone' | 'messages' | 'classifieds' | 'notifications' | 'admin_messages' | 'proplus' | 'crowdfund' | 'charity' | 'page_creator' | 'page_manager' | 'games' | 'calendar' | (string & {});
 export type Theme =
   | 'io-light' | 'io-dark'
   | 'civic-classic-light' | 'civic-classic-dark'
@@ -17,7 +17,7 @@ export type Layout = 'classic' | 'minimal' | 'setx-v1';
 
 import { getSeasonalTheme, applyCustomThemeVariables, clearCustomThemeVariables } from '../lib/theme';
 
-export type Scope = 'national' | 'state' | 'county' | 'city';
+export type Scope = 'national' | 'state' | 'region' | 'county' | 'city';
 export type AppTier = 'global' | 'state' | 'local';
 export type AppOrigin = 'christworx' | 'efutura' | 'txorb' | 'setx360';
 
@@ -35,6 +35,17 @@ interface AppContextType {
   activeTab: number;
   unreadCount: number;
   isLoading: boolean;
+  activeRegion: string;
+  activeCity: string;
+  activeCounty: string;
+  physicalCity: string | null;
+  physicalCounty: string | null;
+  physicalRegion: string | null;
+  isLocalCitizen: boolean;
+  setActiveRegion: (region: string) => void;
+  setActiveCity: (city: string) => void;
+  setActiveCounty: (county: string) => void;
+  setPhysicalLocation: (city: string | null, county: string | null, region: string | null) => void;
   localSearchQuery: string;
   masterSearchQuery: string;
   onlineUsers: Set<string>;
@@ -146,8 +157,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return Number(localStorage.getItem('ecity_tab')) || 0;
   });
   const [scope, setScopeState] = useState<Scope>(() => {
-    return (localStorage.getItem('ecity_scope') as Scope) || 'county';
+    return (localStorage.getItem('ecity_scope') as Scope) || 'region';
   });
+
+  const [activeRegion, setActiveRegionState] = useState<string>(() => {
+    return localStorage.getItem('ecity_active_region') || 'SETX';
+  });
+
+  const [activeCity, setActiveCityState] = useState<string>(() => {
+    return localStorage.getItem('ecity_active_city') || 'Beaumont';
+  });
+
+  const [activeCounty, setActiveCountyState] = useState<string>(() => {
+    return localStorage.getItem('ecity_active_county') || 'Jefferson';
+  });
+
+  const [physicalCity, setPhysicalCity] = useState<string | null>(null);
+  const [physicalCounty, setPhysicalCounty] = useState<string | null>(null);
+  const [physicalRegion, setPhysicalRegion] = useState<string | null>(null);
+
+  const setActiveRegion = (region: string) => {
+    setActiveRegionState(region);
+    if (typeof window !== 'undefined') localStorage.setItem('ecity_active_region', region);
+  };
+
+  const setActiveCity = (city: string) => {
+    setActiveCityState(city);
+    if (typeof window !== 'undefined') localStorage.setItem('ecity_active_city', city);
+  };
+
+  const setActiveCounty = (county: string) => {
+    setActiveCountyState(county);
+    if (typeof window !== 'undefined') localStorage.setItem('ecity_active_county', county);
+  };
+
+  const setPhysicalLocation = (city: string | null, county: string | null, region: string | null) => {
+    setPhysicalCity(city);
+    setPhysicalCounty(county);
+    setPhysicalRegion(region);
+  };
+
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -265,6 +314,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
   }, [queue, queueIndex]);
+
+  const isLocalCitizen = React.useMemo(() => {
+    if (!user) return false;
+    if (scope === 'state') return true; // All are citizens at state/national level
+    if (scope === 'region') {
+      return (user as any).region === activeRegion || true; // region isn't on user yet, fallback true
+    }
+    if (scope === 'county') {
+      return user.county === activeCounty;
+    }
+    if (scope === 'city') {
+      return user.community === activeCity;
+    }
+    return false;
+  }, [user, scope, activeCity, activeCounty, activeRegion]);
 
   const togglePlay = useCallback(() => {
     if (currentSong) {
@@ -385,6 +449,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setUserPages(pages || []);
     setUser(userData);
+
+    if (!localStorage.getItem('ecity_active_city') && userData.community) setActiveCity(userData.community);
+    if (!localStorage.getItem('ecity_active_county') && userData.county) setActiveCounty(userData.county);
+
     if (userData.translation_language) {
       setTranslationLanguage(userData.translation_language);
     }
@@ -542,6 +610,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     scope,
     appTier,
     appOrigin,
+    activeRegion,
+    activeCity,
+    activeCounty,
+    physicalCity,
+    physicalCounty,
+    physicalRegion,
+    isLocalCitizen,
+    setActiveRegion,
+    setActiveCity,
+    setActiveCounty,
+    setPhysicalLocation,
     activeTab,
     unreadCount,
     isLoading,

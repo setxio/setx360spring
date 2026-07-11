@@ -18,6 +18,7 @@ const MarketHome       = lazy(() => import('./components/MarketHome').then(m => 
 const DiscoverView     = lazy(() => import('./components/DiscoverView').then(m => ({ default: m.DiscoverView })));
 const SearchView       = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
 const HomeView         = lazy(() => import('./components/HomeView').then(m => ({ default: m.HomeView })));
+const WebBuilderView   = lazy(() => import('./components/WebBuilderView').then(m => ({ default: m.WebBuilderView })));
 const WikiHome         = lazy(() => import('./components/wiki/WikiHome').then(m => ({ default: m.WikiHome })));
 const StoresDirectory  = lazy(() => import('./components/StoresDirectory').then(m => ({ default: m.StoresDirectory })));
 const ProductSearch    = lazy(() => import('./components/ProductSearch').then(m => ({ default: m.ProductSearch })));
@@ -53,6 +54,7 @@ const TravelView       = lazy(() => import('./components/TravelView').then(m => 
 const CareView         = lazy(() => import('./components/CareView').then(m => ({ default: m.CareView })));
 const WalletView       = lazy(() => import('./components/WalletView').then(m => ({ default: m.WalletView })));
 const EventsView       = lazy(() => import('./components/EventsView').then(m => ({ default: m.EventsView })));
+const CalendarView     = lazy(() => import('./components/CalendarView').then(m => ({ default: m.CalendarView })));
 const ServicesView     = lazy(() => import('./components/ServicesView').then(m => ({ default: m.ServicesView })));
 const MediaView        = lazy(() => import('./components/MediaView').then(m => ({ default: m.MediaView })));
 const MusicView        = lazy(() => import('./components/MusicView').then(m => ({ default: m.MusicView })));
@@ -60,6 +62,7 @@ const ArtGalleryView   = lazy(() => import('./components/ArtGalleryView').then(m
 const FaithView        = lazy(() => import('./components/FaithView').then(m => ({ default: m.FaithView })));
 const SportsView       = lazy(() => import('./components/SportsView').then(m => ({ default: m.SportsView })));
 const WeatherNewsView  = lazy(() => import('./components/WeatherNewsView').then(m => ({ default: m.WeatherNewsView })));
+const WeatherView      = lazy(() => import('./components/weather/WeatherView').then(m => ({ default: m.WeatherView })));
 const CivicsView       = lazy(() => import('./components/CivicsView').then(m => ({ default: m.CivicsView })));
 const CorporateView    = lazy(() => import('./components/CorporateView').then(m => ({ default: m.CorporateView })));
 const LabsView         = lazy(() => import('./components/LabsView').then(m => ({ default: m.LabsView })));
@@ -71,6 +74,7 @@ const PhoneView        = lazy(() => import('./components/PhoneView').then(m => (
 const AdminMessagesView = lazy(() => import('./components/AdminMessagesView').then(m => ({ default: m.AdminMessagesView })));
 
 const AdminDashboard   = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const DashboardPortal  = lazy(() => import('./components/dashboards/DashboardPortal').then(m => ({ default: m.DashboardPortal })));
 const MePortal         = lazy(() => import('./components/MePortal').then(m => ({ default: m.MePortal })));
 const OrdersView       = lazy(() => import('./components/OrdersView').then(m => ({ default: m.OrdersView })));
 const StadiumView      = lazy(() => import('./components/stadium/StadiumView').then(m => ({ default: m.StadiumView })));
@@ -80,11 +84,13 @@ const CrowdFundView    = lazy(() => import('./components/CrowdFundView').then(m 
 
 const ProductDetailsModal = lazy(() => import('./components/ProductDetailsModal').then(m => ({ default: m.ProductDetailsModal })));
 const LocalActionAgent    = lazy(() => import('./components/LocalActionAgent').then(m => ({ default: m.LocalActionAgent })));
-const GamesView           = lazy(() => import('./components/games/GamesView').then(m => ({ default: m.GamesView })));
+const AppsStoreView       = lazy(() => import('./components/apps/AppsStoreView').then(m => ({ default: m.AppsStoreView })));
 
 import { useApp, type Env } from './context/AppContext';
-import { supabase } from './lib/supabase';
+import { getPreviewWeather } from './lib/weatherService';
+import { APPS_REGISTRY } from './components/apps/AppsStoreView';
 import { useToast } from './context/ToastContext';
+import { supabase } from './lib/supabase';
 
 const App: React.FC = () => {
   const { info } = useToast();
@@ -379,6 +385,10 @@ const App: React.FC = () => {
       }} />;
     }
 
+    if (env === 'web_builder') {
+      return <WebBuilderView user={user} scope={scope} />;
+    }
+
     if (env === 'discover') {
       switch (activeTab) {
         case 0: return <DiscoverView user={user} scope={scope} onNavigate={(envStr) => {
@@ -438,11 +448,13 @@ const App: React.FC = () => {
     if (env === 'rides') return <RidesView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'services') return <ServicesView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'events') return <EventsView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'calendar') return <CalendarView user={user} scope={scope} />;
     if (env === 'wallet') return <WalletView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'care') return <CareView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'homes') return <HomesView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'auto') return <AutoView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'travel') return <TravelView activeTab={activeTab} user={user} scope={scope} />;
+    if (env === 'weather') return <WeatherView />;
     if (env === 'jobs') return <JobsView activeTab={activeTab} user={user} scope={scope} />;
     if (env === 'gigs') return <GigsView activeTab={activeTab} user={user} scope={scope} onNavigate={(envStr, tab, context) => {
       setEnv(envStr as Env);
@@ -460,10 +472,17 @@ const App: React.FC = () => {
     if (env === 'crowdfund') return <CrowdFundView />;
     if (env === 'charity') return <CharitiesView />;
     if (env === 'stadium') return <StadiumView onNavigate={(envStr) => setEnv(envStr as Env)} />;
-    if (env === 'games') return <GamesView />;
+    
+    if (env === 'apps') return <AppsStoreView />;
+    if (env === 'games') return <AppsStoreView />;
+
+    const isMiniApp = APPS_REGISTRY.some(a => a.id === env && a.isMiniApp);
+    if (isMiniApp) {
+      return <AppsStoreView initialMiniApp={env} />;
+    }
 
     if (env === 'civics') {
-      if (user?.role !== 'admin') { setEnv('discover'); return null; }
+      if (user?.role !== 'super admin') { setEnv('discover'); return null; }
       return <CivicsView activeTab={activeTab} user={user} scope={scope} />;
     }
     
@@ -506,15 +525,15 @@ const App: React.FC = () => {
     );
   }
 
-  // Top-level admin bypass
+  // Top-level admin and dashboard bypass
   if ((env === 'admin' || env === 'dashboard')) {
-    if (user?.role !== 'admin') {
-      // Must be an admin
+    if (env === 'admin' && user?.role !== 'super admin') {
+      // Must be a super admin to explicitly request admin route
       return <div className="app-container" style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh',color:'red'}}>Access Denied</div>;
     }
     return (
       <React.Suspense fallback={<div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><Loader2 className="animate-spin" size={48} color="var(--primary)" /></div>}>
-        <AdminDashboard user={user} />
+        <DashboardPortal />
       </React.Suspense>
     );
   }

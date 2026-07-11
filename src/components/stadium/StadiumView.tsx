@@ -1503,7 +1503,7 @@ export const StadiumView: React.FC<{ onNavigate: (env: string) => void }> = ({ o
         </button>
         <div>
           <h2 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{roomName}</h2>
-          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem', textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>{Object.keys(players).length + 1} citizens connected</p>
+          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem', textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>{Object.keys(players).length + 1} users connected</p>
         </div>
       </div>
 

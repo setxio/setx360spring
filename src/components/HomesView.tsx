@@ -68,7 +68,7 @@ const LISTINGS: Listing[] = [
   }
 ];
 
-export const HomesView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'national' }) => {
+export const HomesView: React.FC<{ activeTab?: number; user?: any; scope?: string }> = ({ activeTab = 0, user: propUser, scope = 'state' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,6 +113,7 @@ export const HomesView: React.FC<{ activeTab?: number; user?: any; scope?: strin
         }
       }
       else if (scope === 'state') query = query.eq('seller.state', user.state);
+      else if (scope === 'region') query = query.eq('seller.state', user.state);
     }
 
     const { data, error } = await query;

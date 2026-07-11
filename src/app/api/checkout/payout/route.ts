@@ -35,25 +35,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing Stripe Connect Account ID' }, { status: 400 });
     }
 
-    // 1. Verify merchant balance
-    const { data: wallet } = await supabase
-      .from('wallet_balances')
-      .select('balance_setx')
-      .eq('profile_id', user.id)
-      .single();
+    // 1. & 2. Deduct (Burn) the balance off-chain securely and atomically via RPC
+    const { error: updateError } = await supabase.rpc('decrement_wallet_balance', {
+      pid: user.id,
+      amount: amount_setx
+    });
 
-    if (!wallet || wallet.balance_setx < amount_setx) {
-      return NextResponse.json({ error: 'Insufficient SETX balance' }, { status: 400 });
+    if (updateError) {
+      console.error('Failed to decrement wallet balance:', updateError);
+      return NextResponse.json({ error: 'Insufficient SETX balance or wallet not found' }, { status: 400 });
     }
-
-    // 2. Deduct (Burn) the balance off-chain
-    const newBalance = wallet.balance_setx - amount_setx;
-    const { error: updateError } = await supabase
-      .from('wallet_balances')
-      .update({ balance_setx: newBalance })
-      .eq('profile_id', user.id);
-
-    if (updateError) throw updateError;
 
     // 3. Initiate Stripe Connect Transfer (ACH Payout)
     // 1 SETX = $1 USD. Stripe expects cents.

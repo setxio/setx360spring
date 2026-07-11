@@ -21,6 +21,7 @@ export type User = {
   translation_language?: string;
   arcade_coins?: number;
   arcade_badges?: string[];
+  account_type?: string;
 };
 
 
@@ -30,7 +31,7 @@ export type StaffClearance = StaffClearanceRow;
 
 // --- Pages Architecture ---
 
-export type PageType = 'business' | 'artist' | 'non_profit' | 'venue' | 'official' | 'chamber' | 'media' | 'church';
+export type PageType = 'business' | 'artist' | 'non_profit' | 'venue' | 'official' | 'chamber' | 'media' | 'church' | 'professional' | 'restaurant' | 'retail' | 'service';
 
 export interface Page {
   id: string;

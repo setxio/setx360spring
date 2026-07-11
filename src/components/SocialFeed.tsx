@@ -24,7 +24,7 @@ interface SocialFeedProps {
   user?: any;
   filterUserId?: string;
   filterGroupId?: string;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
   onNavigateToPost?: (postId: string, commentId?: string) => void;
   onNavigateToProfile?: (profileId: string) => void;
 }
@@ -35,7 +35,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
   user, 
   filterUserId, 
   filterGroupId,
-  scope = 'national',
+  scope = 'state',
   onNavigateToPost,
   onNavigateToProfile
 }) => {
@@ -378,7 +378,7 @@ export const SocialFeed: React.FC<SocialFeedProps> = ({
             <CreatePostModal 
               user={user}
               activeCategory={activeCategory}
-              currentScope={scope}
+              currentScope={scope as 'state' | 'region' | 'county' | 'city'}
               onClose={() => {
                 setIsPosting(false);
                 refetchFeed();

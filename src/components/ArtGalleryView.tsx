@@ -12,7 +12,7 @@ const ARTWORKS = [
   { id: '6', title: 'Golden Hour', artist: 'Leo Gold', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600', price: '$1,200', views: '1.5K' }
 ];
 
-export const ArtGalleryView: React.FC<{ user?: any; scope?: string }> = ({ user: propUser, scope = 'national' }) => {
+export const ArtGalleryView: React.FC<{ user?: any; scope?: string }> = ({ user: propUser, scope = 'state' }) => {
   const [artworks, setArtworks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [escalatedScope, setEscalatedScope] = useState<string | null>(null);

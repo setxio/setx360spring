@@ -19,10 +19,10 @@ interface Product {
 
 interface HotDealsViewProps {
   user?: any;
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
 }
 
-export const HotDealsView: React.FC<HotDealsViewProps> = ({ user, scope = 'national' }) => {
+export const HotDealsView: React.FC<HotDealsViewProps> = ({ user, scope = 'state' }) => {
   const { theme } = useApp();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,6 +67,7 @@ export const HotDealsView: React.FC<HotDealsViewProps> = ({ user, scope = 'natio
           }
         }
         else if (scope === 'state') query = query.eq('store.seller.state', user.state);
+      else if (scope === 'region') query = query.eq('store.seller.state', user.state);
       }
 
       query = query

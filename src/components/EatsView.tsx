@@ -132,6 +132,7 @@ export const EatsView: React.FC<{ activeTab?: number; user?: any; scope?: string
         }
       }
       else if (scope === 'state') query = query.eq('seller.state', user.state);
+      else if (scope === 'region') query = query.eq('seller.state', user.state);
     }
 
     const { data, error } = await query;

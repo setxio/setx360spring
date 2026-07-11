@@ -7,9 +7,9 @@ import { getAvatarUrl } from '../lib/utils';
 import './SocialDirectories.css';
 
 export const UserDirectory: React.FC<{ 
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
   onNavigateToProfile?: (id: string) => void;
-}> = ({ scope = 'national', onNavigateToProfile }) => {
+}> = ({ scope = 'state', onNavigateToProfile }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ export const UserDirectory: React.FC<{
         usersQuery = usersQuery.eq('county', user.user_metadata.county);
       } else if (scope === 'state' && user.user_metadata?.state) {
         usersQuery = usersQuery.eq('state', user.user_metadata.state);
-      } else if (scope === 'national' && user.user_metadata?.country) {
+      } else if (scope === 'state' && user.user_metadata?.country) {
         usersQuery = usersQuery.eq('country', user.user_metadata.country);
       }
     }
@@ -256,9 +256,9 @@ export const UserDirectory: React.FC<{
 }
 
 export const GroupDirectory: React.FC<{ 
-  scope?: 'national' | 'state' | 'county' | 'city';
+  scope?: 'national' | 'state' | 'region' | 'county' | 'city';
   onNavigateToGroup: (groupId: string) => void;
-}> = ({ scope = 'national', onNavigateToGroup }) => {
+}> = ({ scope = 'state', onNavigateToGroup }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

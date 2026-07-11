@@ -4,6 +4,7 @@ import { PostCard } from './PostCard';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
 import { formatText } from '../utils/textFormatting';
+import { useApp } from '../context/AppContext';
 import { formatRelativeTime } from '../utils/dateUtils';
 import { FlagContentModal } from './FlagContentModal';
 import './PostDetailView.css';
@@ -169,6 +170,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTevisThinking, setIsTevisThinking] = useState(false);
   const tevisTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const { activeContext } = useApp();
 
   useEffect(() => {
     fetchPostAndComments();
@@ -409,7 +411,7 @@ export const PostDetailView: React.FC<PostDetailViewProps> = ({ postId, highligh
           onDelete={() => onBack()}
           onRepost={async (postId) => {
             if (!user) return;
-            await supabase.from('posts').insert({ profile_id: user.id, type: 'repost', original_post_id: postId, content: '' });
+            await supabase.from('posts').insert({ profile_id: user.id, page_id: activeContext?.id || null, type: 'repost', original_post_id: postId, content: '' });
             const t = document.createElement('div');
             t.textContent = '\u2713 Reposted to your timeline';
             Object.assign(t.style, { position:'fixed', bottom:'80px', left:'50%', transform:'translateX(-50%)', background:'var(--primary)', color:'#fff', padding:'10px 20px', borderRadius:'24px', fontSize:'0.9rem', fontWeight:'600', zIndex:'9999' });

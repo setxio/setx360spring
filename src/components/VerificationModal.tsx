@@ -135,22 +135,15 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ onClose, u
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Badge Type</label>
+            <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification Type</label>
             <select
               value={role}
               onChange={e => setRole(e.target.value)}
               disabled={isSubmitting}
               style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--text, #fff)', fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
             >
-              <option value="resident">Resident</option>
-              <option value="business">Business</option>
-              <option value="freelancer">Freelancer / Gig Worker</option>
-              <option value="venue">Venue</option>
-              <option value="media">Media</option>
-              <option value="non_profit">Non Profit</option>
-              <option value="church">Church</option>
-              <option value="artist">Artist</option>
-              <option value="chamber">Chamber Member</option>
+              <option value="resident">Verified Citizen (Blue Checkmark)</option>
+              <option value="verified_pro">Professional/Entity (Unlocks Workspaces)</option>
             </select>
           </div>
 

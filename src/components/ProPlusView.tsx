@@ -12,7 +12,7 @@ interface ProPlusViewProps {
   scope?: string;
 }
 
-export const ProPlusView: React.FC<ProPlusViewProps> = ({ user, scope = 'national' }) => {
+export const ProPlusView: React.FC<ProPlusViewProps> = ({ user, scope = 'state' }) => {
   const [activeTab, setActiveTab] = useState<'feed' | 'network' | 'jobs' | 'profile'>('feed');
 
   return (

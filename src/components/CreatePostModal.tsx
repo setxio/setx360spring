@@ -13,7 +13,7 @@ interface CreatePostModalProps {
   user?: any;
   activeCategory?: string;
   groupId?: string;
-  currentScope?: 'national' | 'state' | 'county' | 'city';
+  currentScope?: 'national' | 'state' | 'region' | 'county' | 'city';
 }
 
 export const CreatePostModal: React.FC<CreatePostModalProps> = ({ 
@@ -21,15 +21,19 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   user, 
   activeCategory = 'Everybody', 
   groupId,
-  currentScope = 'national' 
+  currentScope = 'state' 
 }) => {
   const [postContent, setPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { info, warning, error: toastError } = useToast();
-  const { appOrigin } = useApp();
+  const { appOrigin, activeContext, physicalCity, activeCity, isLocalCitizen } = useApp();
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
-  const [location] = useState(user?.community || '');
+  // Auto-set location: if traveling (physicalCity differs from home city), use physicalCity
+  const isTraveling = physicalCity && physicalCity !== (user?.community || activeCity);
+  const [location, setLocation] = useState(
+    isTraveling ? (physicalCity || user?.community || '') : (user?.community || '')
+  );
   const [pollOptions, setPollOptions] = useState(['', '']);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
@@ -41,6 +45,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [selectedGroupId, setSelectedGroupId] = useState<string>(groupId || '');
   const [isNsfw, setIsNsfw] = useState(false);
   const [tags, setTags] = useState('');
+  const [postAsEntity, setPostAsEntity] = useState(!!activeContext);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -154,17 +159,25 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
       const { error } = await supabase.from('posts').insert([{ 
         profile_id: user.id,
+        page_id: postAsEntity && activeContext ? activeContext.id : null,
         content: postContent,
         type: finalType,
         category: targetFeed,
         media_urls: mediaUrls,
         poll_data: pollData,
         location: location || user?.community,
-        visibility_scope: currentScope === 'national' ? 'national' : currentScope,
+        visibility_scope: currentScope,
         group_id: targetFeed === 'Groups' ? selectedGroupId : null,
         is_nsfw: isNsfw,
         tags: tags.split(',').map(t => t.trim()).filter(t => t.length > 0),
-        metadata: { platform: appOrigin }
+        metadata: {
+          platform: appOrigin,
+          // If the user is physically somewhere other than their home city, record it
+          ...(isTraveling && {
+            visiting_from: user?.community || null,
+            is_traveler_post: true,
+          })
+        }
       }]);
 
       if (error) throw error;
@@ -206,12 +219,42 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         <div className="modal-content-scrollable">
           <div className="composer-wrapper">
             <div className="composer-header">
-              <Avatar url={user?.avatar_url} name={user?.name} size={48} />
+              <Avatar url={postAsEntity && activeContext ? activeContext.avatar_url : user?.avatar_url} name={postAsEntity && activeContext ? activeContext.name : user?.name} size={48} />
               <div className="header-controls">
-                <div className="control-row">
+                <div className="control-row" style={{ flexWrap: 'wrap', gap: '8px' }}>
+                  {activeContext && (
+                    <div className="dropdown-wrapper" style={{ marginRight: '4px' }}>
+                      <select 
+                        value={postAsEntity ? 'entity' : 'user'}
+                        onChange={(e) => setPostAsEntity(e.target.value === 'entity')}
+                        className="category-select"
+                        style={{ border: '1px solid var(--primary)', color: 'var(--primary)', fontWeight: 'bold' }}
+                      >
+                        <option value="user">Post as {user?.name}</option>
+                        <option value="entity">Post as {activeContext.name}</option>
+                      </select>
+                      <ChevronDown size={14} className="dropdown-arrow" style={{ color: 'var(--primary)' }}/>
+                    </div>
+                  )}
                   <div className="community-chip">
-                    {location || 'Local'}
+                    📍 {location || 'Local'}
                   </div>
+                  {isTraveling && user?.community && (
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '3px 8px',
+                      borderRadius: '20px',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      fontSize: '0.72rem',
+                      color: '#f59e0b',
+                      fontWeight: 600,
+                    }}>
+                      ✈️ Visiting from {user.community}
+                    </div>
+                  )}
                   <div className="dropdown-wrapper">
                     <select 
                       value={targetFeed} 

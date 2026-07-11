@@ -477,15 +477,6 @@ export const ClassicLayout: React.FC<ClassicLayoutProps> = ({
             </div>
           </div>
           {user && (
-            <div className="top-switch-container auto-hide-target" style={{ padding: '4px 0 8px' }}>
-              <div className="two-notches">
-                <div className={`notch notch-2 ${scope === 'county' ? 'active' : ''} ${showNotchPulse && scope === 'city' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('county')} style={{ cursor: 'pointer' }} title={`${user?.county || 'Regional'} (County)`} />
-                {/* City notch hidden per focus request */}
-                {/* <div className={`notch notch-3 ${scope === 'city' ? 'active' : ''} ${showNotchPulse && scope === 'county' ? 'pulse' : ''}`} onClick={() => handleNotchInteraction('city')} style={{ cursor: 'pointer' }} title={`${user?.community || 'Local'} (City)`} /> */}
-              </div>
-            </div>
-          )}
-          {user && (
             <header className="main-header auto-hide-target" style={{ padding: '0 16px 8px' }}>
               <div className="header-content" style={{ display: 'block' }}>
                 <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>

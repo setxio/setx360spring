@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, Clock, CalendarDays, Wind, Droplets, CloudRain, Sun, Cloud, CloudFog, CloudLightning, Snowflake, Map } from 'lucide-react';
-import { getWeatherFromCoords, getUserLocation, getLocationNameFromCoords, WeatherData } from '../lib/weatherService';
+import { X, MapPin, Clock, CalendarDays, Wind, Droplets, CloudRain, Sun, Cloud, CloudFog, CloudLightning, Snowflake, Map, Thermometer, Activity, Factory, ChevronLeft } from 'lucide-react';
+import { getWeatherFromCoords, getUserLocation, getLocationNameFromCoords, WeatherData, getMascotImage } from '../lib/weatherService';
 import './WeatherForecastModal.css';
 
 interface WeatherForecastModalProps {
@@ -10,7 +10,7 @@ interface WeatherForecastModalProps {
   onWeatherLoaded?: (data: WeatherData) => void;
 }
 
-const getWeatherIcon = (condition: string, size = 24) => {
+export const getWeatherIcon = (condition: string, size = 24) => {
   const c = condition.toLowerCase();
   if (c.includes('clear')) return <Sun size={size} color="#FFD700" />;
   if (c.includes('partly')) return <CloudSun size={size} color="#FFD700" />;
@@ -39,11 +39,37 @@ const CloudSun = ({ size, color }: any) => {
   );
 };
 
+const getAqiRating = (aqi: number) => {
+  if (aqi <= 50) return { level: 1, text: 'Excellent', color: '#4CAF50' };
+  if (aqi <= 100) return { level: 2, text: 'Good', color: '#8BC34A' };
+  if (aqi <= 150) return { level: 3, text: 'Moderate', color: '#FFC107' };
+  if (aqi <= 200) return { level: 4, text: 'Poor', color: '#FF9800' };
+  return { level: 5, text: 'Bad', color: '#F44336' };
+};
+
+const getPm25Rating = (pm25: number) => {
+  if (pm25 <= 12) return { level: 1, text: 'Excellent', color: '#4CAF50' };
+  if (pm25 <= 35) return { level: 2, text: 'Good', color: '#8BC34A' };
+  if (pm25 <= 55) return { level: 3, text: 'Moderate', color: '#FFC107' };
+  if (pm25 <= 150) return { level: 4, text: 'Poor', color: '#FF9800' };
+  return { level: 5, text: 'Bad', color: '#F44336' };
+};
+
+const getSo2Rating = (so2: number) => {
+  if (so2 <= 20) return { level: 1, text: 'Excellent', color: '#4CAF50' };
+  if (so2 <= 50) return { level: 2, text: 'Good', color: '#8BC34A' };
+  if (so2 <= 100) return { level: 3, text: 'Moderate', color: '#FFC107' };
+  if (so2 <= 200) return { level: 4, text: 'Poor', color: '#FF9800' };
+  return { level: 5, text: 'Bad', color: '#F44336' };
+};
+
 
 export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({ isOpen, onClose, onWeatherLoaded }) => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<WeatherData | null>(null);
+  const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showRadar, setShowRadar] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -55,9 +81,10 @@ export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({ isOp
     setLoading(true);
     setError(null);
     try {
-      const coords = await getUserLocation();
-      const locationName = await getLocationNameFromCoords(coords.lat, coords.lon);
-      const weatherData = await getWeatherFromCoords(coords.lat, coords.lon, locationName);
+      const locationCoords = await getUserLocation();
+      setCoords(locationCoords);
+      const locationName = await getLocationNameFromCoords(locationCoords.lat, locationCoords.lon);
+      const weatherData = await getWeatherFromCoords(locationCoords.lat, locationCoords.lon, locationName);
       setData(weatherData);
       if (onWeatherLoaded) {
         onWeatherLoaded(weatherData);
@@ -112,37 +139,65 @@ export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({ isOp
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button className="weather-modal-close" onClick={onClose}>
-              <X size={20} />
-            </button>
-
-            {loading ? (
-              <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-                <div className="loader" style={{ borderTopColor: 'var(--primary)', width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.2)', borderTop: '3px solid #fff', animation: 'spin 1s linear infinite' }}></div>
-                <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-                <p>Getting local weather...</p>
-              </div>
-            ) : error || !data ? (
-              <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
-                <p>{error || "Unable to load weather."}</p>
-                <button onClick={loadWeather} style={{ background: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', color: '#fff', marginTop: 16 }}>Retry</button>
+            {showRadar && coords ? (
+              <div className="radar-fullscreen-view" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <button 
+                    onClick={() => setShowRadar(false)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 600, padding: 0 }}
+                  >
+                    <ChevronLeft size={24} /> Back to Weather
+                  </button>
+                  <button className="weather-modal-close" onClick={onClose} style={{ position: 'relative', top: 'auto', right: 'auto', background: 'var(--glass-bg)' }}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <iframe 
+                  width="100%" 
+                  style={{ flex: 1, borderRadius: '20px', backgroundColor: '#1E293B', border: '1px solid var(--border-color)' }}
+                  src={`https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=in&metricTemp=°F&metricWind=mph&zoom=8&overlay=radar&product=radar&level=surface&lat=${coords.lat}&lon=${coords.lon}`}
+                  frameBorder="0"
+                ></iframe>
               </div>
             ) : (
               <>
-                <div className="weather-modal-header">
-                  <h2 className="weather-location-title">
-                    <MapPin size={24} />
-                    {data.locationName}
-                  </h2>
-                  <h1 className="weather-huge-temp">
-                    {data.current.temp}°
-                  </h1>
-                  <div className="weather-current-condition">
-                    {data.current.condition}
+                <button className="weather-modal-close" onClick={onClose}>
+                  <X size={20} />
+                </button>
+
+                {loading ? (
+                  <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+                    <div className="loader" style={{ borderTopColor: 'var(--primary)', width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.2)', borderTop: '3px solid #fff', animation: 'spin 1s linear infinite' }}></div>
+                    <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                    <p>Getting local weather...</p>
                   </div>
-                  <p className="weather-high-low">
-                    H:{data.current.high}° L:{data.current.low}°
-                  </p>
+                ) : error || !data ? (
+                  <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
+                    <p>{error || "Unable to load weather."}</p>
+                    <button onClick={loadWeather} style={{ background: 'var(--primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', color: '#fff', marginTop: 16 }}>Retry</button>
+                  </div>
+                ) : (
+                  <>
+                    <div 
+                      className="weather-modal-header scenic-header"
+                      style={{ backgroundImage: `url(${getMascotImage(data)})` }}
+                    >
+                  <div className="scenic-overlay"></div>
+                  <div className="scenic-content">
+                    <h2 className="weather-location-title">
+                      <MapPin size={24} />
+                      {data.locationName}
+                    </h2>
+                    <h1 className="weather-huge-temp">
+                      {data.current.temp}°
+                    </h1>
+                    <div className="weather-current-condition">
+                      {data.current.condition}
+                    </div>
+                    <p className="weather-high-low">
+                      H:{data.current.high}° L:{data.current.low}°
+                    </p>
+                  </div>
                 </div>
 
                 <div className="weather-modal-scroll-area">
@@ -204,11 +259,57 @@ export const WeatherForecastModal: React.FC<WeatherForecastModalProps> = ({ isOp
                       <div className="weather-detail-title"><Droplets size={16} /> Humidity</div>
                       <div className="weather-detail-value">{data.current.humidity}%</div>
                     </div>
+                    {data.current.feelsLike !== undefined && (
+                      <div className="weather-detail-card">
+                        <div className="weather-detail-title"><Thermometer size={16} /> Feels Like</div>
+                        <div className="weather-detail-value">{data.current.feelsLike}°</div>
+                      </div>
+                    )}
+                    {data.current.precip !== undefined && (
+                      <div className="weather-detail-card">
+                        <div className="weather-detail-title"><CloudRain size={16} /> Rainfall</div>
+                        <div className="weather-detail-value">{data.current.precip}"</div>
+                      </div>
+                    )}
+                    {data.current.aqi !== undefined && (
+                      <div className="weather-detail-card">
+                        <div className="weather-detail-title"><Activity size={16} /> Air Quality</div>
+                        <div className="weather-detail-value" style={{ color: getAqiRating(data.current.aqi).color, fontSize: '1.2rem' }}>
+                          Level {getAqiRating(data.current.aqi).level}: {getAqiRating(data.current.aqi).text}
+                        </div>
+                      </div>
+                    )}
+                    {data.current.pm25 !== undefined && (
+                      <div className="weather-detail-card">
+                        <div className="weather-detail-title"><CloudFog size={16} /> Smoke Level</div>
+                        <div className="weather-detail-value" style={{ color: getPm25Rating(data.current.pm25).color, fontSize: '1.2rem' }}>
+                          Level {getPm25Rating(data.current.pm25).level}: {getPm25Rating(data.current.pm25).text}
+                        </div>
+                      </div>
+                    )}
+                    {data.current.so2 !== undefined && (
+                      <div className="weather-detail-card">
+                        <div className="weather-detail-title"><Factory size={16} /> Refinery Level</div>
+                        <div className="weather-detail-value" style={{ color: getSo2Rating(data.current.so2).color, fontSize: '1.2rem' }}>
+                          Level {getSo2Rating(data.current.so2).level}: {getSo2Rating(data.current.so2).text}
+                        </div>
+                      </div>
+                    )}
+                    <div 
+                      className="weather-detail-card" 
+                      onClick={() => setShowRadar(true)}
+                      style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--primary, #3b82f6)', color: 'white', minHeight: '80px', gap: '4px' }}
+                    >
+                      <Map size={24} color="#fff" />
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#fff' }}>Live Radar</div>
+                    </div>
                   </div>
                 </div>
               </>
             )}
-          </motion.div>
+          </>
+        )}
+      </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

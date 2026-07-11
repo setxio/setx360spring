@@ -135,6 +135,7 @@ export const EventsView: React.FC<{ activeTab?: number; user?: any; scope?: stri
         }
       }
       else if (scope === 'state') query = query.eq('organizer.state', user.state);
+      else if (scope === 'region') query = query.eq('organizer.state', user.state);
     }
 
     const [eventsRes, postsRes] = await Promise.all([

@@ -121,7 +121,8 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
     isSetxIO,
     userPages,
     activeContext,
-    setActiveContext
+    setActiveContext,
+    scope
   } = useApp();
   const { currentSong, isPlaying, togglePlay, setIsPlaying } = useApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -984,7 +985,7 @@ export const MinimalLayout: React.FC<MinimalLayoutProps> = ({
       )}
 
       {isCreatePostOpen && (
-        <CreatePostModal onClose={() => setIsCreatePostOpen(false)} user={user} currentScope={'national'} />
+        <CreatePostModal onClose={() => setIsCreatePostOpen(false)} user={user} currentScope={scope as any} />
       )}
     </div>
   );

@@ -80,7 +80,7 @@ export const CorporateView: React.FC = () => {
           <div className="value-card glass">
             <Target className="icon" />
             <h3>Our Mission</h3>
-            <p>To digitize the local experience, ensuring every citizen and business has access to world-class technology tailored to their specific regional needs.</p>
+            <p>To digitize the local experience, ensuring every resident and business has access to world-class technology tailored to their specific regional needs.</p>
           </div>
           <div className="value-card glass">
             <Lightbulb className="icon" />
@@ -120,7 +120,7 @@ export const CorporateView: React.FC = () => {
             <div className="solution-icon"><Building2 /></div>
             <div className="solution-text">
               <h3>Civic Transparency Portals</h3>
-              <p>Direct-to-citizen communication tools for local governments, chambers of commerce, and non-profits.</p>
+              <p>Direct-to-resident communication tools for local governments, chambers of commerce, and non-profits.</p>
             </div>
             <ArrowRight className="go-arrow" />
           </div>

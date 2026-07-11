@@ -198,8 +198,8 @@ export const processStripeSplitPayment = async (
 };
 
 /**
- * STRIPE & SEC REFUND HANDLER
- * Handles reversing a transaction either internally (SEC) or via Stripe API.
+ * STRIPE & INTERNAL WALLET REFUND HANDLER
+ * Handles reversing a transaction either internally or via Stripe API.
  */
 export const processRefund = async (orderId: string, amount?: number) => {
   try {
@@ -236,7 +236,7 @@ export const processRefund = async (orderId: string, amount?: number) => {
       // In production: const refund = await stripe.refunds.create({ payment_intent: order.stripe_payment_intent_id, amount: refundAmount * 100 });
     }
 
-    // 3. SEC Wallet Reversal (Internal Ledger)
+    // 3. Internal Wallet Reversal
     // We need the vendor wallet and customer wallet
     const vendorWallet = await getOrCreateWallet(order.stores.owner_id, 'business');
     const customerWallet = await getOrCreateWallet(order.customer_id, 'personal');
