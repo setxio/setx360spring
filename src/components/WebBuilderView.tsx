@@ -29,11 +29,13 @@ interface WbPost {
   id: string; site_id: string; title: string; slug: string;
   content?: string; excerpt?: string; status: string;
   featured_image_url?: string; categories: string[]; tags: string[];
+  meta_title?: string; meta_description?: string; og_image?: string;
   published_at?: string; created_at: string;
 }
 interface WbPage {
   id: string; site_id: string; title: string; slug: string;
   content?: string; status: string; sort_order: number; created_at: string;
+  meta_title?: string; meta_description?: string; og_image?: string;
 }
 interface WbMedia {
   id: string; site_id: string; file_name: string; file_url: string;
@@ -625,7 +627,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const [editingProduct, setEditingProduct] = useState<Partial<WbProduct> | null>(null);
   const [editingVariations, setEditingVariations] = useState<any[]>([]);
   const [showImagePicker, setShowImagePicker] = useState(false);
-  const [imagePickerTarget, setImagePickerTarget] = useState<'featured' | 'editor' | 'product_featured'>('featured');
+  const [imagePickerTarget, setImagePickerTarget] = useState<'featured' | 'editor' | 'product_featured' | 'og_image_post' | 'og_image_page'>('featured');
 
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [wlConfig, setWlConfig] = useState<any>({});
@@ -843,6 +845,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <Home size={20} /> },
     { id: 'posts', label: 'Posts', icon: <PenTool size={20} /> },
+    { id: 'taxonomy', label: 'Categories & Tags', icon: <Tag size={20} /> },
     { id: 'pages', label: 'Pages', icon: <FileText size={20} /> },
     { id: 'media', label: 'Media', icon: <ImageIcon size={20} /> },
     { id: 'comments', label: 'Comments', icon: <MessageSquare size={20} /> },
@@ -1068,6 +1071,35 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
                     ))}
                     {posts.length === 0 && <p style={{ color: '#646970', margin: 0 }}>No posts yet. <button className="wb-link-btn" onClick={() => { setEditingPost({ title: '', status: 'draft', content: '', categories: [], tags: [] }); setActiveTab('posts'); }}>Create your first post →</button></p>}
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAXONOMY ── */}
+          {activeTab === 'taxonomy' && !tabLoading && (
+            <div>
+              <div className="wb-content-header">
+                <h1>Categories & Tags</h1>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24 }}>
+                <div className="wb-widget" style={{ padding: 24 }}>
+                  <h3 style={{ fontSize: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Tag size={18} /> All Categories</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {Array.from(new Set(posts.flatMap(p => p.categories || []))).map(c => (
+                      <span key={c} className="wb-pill">{c}</span>
+                    ))}
+                  </div>
+                  {Array.from(new Set(posts.flatMap(p => p.categories || []))).length === 0 && <p style={{ color: '#646970' }}>No categories found across your posts.</p>}
+                </div>
+                <div className="wb-widget" style={{ padding: 24 }}>
+                  <h3 style={{ fontSize: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Tag size={18} /> All Tags</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {Array.from(new Set(posts.flatMap(p => p.tags || []))).map(t => (
+                      <span key={t} className="wb-pill">{t}</span>
+                    ))}
+                  </div>
+                  {Array.from(new Set(posts.flatMap(p => p.tags || []))).length === 0 && <p style={{ color: '#646970' }}>No tags found across your posts.</p>}
                 </div>
               </div>
             </div>
@@ -1383,6 +1415,25 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
               <ChipInput label="Tags" values={editingPost.tags || []} onChange={vals => updateEditingPost({ tags: vals })} placeholder="Add tag..." />
             </div>
 
+            <div style={{ borderTop: '1px solid #f0f0f1', margin: '24px 0', paddingTop: 24 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1d2327', marginBottom: 16 }}>SEO Settings</h3>
+              <div className="wb-form-group">
+                <label>Meta Title</label>
+                <input type="text" className="wb-input" value={editingPost.meta_title || ''} onChange={e => updateEditingPost({ meta_title: e.target.value })} placeholder="SEO Title..." />
+              </div>
+              <div className="wb-form-group">
+                <label>Meta Description</label>
+                <textarea className="wb-textarea" rows={2} value={editingPost.meta_description || ''} onChange={e => updateEditingPost({ meta_description: e.target.value })} placeholder="SEO Description..." />
+              </div>
+              <div className="wb-form-group">
+                <label>Open Graph Image URL</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" className="wb-input" value={editingPost.og_image || ''} onChange={e => updateEditingPost({ og_image: e.target.value })} placeholder="https://..." style={{ flex: 1 }} />
+                  <button className="wb-btn-secondary" onClick={() => { setImagePickerTarget('og_image_post'); setShowImagePicker(true); }}>Select</button>
+                </div>
+              </div>
+            </div>
+
             <div className="wb-modal-actions">
               <button className="wb-btn-text" onClick={() => setEditingPost(null)}>Cancel</button>
               <button className="wb-btn-primary" onClick={() => savePost(editingPost)}>
@@ -1415,6 +1466,25 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
               </select>
+            </div>
+
+            <div style={{ borderTop: '1px solid #f0f0f1', margin: '24px 0', paddingTop: 24 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1d2327', marginBottom: 16 }}>SEO Settings</h3>
+              <div className="wb-form-group">
+                <label>Meta Title</label>
+                <input type="text" className="wb-input" value={editingPage.meta_title || ''} onChange={e => setEditingPage({ ...editingPage, meta_title: e.target.value })} placeholder="SEO Title..." />
+              </div>
+              <div className="wb-form-group">
+                <label>Meta Description</label>
+                <textarea className="wb-textarea" rows={2} value={editingPage.meta_description || ''} onChange={e => setEditingPage({ ...editingPage, meta_description: e.target.value })} placeholder="SEO Description..." />
+              </div>
+              <div className="wb-form-group">
+                <label>Open Graph Image URL</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" className="wb-input" value={editingPage.og_image || ''} onChange={e => setEditingPage({ ...editingPage, og_image: e.target.value })} placeholder="https://..." style={{ flex: 1 }} />
+                  <button className="wb-btn-secondary" onClick={() => { setImagePickerTarget('og_image_page'); setShowImagePicker(true); }}>Select</button>
+                </div>
+              </div>
             </div>
             <div className="wb-modal-actions">
               <button className="wb-btn-text" onClick={() => setEditingPage(null)}>Cancel</button>
@@ -1610,8 +1680,12 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
           onSelect={(url) => {
             if (imagePickerTarget === 'featured') {
               updateEditingPost({ featured_image_url: url });
+            } else if (imagePickerTarget === 'og_image_post') {
+              updateEditingPost({ og_image: url });
+            } else if (imagePickerTarget === 'og_image_page') {
+              if (editingPage) setEditingPage({ ...editingPage, og_image: url });
             } else if (imagePickerTarget === 'product_featured') {
-              setEditingProduct({ ...editingProduct, featured_image_url: url });
+              if (editingProduct) setEditingProduct({ ...editingProduct, featured_image_url: url });
             }
             setShowImagePicker(false);
           }}
