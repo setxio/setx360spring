@@ -374,7 +374,8 @@ function SiteShell({
   site,
   menuItems,
   accentColor,
-  fontFamily,
+  headingFont,
+  bodyFont,
   children,
 }: {
   site: any;
