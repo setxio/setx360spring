@@ -5,7 +5,8 @@ import {
   LayoutGrid, FileSignature, ArrowLeft, MoreVertical, Globe,
   Check, Loader2, X, Trash2, Edit2, Upload, Link as LinkIcon,
   AlertCircle, UserPlus, ChevronUp, ChevronDown, Star, Clock,
-  RefreshCw, Tag, MessageCircle, Calendar, ShoppingCart, ShoppingBag, DollarSign
+  RefreshCw, Tag, MessageCircle, Calendar, ShoppingCart, ShoppingBag, DollarSign,
+  Video, File as FileIcon
 } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { supabase } from '../lib/supabase';
@@ -21,7 +22,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface WbSite {
   id: string; name: string; subdomain: string; tagline?: string;
-  status: string; plan: string; storage_bucket?: string;
+  status: string; plan: string; storage_bucket?: string; owner_id?: string;
   white_label_config: { brandName?: string; sidebarBg?: string; sidebarColor?: string; accentColor?: string };
   created_at: string;
 }
@@ -41,6 +42,10 @@ interface WbPage {
 interface WbMedia {
   id: string; site_id: string; file_name: string; file_url: string;
   file_type?: string; file_size?: number; alt_text?: string; created_at: string;
+  folder_path?: string;
+}
+interface WbFormSubmission {
+  id: string; site_id: string; form_name: string; data: any; is_read: boolean; created_at: string;
 }
 interface WbSubscriber {
   id: string; site_id: string; user_id: string; role: string;
@@ -701,6 +706,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const [pages, setPages] = useState<WbPage[]>([]);
   const [media, setMedia] = useState<WbMedia[]>([]);
   const [subscribers, setSubscribers] = useState<WbSubscriber[]>([]);
+  const [forms, setForms] = useState<WbFormSubmission[]>([]);
   const [products, setProducts] = useState<WbProduct[]>([]);
   const [orders, setOrders] = useState<WbOrder[]>([]);
   const [tabLoading, setTabLoading] = useState(false);
@@ -713,6 +719,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const [imagePickerTarget, setImagePickerTarget] = useState<'featured' | 'editor' | 'product_featured' | 'og_image_post' | 'og_image_page'>('featured');
 
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [wlConfig, setWlConfig] = useState<any>({});
 
   // Autosave
@@ -767,6 +774,10 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
       if (activeTab === 'orders' || activeTab === 'dashboard') {
         const { data } = await supabase.from('wb_orders').select('*').eq('site_id', activeSite.id).order('created_at', { ascending: false });
         setOrders(data || []);
+      }
+      if (activeTab === 'forms' || activeTab === 'dashboard') {
+        const { data } = await supabase.from('wb_form_submissions').select('*').eq('site_id', activeSite.id).order('created_at', { ascending: false });
+        setForms(data || []);
       }
       setTabLoading(false);
     };
@@ -912,8 +923,24 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
       await supabase.from('wb_media').insert({ site_id: activeSite.id, uploader_id: user.id, file_name: file.name, file_url: urlData.publicUrl, file_type: file.type, file_size: file.size });
       const { data: fresh } = await supabase.from('wb_media').select('*').eq('site_id', activeSite.id).order('created_at', { ascending: false });
       setMedia(fresh || []);
+      setUploadingMedia(false);
     }
-    setUploadingMedia(false);
+  };
+
+  const handleBulkDeleteMedia = async () => {
+    if (!activeSite || selectedMediaIds.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedMediaIds.length} items?`)) return;
+    
+    const mediaToDelete = media.filter(m => selectedMediaIds.includes(m.id));
+    const filePaths = mediaToDelete.map(m => m.file_url.split('/').pop()!).filter(Boolean);
+    
+    if (filePaths.length > 0 && activeSite.storage_bucket) {
+      await supabase.storage.from(activeSite.storage_bucket).remove(filePaths);
+    }
+    
+    await supabase.from('wb_media').delete().in('id', selectedMediaIds);
+    setMedia(media.filter(m => !selectedMediaIds.includes(m.id)));
+    setSelectedMediaIds([]);
   };
 
   const updateSubscriberRole = async (subId: string, role: string) => {
@@ -925,22 +952,27 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const sidebarColor = wlConfig.sidebarColor || '#ffffff';
   const brandName = wlConfig.brandName || activeSite?.name || 'SiteBuilder';
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <Home size={20} /> },
-    { id: 'posts', label: 'Posts', icon: <PenTool size={20} /> },
-    { id: 'taxonomy', label: 'Categories & Tags', icon: <Tag size={20} /> },
-    { id: 'pages', label: 'Pages', icon: <FileText size={20} /> },
-    { id: 'media', label: 'Media', icon: <ImageIcon size={20} /> },
-    { id: 'comments', label: 'Comments', icon: <MessageSquare size={20} /> },
-    { id: 'products', label: 'Products', icon: <ShoppingCart size={20} /> },
-    { id: 'orders', label: 'Orders', icon: <ShoppingBag size={20} /> },
-    { id: 'menus', label: 'Navigation', icon: <Menu size={20} /> },
-    { id: 'users', label: 'Users', icon: <Users size={20} /> },
-    { id: 'appearance', label: 'Appearance', icon: <Palette size={20} /> },
-    { id: 'plugins', label: 'Integrations', icon: <Plug size={20} /> },
-    { id: 'white_label', label: 'White Label', icon: <LayoutGrid size={20} /> },
-    { id: 'settings', label: 'Settings', icon: <Settings size={20} /> },
+  const currentUserRole = activeSite?.owner_id === user.id ? 'admin' : (subscribers.find(s => s.user_id === user.id)?.role || 'author');
+
+  const allNavItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: <Home size={20} />, roles: ['admin', 'editor', 'author'] },
+    { id: 'posts', label: 'Posts', icon: <PenTool size={20} />, roles: ['admin', 'editor', 'author'] },
+    { id: 'taxonomy', label: 'Categories & Tags', icon: <Tag size={20} />, roles: ['admin', 'editor', 'author'] },
+    { id: 'pages', label: 'Pages', icon: <FileText size={20} />, roles: ['admin', 'editor'] },
+    { id: 'media', label: 'Media', icon: <ImageIcon size={20} />, roles: ['admin', 'editor', 'author'] },
+    { id: 'comments', label: 'Comments', icon: <MessageSquare size={20} />, roles: ['admin', 'editor', 'author'] },
+    { id: 'forms', label: 'Forms', icon: <MessageCircle size={20} />, roles: ['admin', 'editor'] },
+    { id: 'products', label: 'Products', icon: <ShoppingCart size={20} />, roles: ['admin', 'editor'] },
+    { id: 'orders', label: 'Orders', icon: <ShoppingBag size={20} />, roles: ['admin', 'editor'] },
+    { id: 'menus', label: 'Navigation', icon: <Menu size={20} />, roles: ['admin'] },
+    { id: 'users', label: 'Users', icon: <Users size={20} />, roles: ['admin'] },
+    { id: 'appearance', label: 'Appearance', icon: <Palette size={20} />, roles: ['admin'] },
+    { id: 'plugins', label: 'Integrations', icon: <Plug size={20} />, roles: ['admin'] },
+    { id: 'white_label', label: 'White Label', icon: <LayoutGrid size={20} />, roles: ['admin'] },
+    { id: 'settings', label: 'Settings', icon: <Settings size={20} />, roles: ['admin'] },
   ];
+
+  const navItems = allNavItems.filter(item => item.roles.includes(currentUserRole));
 
   // ─── LIST VIEW ─────────────────────────────────────────────────────────────
   if (mode === 'list') {
@@ -1247,29 +1279,73 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
           {activeTab === 'media' && !tabLoading && (
             <div>
               <div className="wb-content-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h1>Media Library</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <h1>Media Library</h1>
+                  {selectedMediaIds.length > 0 && (
+                    <button className="wb-btn-secondary" style={{ color: '#d63638', borderColor: '#d63638' }} onClick={handleBulkDeleteMedia}>
+                      <Trash2 size={16} /> Delete {selectedMediaIds.length} items
+                    </button>
+                  )}
+                </div>
                 <label className="wb-btn-primary" style={{ cursor: 'pointer' }}>
                   {uploadingMedia ? <><Loader2 size={16} className="wb-spinner" /> Uploading...</> : <><Upload size={16} /> Upload File</>}
-                  <input type="file" hidden accept="image/*,video/*,audio/*,application/pdf" onChange={handleMediaUpload} disabled={!activeSite?.storage_bucket} />
+                  <input type="file" hidden accept="image/*,video/*,audio/*,application/pdf" multiple onChange={handleMediaUpload} disabled={!activeSite?.storage_bucket} />
                 </label>
               </div>
               {!activeSite?.storage_bucket && <div className="wb-info-box"><AlertCircle size={16} />Storage bucket is still provisioning. Refresh in a moment.</div>}
               <div className="wb-media-grid">
                 {media.map(m => (
-                  <div key={m.id} className="wb-media-item">
+                  <div key={m.id} className={`wb-media-item ${selectedMediaIds.includes(m.id) ? 'selected' : ''}`} style={{ position: 'relative' }}>
+                    <input 
+                      type="checkbox" 
+                      className="wb-media-checkbox"
+                      style={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}
+                      checked={selectedMediaIds.includes(m.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) setSelectedMediaIds([...selectedMediaIds, m.id]);
+                        else setSelectedMediaIds(selectedMediaIds.filter(id => id !== m.id));
+                      }}
+                    />
                     {m.file_type?.startsWith('image/') ? (
                       <img src={m.file_url} alt={m.alt_text || m.file_name} className="wb-media-thumb" />
+                    ) : m.file_type?.startsWith('video/') ? (
+                      <div className="wb-media-file-icon"><Video size={32} color="#8c8f94" /></div>
+                    ) : m.file_type === 'application/pdf' ? (
+                      <div className="wb-media-file-icon"><FileText size={32} color="#8c8f94" /></div>
                     ) : (
-                      <div className="wb-media-file-icon"><FileSignature size={32} color="#8c8f94" /></div>
+                      <div className="wb-media-file-icon"><FileIcon size={32} color="#8c8f94" /></div>
                     )}
                     <div className="wb-media-info">
-                      <p className="wb-media-name">{m.file_name}</p>
+                      <p className="wb-media-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.file_name}</p>
                       <button className="wb-link-btn" onClick={() => navigator.clipboard.writeText(m.file_url)}>Copy URL</button>
                     </div>
                   </div>
                 ))}
                 {media.length === 0 && <div className="wb-empty-state"><ImageIcon size={40} color="#c3c4c7" /><p>No media uploaded yet.</p></div>}
               </div>
+            </div>
+          )}
+
+          {/* ── FORMS ── */}
+          {activeTab === 'forms' && !tabLoading && (
+            <div>
+              <div className="wb-content-header">
+                <h1>Form Submissions</h1>
+              </div>
+              <table className="wb-table">
+                <thead><tr><th>Form Name</th><th>From</th><th>Message</th><th>Date</th></tr></thead>
+                <tbody>
+                  {forms.map(f => (
+                    <tr key={f.id} style={{ fontWeight: f.is_read ? 'normal' : '500' }}>
+                      <td>{f.form_name}</td>
+                      <td>{f.data?.name || 'Anonymous'} <br/><span style={{fontSize: 12, color: '#646970'}}>{f.data?.email}</span></td>
+                      <td>{f.data?.message || JSON.stringify(f.data)}</td>
+                      <td>{new Date(f.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                  {forms.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: '#646970', padding: 32 }}>No submissions yet.</td></tr>}
+                </tbody>
+              </table>
             </div>
           )}
 
