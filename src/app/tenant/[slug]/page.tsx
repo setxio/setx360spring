@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import CheckoutButton from '@/components/CheckoutButton';
 
 export const runtime = 'edge';
 
@@ -243,22 +244,13 @@ async function WbSiteRenderer({
             </p>
             <div style={{ color: '#444', lineHeight: 1.6, marginBottom: 32 }} dangerouslySetInnerHTML={{ __html: prod.description || '' }} />
             
-            {variations && variations.length > 0 && (
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>Select Variation:</label>
-                <select style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ccc', fontSize: 15, background: '#fff' }}>
-                  {variations.map((v: any) => (
-                    <option key={v.id} value={v.id}>
-                      {Object.values(v.attributes).join(' / ')} - ${(v.price || prod.price).toFixed(2)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            
-            <button style={{ width: '100%', background: accentColor, color: '#fff', border: 'none', padding: '14px', borderRadius: 6, fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer' }}>
-              Add to Cart
-            </button>
+            <CheckoutButton
+              siteId={site.id}
+              productId={prod.id}
+              variations={variations || []}
+              productPrice={Number(prod.price)}
+              accentColor={accentColor}
+            />
             <p style={{ fontSize: 12, color: '#888', marginTop: 12, textAlign: 'center' }}>Secure checkout powered by Stripe Connect.</p>
           </div>
         </div>
