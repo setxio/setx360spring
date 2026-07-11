@@ -60,9 +60,8 @@ export default async function middleware(req: NextRequest) {
 
     // 2. Custom Domain routing (e.g., myboutique.com)
     // In a real Vercel environment, you would hit the Vercel Edge Config or Supabase
-    // to map `hostname` -> `tenant_slug`. For this boilerplate, we rewrite to a specialized handler.
-    // We pass the raw hostname to the dynamic route so it can look up the tenant.
-    return NextResponse.rewrite(new URL(`/tenant/custom/${hostname}${url.pathname}`, req.url));
+    // to map `hostname` -> `tenant_slug`. For this boilerplate, we rewrite to the tenant handler directly.
+    return NextResponse.rewrite(new URL(`/tenant/${hostname}${url.pathname}`, req.url));
   }
 
   return NextResponse.next();

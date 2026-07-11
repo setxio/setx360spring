@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { data: site } = await supabase
     .from('wb_sites')
     .select('name, tagline, white_label_config')
-    .eq('subdomain', slug)
+    .or(`subdomain.eq.${slug},custom_domain.eq.${slug}`)
     .eq('status', 'active')
     .single();
 
@@ -56,7 +56,7 @@ export default async function TenantPage({ params, searchParams }: Props) {
   const { data: site } = await supabase
     .from('wb_sites')
     .select('*')
-    .eq('subdomain', slug)
+    .or(`subdomain.eq.${slug},custom_domain.eq.${slug}`)
     .eq('status', 'active')
     .single();
 
@@ -123,7 +123,8 @@ async function WbSiteRenderer({
 }) {
   const wl = site.white_label_config || {};
   const accentColor = wl.accentColor || '#2271b1';
-  const fontFamily = wl.fontFamily || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  const headingFont = wl.headingFont || 'Inter';
+  const bodyFont = wl.bodyFont || 'Inter';
 
   // Fetch nav menu items
   const { data: menuItems } = await supabase
@@ -154,7 +155,7 @@ async function WbSiteRenderer({
     if (!post) notFound();
 
     return (
-      <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} fontFamily={fontFamily}>
+      <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} headingFont={headingFont} bodyFont={bodyFont}>
         <article style={{ maxWidth: 720, margin: '0 auto', padding: '40px 0' }}>
           {post.featured_image_url && (
             <img src={post.featured_image_url} alt={post.title} style={{ width: '100%', height: 320, objectFit: 'cover', borderRadius: 8, marginBottom: 32 }} />
@@ -197,7 +198,7 @@ async function WbSiteRenderer({
     if (!pg) notFound();
 
     return (
-      <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} fontFamily={fontFamily}>
+      <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} headingFont={headingFont} bodyFont={bodyFont}>
         <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 0' }}>
           <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: 32, color: '#1a1a1a' }}>{pg.title}</h1>
           <div
@@ -228,7 +229,7 @@ async function WbSiteRenderer({
       .order('price', { ascending: true });
 
     return (
-      <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} fontFamily={fontFamily}>
+      <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} headingFont={headingFont} bodyFont={bodyFont}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 0', display: 'flex', gap: 40, flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 400px' }}>
             {prod.image_url ? (
@@ -281,7 +282,7 @@ async function WbSiteRenderer({
   }
 
   return (
-    <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} fontFamily={fontFamily}>
+    <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} headingFont={headingFont} bodyFont={bodyFont}>
       {/* Hero */}
       <section style={{ background: `linear-gradient(135deg, ${accentColor}18, ${accentColor}08)`, borderRadius: 12, padding: '56px 40px', marginBottom: 48, textAlign: 'center', border: `1px solid ${accentColor}22` }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: '0 0 16px', color: '#1a1a1a', lineHeight: 1.2 }}>{site.name}</h1>
@@ -379,10 +380,15 @@ function SiteShell({
   site: any;
   menuItems: any[];
   accentColor: string;
-  fontFamily: string;
+  headingFont: string;
+  bodyFont: string;
   children: React.ReactNode;
 }) {
   const wl = site.white_label_config || {};
+
+  // Build Google Fonts URL
+  const fonts = Array.from(new Set([headingFont, bodyFont])).map(f => f.replace(/ /g, '+'));
+  const fontUrl = `https://fonts.googleapis.com/css2?${fonts.map(f => `family=${f}:wght@400;500;600;700`).join('&')}&display=swap`;
 
   return (
     <html lang="en">
@@ -391,18 +397,22 @@ function SiteShell({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{site.name}</title>
         {site.tagline && <meta name="description" content={site.tagline} />}
+        <link href={fontUrl} rel="stylesheet" />
         <style>{`
           *, *::before, *::after { box-sizing: border-box; }
-          body { margin: 0; font-family: ${fontFamily}; background: #fff; color: #1a1a1a; }
+          body { margin: 0; font-family: "${bodyFont}", sans-serif; background: #fff; color: #1a1a1a; }
           a { color: ${accentColor}; }
           img { max-width: 100%; }
-          h1,h2,h3,h4 { line-height: 1.3; }
+          h1,h2,h3,h4 { line-height: 1.3; font-family: "${headingFont}", sans-serif; }
           .wb-content p { margin: 0 0 1.2em; }
           .wb-content ul, .wb-content ol { padding-left: 1.5em; margin: 0 0 1.2em; }
           .wb-content blockquote { border-left: 4px solid ${accentColor}; margin: 0; padding: 8px 16px; color: #666; background: #f8f9fa; }
           .wb-content code { background: #f0f0f1; padding: 2px 6px; border-radius: 3px; font-size: .9em; }
           .wb-content h2 { font-size: 1.5em; margin: 1.5em 0 .5em; }
           .wb-content h3 { font-size: 1.25em; margin: 1.2em 0 .4em; }
+          
+          /* Custom CSS */
+          ${wl.customCss || ''}
         `}</style>
       </head>
       <body>

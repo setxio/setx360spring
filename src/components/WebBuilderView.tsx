@@ -152,20 +152,25 @@ const RichEditor: React.FC<{
 };
 
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
-const SettingsTab: React.FC<{ siteId: string; subdomain: string }> = ({ siteId, subdomain }) => {
+const SettingsTab: React.FC<{ site: any }> = ({ site }) => {
   const [settings, setSettings] = useState<any>(null);
+  const [customDomain, setCustomDomain] = useState(site.custom_domain || '');
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    supabase.from('wb_site_settings').select('*').eq('site_id', siteId).single().then(({ data }) => {
-      setSettings(data || { site_id: siteId, timezone: 'America/Chicago', posts_per_page: 10, homepage_type: 'latest_posts', allow_subscriptions: true, comment_moderation: true });
+    supabase.from('wb_site_settings').select('*').eq('site_id', site.id).single().then(({ data }) => {
+      setSettings(data || { site_id: site.id, timezone: 'America/Chicago', posts_per_page: 10, homepage_type: 'latest_posts', allow_subscriptions: true, comment_moderation: true });
       setLoading(false);
     });
-  }, [siteId]);
+  }, [site.id]);
 
   const save = async () => {
-    await supabase.from('wb_site_settings').upsert({ ...settings, site_id: siteId }, { onConflict: 'site_id' });
+    await supabase.from('wb_site_settings').upsert({ ...settings, site_id: site.id }, { onConflict: 'site_id' });
+    if (customDomain !== site.custom_domain) {
+      await supabase.from('wb_sites').update({ custom_domain: customDomain || null }).eq('id', site.id);
+      site.custom_domain = customDomain; // Update local state mutatively for immediate feedback
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -186,9 +191,14 @@ const SettingsTab: React.FC<{ siteId: string; subdomain: string }> = ({ siteId, 
               <label>Tagline</label>
               <input type="text" className="wb-input" value={settings?.tagline || ''} placeholder="Just another SETX 360 site" onChange={e => setSettings({ ...settings, tagline: e.target.value })} />
             </div>
-            <div className="wb-form-group" style={{ marginBottom: 0 }}>
+            <div className="wb-form-group">
               <label>Public URL</label>
-              <input type="text" className="wb-input" value={`${subdomain}.setx360.com`} readOnly style={{ background: '#f6f7f7', color: '#646970' }} />
+              <input type="text" className="wb-input" value={`${site.subdomain}.setx360.com`} readOnly style={{ background: '#f6f7f7', color: '#646970' }} />
+            </div>
+            <div className="wb-form-group" style={{ marginBottom: 0 }}>
+              <label>Custom Domain</label>
+              <input type="text" className="wb-input" placeholder="e.g. mystore.com" value={customDomain} onChange={e => setCustomDomain(e.target.value)} />
+              <p style={{ fontSize: 12, color: '#646970', marginTop: 4 }}>Configure your domain's CNAME to point to <strong>cname.vercel-dns.com</strong>.</p>
             </div>
           </div>
         </div>
@@ -649,6 +659,22 @@ const AppearanceTab: React.FC<{ siteId: string; wlConfig: any; onUpdateWlConfig:
               <input type="checkbox" checked={wlConfig?.centerLogo ?? false} onChange={e => onUpdateWlConfig('centerLogo', e.target.checked)} style={{ width: 16, height: 16 }} />
               <span>Center Logo in Navigation</span>
             </label>
+          </div>
+        </div>
+        <div className="wb-widget" style={{ gridColumn: '1 / -1' }}>
+          <h2 className="wb-widget-title">Custom CSS</h2>
+          <div className="wb-widget-content" style={{ padding: '16px 20px 20px' }}>
+            <div className="wb-form-group" style={{ marginBottom: 0 }}>
+              <label>Inject Custom Styles (Advanced)</label>
+              <textarea 
+                className="wb-input" 
+                value={wlConfig?.customCss || ''} 
+                onChange={e => onUpdateWlConfig('customCss', e.target.value)} 
+                placeholder="/* e.g. .site-header { border-bottom: 2px solid red; } */"
+                style={{ fontFamily: 'monospace', height: 120, resize: 'vertical' }}
+              />
+              <p style={{ fontSize: 12, color: '#646970', marginTop: 8 }}>Write pure CSS to override frontend styles. Do not include &lt;style&gt; tags.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -1559,7 +1585,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
 
           {/* ── SETTINGS ── */}
           {activeTab === 'settings' && activeSite && (
-            <SettingsTab siteId={activeSite.id} subdomain={activeSite.subdomain} />
+            <SettingsTab site={activeSite} />
           )}
 
           {/* ── APPEARANCE ── */}
