@@ -239,6 +239,66 @@ const SettingsTab: React.FC<{ siteId: string; subdomain: string }> = ({ siteId, 
   );
 };
 
+// ─── Plugins Tab ─────────────────────────────────────────────────────────────
+const PluginsTab: React.FC<{ siteId: string }> = ({ siteId }) => {
+  const [pluginsConfig, setPluginsConfig] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from('wb_site_settings').select('plugins_config').eq('site_id', siteId).single().then(({ data }) => {
+      setPluginsConfig(data?.plugins_config || {});
+      setLoading(false);
+    });
+  }, [siteId]);
+
+  const togglePlugin = async (pluginId: string) => {
+    const newConfig = { ...pluginsConfig, [pluginId]: !pluginsConfig[pluginId] };
+    setPluginsConfig(newConfig);
+    await supabase.from('wb_site_settings').update({ plugins_config: newConfig }).eq('site_id', siteId);
+  };
+
+  if (loading) return <div style={{ padding: 40, textAlign: 'center' }}><Loader2 size={24} className="wb-spinner" /></div>;
+
+  const plugins = [
+    { id: 'ecommerce', name: 'Store (E-commerce)', description: 'Sell products and digital downloads. Enables the Products and Orders tabs.', icon: <ShoppingBag size={24} color="#2271b1" /> },
+    { id: 'stripe', name: 'Stripe Payments', description: 'Accept credit cards directly on your site securely via Stripe.', icon: <DollarSign size={24} color="#008cdd" /> },
+    { id: 'mailchimp', name: 'Mailchimp Integration', description: 'Sync your form submissions and subscribers automatically to Mailchimp.', icon: <Users size={24} color="#ffe01b" /> },
+    { id: 'seo_pro', name: 'Advanced SEO Pro', description: 'Unlock advanced metadata options, XML sitemaps, and robots.txt generation.', icon: <Globe size={24} color="#10b981" /> }
+  ];
+
+  return (
+    <div className="wb-fade-in">
+      <div className="wb-content-header">
+        <h1>Integrations & Features</h1>
+      </div>
+      <div style={{ maxWidth: 800 }}>
+        <p style={{ color: '#646970', marginBottom: 24 }}>Enable or disable built-in features and third-party integrations for your site.</p>
+        <div style={{ display: 'grid', gap: 16 }}>
+          {plugins.map(p => (
+            <div key={p.id} className="wb-widget" style={{ padding: 20, display: 'flex', alignItems: 'center', gap: 20 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 8, background: '#f0f0f1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {p.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: 15, marginBottom: 4 }}>{p.name}</h3>
+                <p style={{ fontSize: 13, color: '#646970', margin: 0 }}>{p.description}</p>
+              </div>
+              <div>
+                <label className="wb-toggle-switch" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={!!pluginsConfig[p.id]} onChange={() => togglePlugin(p.id)} style={{ display: 'none' }} />
+                  <div style={{ width: 40, height: 24, background: pluginsConfig[p.id] ? '#2271b1' : '#c3c4c7', borderRadius: 12, position: 'relative', transition: 'background 0.2s' }}>
+                    <div style={{ width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute', top: 2, left: pluginsConfig[p.id] ? 18 : 2, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                  </div>
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Menu Builder Tab ─────────────────────────────────────────────────────────
 const MenuBuilderTab: React.FC<{ siteId: string; subdomain: string }> = ({ siteId, subdomain }) => {
   const [items, setItems] = useState<WbMenuItem[]>([]);
@@ -609,7 +669,7 @@ const AppearanceTab: React.FC<{ siteId: string; wlConfig: any; onUpdateWlConfig:
 // ─── Main Component ───────────────────────────────────────────────────────────
 interface PageBlock {
   id: string;
-  type: 'hero' | 'feature_grid' | 'rich_text';
+  type: 'hero' | 'feature_grid' | 'rich_text' | 'form' | 'video';
   data: any;
 }
 
@@ -671,6 +731,19 @@ const BlockBuilder: React.FC<{ blocks: PageBlock[]; onChange: (blocks: PageBlock
           {block.type === 'rich_text' && (
              <RichEditor content={block.data.content || ''} onChange={html => updateBlock(block.id, { content: html })} />
           )}
+
+          {block.type === 'form' && (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+               <input className="wb-input" placeholder="Form Title (e.g. Contact Us)" value={block.data.title || ''} onChange={e => updateBlock(block.id, { title: e.target.value })} />
+               <input className="wb-input" placeholder="Recipient Email (where submissions are sent)" value={block.data.emailTo || ''} onChange={e => updateBlock(block.id, { emailTo: e.target.value })} />
+             </div>
+          )}
+
+          {block.type === 'video' && (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+               <input className="wb-input" placeholder="Video URL (YouTube or Vimeo)" value={block.data.url || ''} onChange={e => updateBlock(block.id, { url: e.target.value })} />
+             </div>
+          )}
         </div>
       ))}
 
@@ -684,6 +757,8 @@ const BlockBuilder: React.FC<{ blocks: PageBlock[]; onChange: (blocks: PageBlock
         <button className="wb-btn-secondary" onClick={() => addBlock('hero')}><Plus size={14} /> Add Hero</button>
         <button className="wb-btn-secondary" onClick={() => addBlock('feature_grid')}><Plus size={14} /> Add Feature Grid</button>
         <button className="wb-btn-secondary" onClick={() => addBlock('rich_text')}><Plus size={14} /> Add Rich Text</button>
+        <button className="wb-btn-secondary" onClick={() => addBlock('form')}><Plus size={14} /> Add Form</button>
+        <button className="wb-btn-secondary" onClick={() => addBlock('video')}><Plus size={14} /> Add Video</button>
       </div>
     </div>
   );
@@ -1484,16 +1559,9 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
             <AppearanceTab siteId={activeSite.id} wlConfig={wlConfig} onUpdateWlConfig={updateWhiteLabel} storageBucket={activeSite.storage_bucket} />
           )}
 
-          {/* ── INTEGRATIONS fallback ── */}
-          {activeTab === 'plugins' && (
-            <div>
-              <div className="wb-content-header"><h1>{navItems.find(i => i.id === activeTab)?.label}</h1></div>
-              <div className="wb-empty-state">
-                <LayoutGrid size={48} color="#c3c4c7" />
-                <h2>{navItems.find(i => i.id === activeTab)?.label}</h2>
-                <p>Full theme and integration management coming soon.</p>
-              </div>
-            </div>
+          {/* ── PLUGINS ── */}
+          {activeTab === 'plugins' && activeSite && (
+            <PluginsTab siteId={activeSite.id} />
           )}
         </main>
       </div>
