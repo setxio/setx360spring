@@ -240,7 +240,7 @@ const SettingsTab: React.FC<{ siteId: string; subdomain: string }> = ({ siteId, 
 };
 
 // ─── Plugins Tab ─────────────────────────────────────────────────────────────
-const PluginsTab: React.FC<{ siteId: string }> = ({ siteId }) => {
+const PluginsTab: React.FC<{ siteId: string; onUpdate?: (cfg: any) => void }> = ({ siteId, onUpdate }) => {
   const [pluginsConfig, setPluginsConfig] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
@@ -254,6 +254,7 @@ const PluginsTab: React.FC<{ siteId: string }> = ({ siteId }) => {
   const togglePlugin = async (pluginId: string) => {
     const newConfig = { ...pluginsConfig, [pluginId]: !pluginsConfig[pluginId] };
     setPluginsConfig(newConfig);
+    if (onUpdate) onUpdate(newConfig);
     await supabase.from('wb_site_settings').update({ plugins_config: newConfig }).eq('site_id', siteId);
   };
 
@@ -796,6 +797,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [wlConfig, setWlConfig] = useState<any>({});
+  const [sitePlugins, setSitePlugins] = useState<any>({});
 
   // Autosave
   const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
@@ -864,6 +866,9 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
     setWlConfig(site.white_label_config || {});
     setMode('dashboard');
     setActiveTab('dashboard');
+    supabase.from('wb_site_settings').select('plugins_config').eq('site_id', site.id).single().then(({ data }) => {
+      setSitePlugins(data?.plugins_config || {});
+    });
     if (!site.storage_bucket) {
       await supabase.functions.invoke('provision-wb-site', {
         body: { site_id: site.id, subdomain: site.subdomain, site_name: site.name },
@@ -1047,7 +1052,10 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
     { id: 'settings', label: 'Settings', icon: <Settings size={20} />, roles: ['admin'] },
   ];
 
-  const navItems = allNavItems.filter(item => item.roles.includes(currentUserRole));
+  let navItems = allNavItems.filter(item => item.roles.includes(currentUserRole));
+  if (!sitePlugins.ecommerce) {
+    navItems = navItems.filter(item => item.id !== 'products' && item.id !== 'orders');
+  }
 
   // ─── LIST VIEW ─────────────────────────────────────────────────────────────
   if (mode === 'list') {
@@ -1561,7 +1569,7 @@ export const WebBuilderView: React.FC<WebBuilderViewProps> = ({ user }) => {
 
           {/* ── PLUGINS ── */}
           {activeTab === 'plugins' && activeSite && (
-            <PluginsTab siteId={activeSite.id} />
+            <PluginsTab siteId={activeSite.id} onUpdate={setSitePlugins} />
           )}
         </main>
       </div>

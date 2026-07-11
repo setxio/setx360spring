@@ -49,6 +49,7 @@ export default async function TenantPage({ params, searchParams }: Props) {
   const resolvedSearch = await searchParams;
   const postSlug = resolvedSearch.post as string | undefined;
   const pageSlug = resolvedSearch.page as string | undefined;
+  const productSlug = resolvedSearch.product as string | undefined;
 
   // ─── Check if this slug belongs to a Website Builder site ──────────────────
   const { data: site } = await supabase
@@ -59,7 +60,7 @@ export default async function TenantPage({ params, searchParams }: Props) {
     .single();
 
   if (site) {
-    return <WbSiteRenderer site={site} postSlug={postSlug} pageSlug={pageSlug} />;
+    return <WbSiteRenderer site={site} postSlug={postSlug} pageSlug={pageSlug} productSlug={productSlug} />;
   }
 
   // ─── Fall back to original SETX.io merchant tenant logic ───────────────────
@@ -112,10 +113,12 @@ async function WbSiteRenderer({
   site,
   postSlug,
   pageSlug,
+  productSlug,
 }: {
   site: any;
   postSlug?: string;
   pageSlug?: string;
+  productSlug?: string;
 }) {
   const wl = site.white_label_config || {};
   const accentColor = wl.accentColor || '#2271b1';
@@ -128,6 +131,14 @@ async function WbSiteRenderer({
     .eq('site_id', site.id)
     .is('parent_id', null)
     .order('sort_order');
+
+  // Fetch plugins config
+  const { data: settings } = await supabase
+    .from('wb_site_settings')
+    .select('plugins_config')
+    .eq('site_id', site.id)
+    .single();
+  const plugins = settings?.plugins_config || {};
 
   // If viewing a specific post
   if (postSlug) {
@@ -197,6 +208,64 @@ async function WbSiteRenderer({
     );
   }
 
+  // If viewing a specific product
+  if (productSlug) {
+    const { data: prod } = await supabase
+      .from('wb_products')
+      .select('*')
+      .eq('site_id', site.id)
+      .eq('slug', productSlug)
+      .eq('status', 'published')
+      .single();
+
+    if (!prod) notFound();
+
+    const { data: variations } = await supabase
+      .from('wb_product_variations')
+      .select('*')
+      .eq('product_id', prod.id)
+      .order('price', { ascending: true });
+
+    return (
+      <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} fontFamily={fontFamily}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 0', display: 'flex', gap: 40, flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 400px' }}>
+            {prod.image_url ? (
+              <img src={prod.image_url} alt={prod.title} style={{ width: '100%', borderRadius: 8, border: '1px solid #e8e8e8' }} />
+            ) : (
+              <div style={{ width: '100%', aspectRatio: '1', background: '#f0f0f1', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>No Image</div>
+            )}
+          </div>
+          <div style={{ flex: '1 1 300px' }}>
+            <h1 style={{ fontSize: '2.5rem', margin: '0 0 8px', color: '#1a1a1a' }}>{prod.title}</h1>
+            <p style={{ fontSize: '1.5rem', fontWeight: 600, color: accentColor, margin: '0 0 24px' }}>
+              ${Number(prod.price).toFixed(2)}
+            </p>
+            <div style={{ color: '#444', lineHeight: 1.6, marginBottom: 32 }} dangerouslySetInnerHTML={{ __html: prod.description || '' }} />
+            
+            {variations && variations.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>Select Variation:</label>
+                <select style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #ccc', fontSize: 15, background: '#fff' }}>
+                  {variations.map((v: any) => (
+                    <option key={v.id} value={v.id}>
+                      {Object.values(v.attributes).join(' / ')} - ${(v.price || prod.price).toFixed(2)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
+            <button style={{ width: '100%', background: accentColor, color: '#fff', border: 'none', padding: '14px', borderRadius: 6, fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer' }}>
+              Add to Cart
+            </button>
+            <p style={{ fontSize: 12, color: '#888', marginTop: 12, textAlign: 'center' }}>Secure checkout powered by Stripe Connect.</p>
+          </div>
+        </div>
+      </SiteShell>
+    );
+  }
+
   // ── Homepage ─────────────────────────────────────────────────────────────────
   // Fetch published posts for the blog roll
   const { data: posts } = await supabase
@@ -207,6 +276,18 @@ async function WbSiteRenderer({
     .order('published_at', { ascending: false })
     .limit(12);
 
+  let storeProducts: any[] = [];
+  if (plugins.ecommerce) {
+    const { data: prods } = await supabase
+      .from('wb_products')
+      .select('id, title, slug, price, image_url')
+      .eq('site_id', site.id)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(8);
+    storeProducts = prods || [];
+  }
+
   return (
     <SiteShell site={site} menuItems={menuItems || []} accentColor={accentColor} fontFamily={fontFamily}>
       {/* Hero */}
@@ -216,7 +297,7 @@ async function WbSiteRenderer({
       </section>
 
       {/* Posts Grid */}
-      {posts && posts.length > 0 ? (
+      {posts && posts.length > 0 && (
         <>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 600, margin: '0 0 24px', color: '#1a1a1a' }}>Latest Posts</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24, marginBottom: 48 }}>
@@ -246,9 +327,37 @@ async function WbSiteRenderer({
             ))}
           </div>
         </>
-      ) : (
+      )}
+
+      {/* Featured Products Grid */}
+      {plugins.ecommerce && storeProducts.length > 0 && (
+        <div style={{ marginTop: 64, marginBottom: 48 }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 24px', color: '#1a1a1a', textAlign: 'center' }}>Featured Products</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 24 }}>
+            {storeProducts.map((p) => (
+              <a
+                key={p.id}
+                href={`/tenant/${site.subdomain}?product=${p.slug}`}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 10, border: '1px solid #e8e8e8', overflow: 'hidden', transition: 'transform .2s', paddingBottom: 16 }}
+              >
+                {p.image_url ? (
+                  <img src={p.image_url} alt={p.title} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', aspectRatio: '1', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc' }}>No Image</div>
+                )}
+                <div style={{ padding: '16px 16px 0', textAlign: 'center' }}>
+                  <h3 style={{ fontSize: '1.1rem', margin: '0 0 8px', color: '#1a1a1a' }}>{p.title}</h3>
+                  <p style={{ fontWeight: 600, color: accentColor, margin: 0 }}>${Number(p.price).toFixed(2)}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!posts?.length && (!plugins.ecommerce || !storeProducts.length) && (
         <div style={{ textAlign: 'center', padding: '80px 20px', color: '#aaa' }}>
-          <p style={{ fontSize: '1.1rem' }}>No posts yet. Check back soon!</p>
+          <p style={{ fontSize: '1.1rem' }}>No content yet. Check back soon!</p>
         </div>
       )}
 
